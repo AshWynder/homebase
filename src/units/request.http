@@ -1,0 +1,50 @@
+### Units — Homebase API
+### Base URL: http://localhost:3000
+
+@baseUrl = http://localhost:3000
+@propertyId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f5
+@unitId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f6
+
+### 1. Create a Unit
+POST {{baseUrl}}/units
+Content-Type: application/json
+
+{
+  "unitNumber": "A101",
+  "blockName": "Block A",
+  "propertyId": "{{propertyId}}"
+}
+
+### 2. Create another Unit (B202)
+POST {{baseUrl}}/units
+Content-Type: application/json
+
+{
+  "unitNumber": "B202",
+  "blockName": "Block B",
+  "propertyId": "{{propertyId}}"
+}
+
+### 3. Get All Units (with Pagination)
+GET {{baseUrl}}/units?page=1&limit=10
+
+### 4. Get Units Filtered by Property
+GET {{baseUrl}}/units?propertyId={{propertyId}}
+
+### 5. Get Units for a Property (Shortcut Route)
+GET {{baseUrl}}/units/property/{{propertyId}}
+
+### 6. Get Unit by ID (with details: property, tenancies, meters, tickets)
+GET {{baseUrl}}/units/{{unitId}}
+
+### 7. Update Unit
+PATCH {{baseUrl}}/units/{{unitId}}
+Content-Type: application/json
+
+{
+  "unitNumber": "A101-Renovated",
+  "blockName": "Block A East"
+}
+
+### 8. Delete Unit
+DELETE {{baseUrl}}/units/{{unitId}}
