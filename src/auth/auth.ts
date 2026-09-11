@@ -1,13 +1,15 @@
+import 'dotenv/config';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from '@better-auth/prisma-adapter';
 import { prisma } from '../../prisma/prisma.client';
 import { bearer, jwt } from 'better-auth/plugins';
 
-export  const auth = betterAuth({
+export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: 'postgresql'
+    provider: 'postgresql',
   }),
   secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL,
   emailAndPassword: {
     enabled: true,
   },
@@ -15,9 +17,9 @@ export  const auth = betterAuth({
     jwt({
       jwt: {
         expirationTime: '1h',
-        refreshExpirationTime: '7d'
+        refreshExpirationTime: '7d',
       },
     }),
     bearer(),
-  ]
-})
+  ],
+});

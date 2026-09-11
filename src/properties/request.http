@@ -1,0 +1,34 @@
+### Property CRUD — Homebase API
+### Base URL: http://localhost:3000
+### Owner ID must reference an existing UserProfile.id (valid UUID)
+
+### Create a Property
+POST http://localhost:3000/properties
+Content-Type: application/json
+
+{
+  "name": "Sunset Apartments",
+  "address": "123 Sunset Blvd, Nairobi",
+  "ownerId": "660e8400-e29b-41d4-a716-446655440000",
+  "caretakerId": "660e8400-e29b-41d4-a716-446655440000"
+}
+
+### Get All Properties (with optional pagination)
+GET http://localhost:3000/properties
+### Or with pagination:
+# GET http://localhost:3000/properties?page=1&limit=10
+
+### Get a Single Property by ID
+GET http://localhost:3000/properties/01a08fb7-a7dc-7491-87f7-10b7ce672974
+
+### Update a Property
+PATCH http://localhost:3000/properties/01a08fb7-a7dc-7491-87f7-10b7ce672974
+Content-Type: application/json
+
+{
+  "name": "Sunset Gardens",
+  "address": "456 Sunset Blvd, Nairobi"
+}
+
+### Delete a Property
+DELETE http://localhost:3000/properties/01a08fb7-a7dc-7491-87f7-10b7ce672974
