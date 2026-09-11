@@ -9,8 +9,8 @@ Content-Type: application/json
 {
   "name": "Sunset Apartments",
   "address": "123 Sunset Blvd, Nairobi",
-  "ownerId": "660e8400-e29b-41d4-a716-446655440000",
-  "caretakerId": "660e8400-e29b-41d4-a716-446655440000"
+  "ownerId": "01a090b1-6dbf-7658-8b71-478965dbbc11",
+  "caretakerId": "01a090b1-6e8f-70cd-b0c1-035fef6ddc0d"
 }
 
 ### Get All Properties (with optional pagination)
