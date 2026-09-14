@@ -19,6 +19,11 @@ enum Role {
   TENANT
 }
 
+enum MeterType {
+  WATER
+  ELECTRICITY
+}
+
 enum InvoiceType {
   RENT
   WATER
@@ -220,15 +225,17 @@ model UtilityMeter {
   unitId String @map("unit_id")
   unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
-  meterType   String  @default("WATER") @map("meter_type")
-  meterNumber String? @map("meter_number")
-  lastReading Int     @map("last_reading")
+  meterType   MeterType @default(WATER) @map("meter_type")
+  meterNumber String?   @unique @map("meter_number")
+  lastReading Int       @default(0) @map("last_reading")
+  pricePerUnit Decimal  @default(150.00) @map("price_per_unit") @db.Decimal(10, 2)
 
   readings MeterReading[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@unique([unitId, meterType])
   @@map("utility_meter")
 }
 
@@ -238,9 +245,14 @@ model MeterReading {
   meterId String       @map("meter_id")
   meter   UtilityMeter @relation(fields: [meterId], references: [id], onDelete: Cascade)
 
-  currentValue  Int      @map("current_value")
-  unitsConsumed Int      @map("units_consumed")
-  readingDate   DateTime @default(now()) @map("reading_date")
+  currentReading Int      @map("current_reading")
+  unitsConsumed  Int      @map("units_consumed")
+  pricePerUnit   Decimal  @map("price_per_unit") @db.Decimal(10, 2)
+  consumptionCost Decimal @map("consumption_cost") @db.Decimal(12, 2)
+  readingDate    DateTime @default(now()) @map("reading_date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("meter_reading")
 }

@@ -1,0 +1,78 @@
+### Meters & Meter Readings — Homebase API
+### Base URL: http://localhost:3000
+
+@baseUrl = http://localhost:3000
+@unitId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f6
+@propertyId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f5
+@meterId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f8
+
+### 1. Create a Water Meter
+POST {{baseUrl}}/meters
+Content-Type: application/json
+
+{
+  "unitId": "{{unitId}}",
+  "meterType": "WATER",
+  "meterNumber": "WM-001",
+  "lastReading": 1200,
+  "pricePerUnit": 150.00
+}
+
+### 2. Create an Electricity Meter
+POST {{baseUrl}}/meters
+Content-Type: application/json
+
+{
+  "unitId": "{{unitId}}",
+  "meterType": "ELECTRICITY",
+  "meterNumber": "EM-001",
+  "lastReading": 500,
+  "pricePerUnit": 35.50
+}
+
+### 3. Get All Meters (with Pagination)
+GET {{baseUrl}}/meters?page=1&limit=10
+
+### 4. Get Meters Filtered by Unit
+GET {{baseUrl}}/meters?unitId={{unitId}}
+
+### 5. Get Meters Filtered by Property
+GET {{baseUrl}}/meters?propertyId={{propertyId}}
+
+### 6. Get Meters Filtered by Type
+GET {{baseUrl}}/meters?meterType=WATER
+
+### 7. Get Meter Details (with latest readings)
+GET {{baseUrl}}/meters/{{meterId}}
+
+### 8. Update a Meter (e.g. price or meter number)
+PATCH {{baseUrl}}/meters/{{meterId}}
+Content-Type: application/json
+
+{
+  "pricePerUnit": 160.00,
+  "meterNumber": "WM-001-RENAMED"
+}
+
+### 9. Record a Reading (computes unitsConsumed & consumptionCost)
+POST {{baseUrl}}/meters/{{meterId}}/readings
+Content-Type: application/json
+
+{
+  "currentReading": 1350
+}
+
+### 10. Record a Reading with a Custom Date
+POST {{baseUrl}}/meters/{{meterId}}/readings
+Content-Type: application/json
+
+{
+  "currentReading": 1500,
+  "readingDate": "2026-10-01T00:00:00.000Z"
+}
+
+### 11. Get Reading History for a Meter (Paginated)
+GET {{baseUrl}}/meters/{{meterId}}/readings?page=1&limit=10
+
+### 12. Delete a Meter
+DELETE {{baseUrl}}/meters/{{meterId}}

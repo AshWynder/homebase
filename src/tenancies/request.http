@@ -1,0 +1,58 @@
+### Tenancies — Homebase API
+### Base URL: http://localhost:3000
+
+@baseUrl = http://localhost:3000
+@tenantId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f4
+@unitId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f6
+@propertyId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f5
+@tenancyId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f7
+
+### 1. Create a Tenancy (Assign Tenant to Unit)
+POST {{baseUrl}}/tenancies
+Content-Type: application/json
+
+{
+  "tenantId": "{{tenantId}}",
+  "unitId": "{{unitId}}",
+  "rentAmount": 25000.00,
+  "startDate": "2026-09-01T00:00:00.000Z",
+  "endDate": "2027-08-31T23:59:59.000Z",
+  "isActive": true
+}
+
+### 2. Get All Tenancies (Paginated)
+GET {{baseUrl}}/tenancies?page=1&limit=10
+
+### 3. Get Active Tenancies Only
+GET {{baseUrl}}/tenancies/active
+
+### 4. Filter Tenancies by Property
+GET {{baseUrl}}/tenancies?propertyId={{propertyId}}
+
+### 5. Filter Tenancies by Tenant
+GET {{baseUrl}}/tenancies?tenantId={{tenantId}}
+
+### 6. Filter Tenancies by Unit
+GET {{baseUrl}}/tenancies?unitId={{unitId}}
+
+### 7. Get Tenancy Details by ID
+GET {{baseUrl}}/tenancies/{{tenancyId}}
+
+### 8. Update Tenancy (e.g. Rent Amount or Dates)
+PATCH {{baseUrl}}/tenancies/{{tenancyId}}
+Content-Type: application/json
+
+{
+  "rentAmount": 27000.00
+}
+
+### 9. Terminate Tenancy (Vacate Unit)
+POST {{baseUrl}}/tenancies/{{tenancyId}}/terminate
+Content-Type: application/json
+
+{
+  "endDate": "2026-09-11T00:00:00.000Z"
+}
+
+### 10. Delete Tenancy
+DELETE {{baseUrl}}/tenancies/{{tenancyId}}
