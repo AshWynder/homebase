@@ -1,0 +1,112 @@
+### Payments — Homebase API
+### Base URL: http://localhost:3000
+
+@baseUrl = http://localhost:3000
+@invoiceId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f9
+@paymentId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49fa
+@reference = HB-EXAMPLE-REF
+
+### 1. Initiate M-Pesa STK Push (tenant receives prompt on phone)
+POST {{baseUrl}}/payments/mpesa/stk
+Content-Type: application/json
+
+{
+  "invoiceId": "{{invoiceId}}",
+  "phoneNumber": "0712345678"
+}
+
+### 2. Initiate Card Payment (returns authorizationUrl — redirect tenant)
+POST {{baseUrl}}/payments/card
+Content-Type: application/json
+
+{
+  "invoiceId": "{{invoiceId}}"
+}
+
+### 3. Optional: Card payment with custom callback (where tenant lands after checkout)
+POST {{baseUrl}}/payments/card
+Content-Type: application/json
+
+{
+  "invoiceId": "{{invoiceId}}",
+  "callbackUrl": "http://localhost:5173/payments/result"
+}
+
+### 4. Register C2B URLs with Safaricom (one-time setup)
+POST {{baseUrl}}/payments/c2b/register-urls
+
+### 5. Verify Payment by Reference (poll fallback when webhooks can't reach you)
+GET {{baseUrl}}/payments/verify/{{reference}}
+
+### 6. List Payments (paginated)
+GET {{baseUrl}}/payments?page=1&limit=10
+
+### 7. List Payments for an Invoice
+GET {{baseUrl}}/payments?invoiceId={{invoiceId}}
+
+### 8. Filter Payments by Method / Status
+GET {{baseUrl}}/payments?method=MPESA_STK&status=SUCCESS
+
+### 9. Get Payment Details
+GET {{baseUrl}}/payments/{{paymentId}}
+
+### ── Webhooks (normally hit by providers, not you) ──────────
+
+### Daraja STK result callback
+POST {{baseUrl}}/payments/stk-callback
+Content-Type: application/json
+
+{
+  "Body": {
+    "stkCallback": {
+      "MerchantRequestID": "29115-34620561-1",
+      "CheckoutRequestID": "ws_CO_191220191020363925",
+      "ResultCode": 0,
+      "ResultDesc": "The service request is processed successfully.",
+      "CallbackMetadata": {
+        "Item": [
+          { "Name": "Amount", "Value": 1.00 },
+          { "Name": "MpesaReceiptNumber", "Value": "NLJ7RT61SV" },
+          { "Name": "Balance" },
+          { "Name": "TransactionDate", "Value": 20191219102115 },
+          { "Name": "PhoneNumber", "Value": 254708374149 }
+        ]
+      }
+    }
+  }
+}
+
+### Daraja C2B confirmation (tenant paid paybill; BillRefNumber = invoice id)
+POST {{baseUrl}}/payments/c2b-confirmation
+Content-Type: application/json
+
+{
+  "TransactionType": "Pay Bill",
+  "TransID": "RKT7DMJ5WD",
+  "TransTime": "20260916101010",
+  "TransAmount": "15000.00",
+  "BusinessShortCode": "600000",
+  "BillRefNumber": "{{invoiceId}}",
+  "InvoiceNumber": "",
+  "OrgAccountBalance": "1000.00",
+  "ThirdPartyTransID": "",
+  "MSISDN": "254708374149",
+  "FirstName": "John",
+  "MiddleName": "",
+  "LastName": "Doe"
+}
+
+### Paystack charge.success webhook
+POST {{baseUrl}}/payments/webhook/paystack
+Content-Type: application/json
+x-paystack-signature: <hmac-sha512-of-raw-body>
+
+{
+  "event": "charge.success",
+  "data": {
+    "reference": "{{reference}}",
+    "status": "success",
+    "amount": 1500000,
+    "currency": "KES"
+  }
+}

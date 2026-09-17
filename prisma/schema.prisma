@@ -50,6 +50,11 @@ enum PaymentStatus {
   PENDING
 }
 
+enum PaymentProvider {
+  DARAJA
+  PAYSTACK
+}
+
 enum TicketStatus {
   OPEN
   IN_PROGRESS
@@ -313,14 +318,29 @@ model Payment {
   invoiceId String  @map("invoice_id")
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  amount         Decimal       @db.Decimal(12, 2)
+  amount         Decimal         @db.Decimal(12, 2)
   method         PaymentMethod
-  transactionRef String        @unique @map("transaction_ref")
-  phoneNumber    String?       @map("phone_number")
-  status         PaymentStatus
+  provider       PaymentProvider
+  transactionRef String          @unique @map("transaction_ref")
+  phoneNumber    String?         @map("phone_number")
+  status         PaymentStatus   @default(PENDING)
+
+  // Daraja (M-Pesa)
+  checkoutRequestId String? @unique @map("checkout_request_id")
+  merchantRequestId String? @map("merchant_request_id")
+
+  // Paystack (Card)
+  authorizationUrl String? @map("authorization_url")
+
+  failureReason String?    @map("failure_reason")
+  paidAt        DateTime?  @map("paid_at")
+  rawPayload    Json?      @map("raw_payload")
 
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([invoiceId])
+  @@index([status])
   @@map("payment")
 }
 

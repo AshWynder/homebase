@@ -7,6 +7,7 @@ import { UnitsModule } from './units/units.module';
 import { TenanciesModule } from './tenancies/tenancies.module';
 import { MetersModule } from './meters/meters.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { InvoicesModule } from './invoices/invoices.module';
     TenanciesModule,
     MetersModule,
     InvoicesModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

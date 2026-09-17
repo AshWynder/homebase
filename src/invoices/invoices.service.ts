@@ -454,6 +454,48 @@ export class InvoicesService {
     return `${month} ${year}`;
   }
 
+  /**
+   * Applies a successful payment to an invoice within a single transaction:
+   * records the decrement of balanceDue and recomputes the invoice status.
+   * Called by PaymentsService when a provider confirms a payment.
+   */
+  async applySuccessfulPayment(payment: {
+    id: string;
+    invoiceId: string;
+    amount: Prisma.Decimal;
+  }) {
+    await this.prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.findUnique({
+        where: { id: payment.invoiceId },
+      });
+
+      if (!invoice) {
+        throw new NotFoundException(
+          `Invoice with id "${payment.invoiceId}" not found`,
+        );
+      }
+
+      const newBalance = Number(invoice.balanceDue) - Number(payment.amount);
+
+      const updated = await tx.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          balanceDue: new Prisma.Decimal(Math.max(newBalance, 0).toFixed(2)),
+        },
+      });
+
+      const status: InvoiceStatus =
+        newBalance <= 0 ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID;
+
+      if (status !== updated.status) {
+        await tx.invoice.update({
+          where: { id: invoice.id },
+          data: { status },
+        });
+      }
+    });
+  }
+
   private async recomputeStatus(invoice: {
     id: string;
     amount: Prisma.Decimal;
