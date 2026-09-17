@@ -8,6 +8,7 @@ import { GenerateInvoicesDto } from './dto/generate-invoices.dto';
 import { QueryInvoicesDto } from './dto/query-invoices.dto';
 import {
   Invoice,
+  InvoiceLineItemType,
   InvoiceStatus,
   Prisma,
 } from '../../generated/prisma/client';
@@ -93,10 +94,12 @@ export class InvoicesService {
 
       const lineItems: Prisma.InvoiceLineItemCreateWithoutInvoiceInput[] = [
         {
+          type: InvoiceLineItemType.RENT,
           description: `Rent for ${this.formatPeriod(periodStart, periodEnd)}`,
           amount: rentAmount,
         },
         ...readings.map((reading) => ({
+          type: InvoiceLineItemType.WATER,
           description: `${reading.meter.meterType} consumption (${reading.unitsConsumed} units @ ${reading.pricePerUnit})`,
           amount: reading.consumptionCost,
           meterReading: { connect: { id: reading.id } },
@@ -107,7 +110,6 @@ export class InvoicesService {
         data: {
           unit: { connect: { id: tenancy.unitId } },
           tenancy: { connect: { id: tenancy.id } },
-          type: 'RENT',
           periodStart,
           periodEnd,
           amount: new Prisma.Decimal(amount.toFixed(2)),
@@ -398,6 +400,7 @@ export class InvoicesService {
       this.prisma.invoiceLineItem.createMany({
         data: newReadings.map((reading) => ({
           invoiceId: id,
+          type: InvoiceLineItemType.WATER,
           description: `${reading.meter.meterType} consumption (${reading.unitsConsumed} units @ ${reading.pricePerUnit})`,
           amount: reading.consumptionCost,
           meterReadingId: reading.id,

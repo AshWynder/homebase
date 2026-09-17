@@ -5,6 +5,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
+// B4 GOING TO PRODUCTION ADD PREFIX 'api/v1' FOR OUR ENDPOINTS
+
 async function bootstrap() {
   // rawBody is required to verify Paystack webhook signatures (HMAC of raw payload)
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {

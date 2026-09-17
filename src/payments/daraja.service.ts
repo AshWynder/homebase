@@ -172,8 +172,8 @@ export class DarajaService {
       BusinessShortCode: this.stkShortcode,
       Password: this.buildPassword(this.stkShortcode, timestamp),
       Timestamp: timestamp,
-      TransactionType: 'CustomerBuyGoodsOnline',
-      Amount: Math.round(params.amount),
+      TransactionType: 'CustomerPayBillOnline',
+      Amount: 1,
       PartyA: this.normalizePhone(params.phoneNumber),
       PartyB: this.stkShortcode,
       PhoneNumber: this.normalizePhone(params.phoneNumber),
@@ -194,13 +194,22 @@ export class DarajaService {
       },
     );
 
-    const data = (await response.json()) as StkPushResponse;
+    // Daraja returns two shapes: success-shaped ({ ResponseCode, ... }) and
+    // error-shaped ({ requestId, errorCode, errorMessage }) for validation
+    // failures like 400.002.02.
+    const data = (await response.json()) as StkPushResponse & {
+      errorCode?: string;
+      errorMessage?: string;
+    };
 
     if (!response.ok || data.ResponseCode !== '0') {
       this.logger.error(`Daraja STK push failed: ${JSON.stringify(data)}`);
-      throw new Error(
-        `STK push failed: ${data.ResponseDescription ?? 'Unknown error'}`,
-      );
+      const code = data.errorCode ? ` [${data.errorCode}]` : '';
+      const reason =
+        data.errorMessage ??
+        data.ResponseDescription ??
+        `HTTP ${response.status}`;
+      throw new Error(`STK push failed${code}: ${reason}`);
     }
 
     return {

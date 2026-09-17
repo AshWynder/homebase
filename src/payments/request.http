@@ -2,7 +2,7 @@
 ### Base URL: http://localhost:3000
 
 @baseUrl = http://localhost:3000
-@invoiceId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f9
+@invoiceId = 01a0aeb5-1050-754a-b4c6-fc6ecbdb0a38
 @paymentId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49fa
 @reference = HB-EXAMPLE-REF
 
@@ -12,7 +12,7 @@ Content-Type: application/json
 
 {
   "invoiceId": "{{invoiceId}}",
-  "phoneNumber": "0712345678"
+  "phoneNumber": "0727125059"
 }
 
 ### 2. Initiate Card Payment (returns authorizationUrl — redirect tenant)
@@ -82,7 +82,7 @@ Content-Type: application/json
 
 {
   "TransactionType": "Pay Bill",
-  "TransID": "RKT7DMJ5WD",
+  "TransID": "TEST001",
   "TransTime": "20260916101010",
   "TransAmount": "15000.00",
   "BusinessShortCode": "600000",

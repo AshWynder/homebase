@@ -24,7 +24,7 @@ enum MeterType {
   ELECTRICITY
 }
 
-enum InvoiceType {
+enum InvoiceLineItemType {
   RENT
   WATER
   GARBAGE
@@ -275,7 +275,6 @@ model Invoice {
   tenancyId String  @map("tenancy_id")
   tenancy   Tenancy @relation(fields: [tenancyId], references: [id], onDelete: Cascade)
 
-  type        InvoiceType @default(RENT)
   periodStart DateTime    @map("period_start")
   periodEnd   DateTime    @map("period_end")
   amount      Decimal     @db.Decimal(12, 2)
@@ -301,6 +300,7 @@ model InvoiceLineItem {
   invoiceId String  @map("invoice_id")
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
+  type InvoiceLineItemType @default(RENT)
   description String
   amount      Decimal @db.Decimal(12, 2)
 
@@ -328,6 +328,7 @@ model Payment {
   // Daraja (M-Pesa)
   checkoutRequestId String? @unique @map("checkout_request_id")
   merchantRequestId String? @map("merchant_request_id")
+  mpesaReceiptNumber String? @map("mpesa_receipt_number")
 
   // Paystack (Card)
   authorizationUrl String? @map("authorization_url")

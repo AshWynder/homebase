@@ -200,16 +200,21 @@ export class PaymentsService {
     }
 
     const metadataItems = cb.CallbackMetadata?.Item ?? [];
-    const receipt = metadataItems.find((i) => i.Name === 'MpesaReceiptNumber')?.Value;
+    const receiptValue = metadataItems.find(
+      (i) => i.Name === 'MpesaReceiptNumber',
+    )?.Value;
+    const receipt =
+      typeof receiptValue === 'string' ? receiptValue : undefined;
     const metadata = Object.fromEntries(
       metadataItems.map((i) => [i.Name, i.Value]),
     );
 
     if (Number(cb.ResultCode) === 0) {
-      await this.settlePayment(payment, {
-        mpesaReceiptNumber: receipt,
-        callback: metadata,
-      });
+      await this.settlePayment(
+        payment,
+        { mpesaReceiptNumber: receipt, callback: metadata },
+        receipt,
+      );
     } else {
       await this.markPaymentFailed(payment.id, cb.ResultDesc ?? 'STK failed');
     }
@@ -367,7 +372,11 @@ export class PaymentsService {
     ) {
       const result = await this.daraja.queryStkStatus(payment.checkoutRequestId);
       if (result.resultCode === 0) {
-        await this.settlePayment(payment, { stkQuery: result.raw });
+        await this.settlePayment(
+          payment,
+          { stkQuery: result.raw },
+          result.mpesaReceiptNumber,
+        );
       } else if (result.resultCode !== 1032 && result.resultCode !== 1037) {
         // 1032 = cancelled by user, 1037 = timeout — leave pending briefly
         await this.markPaymentFailed(payment.id, result.resultDesc);
@@ -414,7 +423,6 @@ export class PaymentsService {
           invoice: {
             select: {
               id: true,
-              type: true,
               status: true,
               amount: true,
               balanceDue: true,
@@ -450,7 +458,6 @@ export class PaymentsService {
         invoice: {
           select: {
             id: true,
-            type: true,
             status: true,
             amount: true,
             balanceDue: true,
@@ -503,16 +510,20 @@ export class PaymentsService {
   /**
    * Idempotent settlement: only a PENDING payment transitions to SUCCESS,
    * and the invoice is credited exactly once (guarded by the same check).
+   * `mpesaReceiptNumber` persists the M-Pesa receipt (MpesaReceiptNumber)
+   * as a first-class column when settling an M-Pesa payment.
    */
   private async settlePayment(
     payment: Payment,
     rawPayload: Record<string, unknown>,
+    mpesaReceiptNumber?: string,
   ) {
     const claimed = await this.prisma.payment.updateMany({
       where: { id: payment.id, status: PaymentStatus.PENDING },
       data: {
         status: PaymentStatus.SUCCESS,
         paidAt: new Date(),
+        ...(mpesaReceiptNumber ? { mpesaReceiptNumber } : {}),
         rawPayload: {
           ...(payment.rawPayload as Record<string, unknown> | null),
           ...rawPayload,
