@@ -1,0 +1,55 @@
+import axios, { AxiosError } from 'axios';
+import Constants from 'expo-constants';
+
+import type { ApiResponse } from '@/api/types';
+
+/**
+ * Resolve the backend base URL.
+ *
+ * Priority:
+ *  1. EXPO_PUBLIC_API_URL  – explicit override (staging/prod or manual IP)
+ *  2. Metro host           – the host that served this bundle, so the device
+ *                            can always reach the dev backend on the same LAN
+ *  3. localhost            – last-resort fallback
+ */
+const metroHost = Constants.expoConfig?.hostUri?.split(':')[0];
+
+const baseURL =
+  process.env.EXPO_PUBLIC_API_URL ??
+  (metroHost ? `http://${metroHost}:3000` : 'http://localhost:3000');
+
+export const api = axios.create({
+  baseURL,
+  timeout: 20000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+export class ApiError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<ApiResponse<unknown>>) => {
+    const payload = error.response?.data;
+    const message =
+      (payload && typeof payload === 'object' && 'message' in payload
+        ? String((payload as { message: unknown }).message)
+        : undefined) ??
+      error.message ??
+      'Something went wrong';
+    return Promise.reject(new ApiError(message, error.response?.status));
+  },
+);
+
+/** Unwraps the backend `{ success, data }` envelope down to `data`. */
+export async function unwrap<T>(promise: Promise<{ data: ApiResponse<T> }>): Promise<T> {
+  const { data } = await promise;
+  return data.data;
+}

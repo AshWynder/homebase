@@ -1,0 +1,23 @@
+{
+  "name": "homebase",
+  "version": "1.0.0",
+  "description": "Homebase monorepo - NestJS backend + Expo client",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm --prefix ./server run start:dev",
+    "dev:client": "npm --prefix ./client run start",
+    "dev:web": "concurrently -k -n server,client -c blue,green \"npm:dev:server\" \"npm:dev:client:web\"",
+    "dev:client:web": "npm --prefix ./client run web",
+    "dev:client:android": "concurrently -k -n server,client -c blue,green \"npm:dev:server\" \"npm --prefix ./client run android\"",
+    "dev:client:ios": "concurrently -k -n server,client -c blue,green \"npm:dev:server\" \"npm --prefix ./client run ios\"",
+    "install:all": "npm install && npm --prefix ./client install && npm --prefix ./server install",
+    "build:server": "npm --prefix ./server run build",
+    "lint": "npm --prefix ./client run lint && npm --prefix ./server run lint",
+    "seed": "npm --prefix ./server run seed",
+    "test:server": "npm --prefix ./server run test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
