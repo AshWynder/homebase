@@ -144,6 +144,47 @@ export interface Invoice {
   updatedAt: string;
 }
 
+// ── Auth ───────────────────────────────────────────────────
+
+/** Better Auth user (subset of fields the client uses). */
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified?: boolean;
+  image?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  role?: Role;
+  nationalId?: string;
+}
+
+/** Response of POST /api/auth/register (envelope-wrapped by the server). */
+export interface RegisterResponse {
+  user: AuthUser;
+  token: string;
+  profile: UserProfile;
+}
+
+/** Raw Better Auth response of POST /api/auth/sign-in/email (no envelope). */
+export interface SignInResponse {
+  token: string;
+  user: AuthUser;
+}
+
+/** Response of GET /api/auth/me (envelope-wrapped by the server). */
+export interface MeResponse {
+  user: AuthUser;
+  profile: UserProfile;
+}
+
 // ── Request payloads ───────────────────────────────────────
 
 export interface CreatePropertyInput {
@@ -190,6 +231,15 @@ export interface CreateMeterInput {
 export interface RecordReadingInput {
   currentReading: number;
   readingDate?: string;
+}
+
+/** Response of POST /meters/:id/readings — the reading plus the invoice it was billed to. */
+export interface RecordedReading extends MeterReading {
+  invoice: {
+    id: string;
+    periodStart: string;
+    periodEnd: string;
+  };
 }
 
 export interface GenerateInvoicesInput {

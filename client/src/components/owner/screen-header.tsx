@@ -10,20 +10,11 @@ interface ScreenHeaderProps {
   addLabel?: string;
 }
 
-/** App bar with a brand mark and an optional green circular add button. */
+/** App bar with the screen title and an optional green circular add button. */
 export function ScreenHeader({ title, onAdd, addLabel = 'Add' }: ScreenHeaderProps) {
   return (
     <View className="border-b border-slate-200 bg-white">
       <View className="flex-row items-center justify-between px-5 py-3">
-        <View className="flex-row items-center gap-2">
-          <View className="h-7 w-7 items-center justify-center rounded-md bg-teal-700">
-            <Text className="text-base leading-none text-white">◇</Text>
-          </View>
-          <Text className="text-xl font-bold text-slate-900">Homebase</Text>
-        </View>
-      </View>
-
-      <View className="flex-row items-center justify-between px-5 pb-3 pt-1">
         <Text className="text-lg font-bold text-slate-900">{title}</Text>
         {onAdd ? (
           <Pressable

@@ -2,6 +2,8 @@ import axios, { AxiosError } from 'axios';
 import Constants from 'expo-constants';
 
 import type { ApiResponse } from '@/api/types';
+import { queryClient } from '@/lib/query-client';
+import { useStore } from '@/stores/use-store';
 
 /**
  * Resolve the backend base URL.
@@ -34,9 +36,25 @@ export class ApiError extends Error {
   }
 }
 
+/** Attach the Better Auth bearer token to every request when signed in. */
+api.interceptors.request.use((config) => {
+  const token = useStore.getState().token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiResponse<unknown>>) => {
+    // Expired/invalid token → drop the session (the AuthGate then redirects
+    // to login) and wipe cached data from the previous session.
+    if (error.response?.status === 401) {
+      useStore.getState().clearSession();
+      queryClient.clear();
+    }
+
     const payload = error.response?.data;
     const message =
       (payload && typeof payload === 'object' && 'message' in payload

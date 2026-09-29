@@ -11,6 +11,7 @@ import type {
 export interface QueryPaymentsInput {
   invoiceId?: string;
   unitId?: string;
+  propertyId?: string;
   status?: PaymentStatus;
   page?: number;
   limit?: number;

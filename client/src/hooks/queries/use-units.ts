@@ -20,6 +20,14 @@ export function useUnitsByProperty(propertyId: string) {
   });
 }
 
+export function useUnit(id: string) {
+  return useQuery({
+    queryKey: queryKeys.units.detail(id),
+    queryFn: () => unitsApi.get(id),
+    enabled: !!id,
+  });
+}
+
 export function useCreateUnit() {
   const queryClient = useQueryClient();
   return useMutation({

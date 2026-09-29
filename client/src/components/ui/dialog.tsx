@@ -4,7 +4,14 @@ import { cn } from '@/lib/utils';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { X } from 'lucide-react-native';
 import * as React from 'react';
-import { Platform, Text, View, type GestureResponderEvent, type ViewProps } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  type GestureResponderEvent,
+  type ViewProps,
+} from 'react-native';
 import { FadeIn, FadeOut, ReduceMotion } from 'react-native-reanimated';
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
 
@@ -53,6 +60,7 @@ function DialogOverlay({
           exiting={FadeOut.duration(150).reduceMotion(ReduceMotion.System)}
           as="Pressable">
           <NativeOnlyAnimatedView
+            className="w-full items-center"
             entering={FadeIn.delay(50).reduceMotion(ReduceMotion.System)}
             exiting={FadeOut.duration(150).reduceMotion(ReduceMotion.System)}>
             <>{children}</>
@@ -66,6 +74,7 @@ function DialogContent({
   className,
   portalHost,
   children,
+  style,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   portalHost?: string;
@@ -81,6 +90,10 @@ function DialogContent({
             }),
             className
           )}
+          style={Platform.select({
+            native: [styles.dialogContent, style],
+            web: style,
+          })}
           {...props}>
           <>{children}</>
           <DialogPrimitive.Close
@@ -102,6 +115,13 @@ function DialogContent({
     </DialogPortal>
   );
 }
+
+const styles = StyleSheet.create({
+  dialogContent: {
+    width: '92%',
+    maxWidth: 420,
+  },
+});
 
 function DialogHeader({ className, ...props }: ViewProps) {
   return (

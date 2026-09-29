@@ -55,3 +55,11 @@ export function useRecordReading() {
     },
   });
 }
+
+export function useMeterReadings(meterId: string, params: { page?: number; limit?: number } = {}) {
+  return useQuery({
+    queryKey: queryKeys.meters.readings(meterId),
+    queryFn: () => metersApi.readings(meterId, params),
+    enabled: !!meterId,
+  });
+}

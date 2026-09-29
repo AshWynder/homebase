@@ -72,11 +72,14 @@ function SelectContent({
   children,
   position = 'popper',
   portalHost,
+  style,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content> & {
     className?: string;
     portalHost?: string;
   }) {
+  const { triggerPosition } = SelectPrimitive.useRootContext();
+
   return (
     <SelectPrimitive.Portal hostName={portalHost}>
       <FullWindowOverlay>
@@ -109,6 +112,11 @@ function SelectContent({
                   }),
                   className
                 )}
+                style={
+                  Platform.OS === 'web'
+                    ? style
+                    : StyleSheet.flatten([{ width: triggerPosition?.width }, style])
+                }
                 position={position}
                 {...props}>
                 <SelectScrollUpButton />
@@ -119,7 +127,7 @@ function SelectContent({
                     cn(
                       'w-full',
                       Platform.select({
-                        web: 'h-[var(--radix-select-trigger-height)] min-w-[var(--radix-select-trigger-width)]',
+                        web: 'min-w-[var(--radix-select-trigger-width)]',
                       })
                     )
                   )}>

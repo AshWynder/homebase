@@ -14,14 +14,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
 import { useCreateProperty } from '@/hooks/queries/use-properties';
+import type { ToastFunction } from '@/hooks/use-toast';
 
 interface CreatePropertyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ownerId: string;
+  onToast: ToastFunction;
 }
 
-export function CreatePropertyDialog({ open, onOpenChange, ownerId }: CreatePropertyDialogProps) {
+export function CreatePropertyDialog({ open, onOpenChange, ownerId, onToast }: CreatePropertyDialogProps) {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const createProperty = useCreateProperty();
@@ -32,9 +34,13 @@ export function CreatePropertyDialog({ open, onOpenChange, ownerId }: CreateProp
       { name: name.trim(), address: address.trim() || undefined, ownerId },
       {
         onSuccess: () => {
+          onToast('Property created successfully', 'success');
           setName('');
           setAddress('');
           onOpenChange(false);
+        },
+        onError: (error) => {
+          onToast((error as Error).message, 'error');
         },
       },
     );
@@ -57,18 +63,15 @@ export function CreatePropertyDialog({ open, onOpenChange, ownerId }: CreateProp
             <Label>Address</Label>
             <Input value={address} onChangeText={setAddress} placeholder="123 Sunset Blvd, Nairobi" />
           </View>
-          {createProperty.isError ? (
-            <Text className="text-sm text-red-600">
-              {(createProperty.error as Error).message}
-            </Text>
-          ) : null}
         </View>
 
         <DialogFooter>
           <Button variant="outline" onPress={() => onOpenChange(false)}>
             <Text>Cancel</Text>
           </Button>
-          <Button onPress={onSubmit} disabled={createProperty.isPending || !name.trim()}>
+          <Button
+            onPress={onSubmit}
+            disabled={createProperty.isPending || !name.trim() || !ownerId}>
             <Text>{createProperty.isPending ? 'Creating…' : 'Create'}</Text>
           </Button>
         </DialogFooter>

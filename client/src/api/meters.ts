@@ -5,6 +5,7 @@ import type {
   MeterReading,
   MeterType,
   Paginated,
+  RecordedReading,
   RecordReadingInput,
   UtilityMeter,
 } from './types';
@@ -26,7 +27,7 @@ export const metersApi = {
     unwrap<UtilityMeter>(api.patch(`/meters/${id}`, input)),
   remove: (id: string) => unwrap<UtilityMeter>(api.delete(`/meters/${id}`)),
   recordReading: (id: string, input: RecordReadingInput) =>
-    unwrap<MeterReading>(api.post(`/meters/${id}/readings`, input)),
+    unwrap<RecordedReading>(api.post(`/meters/${id}/readings`, input)),
   readings: (id: string, params: { page?: number; limit?: number } = {}) =>
     unwrap<Paginated<MeterReading>>(api.get(`/meters/${id}/readings`, { params })),
 };

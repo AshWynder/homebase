@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Dialog,
   DialogContent,
@@ -21,34 +22,72 @@ import {
   type Option,
 } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
+import { useProperties } from '@/hooks/queries/use-properties';
 import { useCreateTenancy, useTenancies } from '@/hooks/queries/use-tenancies';
 import { useUnits } from '@/hooks/queries/use-units';
+import type { ToastFunction } from '@/hooks/use-toast';
 import { tenantName } from '@/lib/format';
 
 interface CreateTenancyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onToast: ToastFunction;
 }
 
-export function CreateTenancyDialog({ open, onOpenChange }: CreateTenancyDialogProps) {
+type SelectOption = { value: string; label: string };
+
+const ALL_PROPERTIES: SelectOption = { value: 'all', label: 'All properties' };
+
+/** Serialize a local calendar day as ISO midnight UTC to avoid TZ off-by-one. */
+function toIsoDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}T00:00:00.000Z`;
+}
+
+export function CreateTenancyDialog({ open, onOpenChange, onToast }: CreateTenancyDialogProps) {
+  const properties = useProperties();
   const units = useUnits({ limit: 100 });
   const existing = useTenancies({ limit: 100 });
   const createTenancy = useCreateTenancy();
 
+  const [property, setProperty] = useState<Option | undefined>(ALL_PROPERTIES);
   const [unit, setUnit] = useState<Option | undefined>();
   const [tenant, setTenant] = useState<Option | undefined>();
   const [rent, setRent] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+
+  const hasMultipleProperties = (properties.data?.length ?? 0) > 1;
+
+  const propertyOptions = useMemo<SelectOption[]>(
+    () => [
+      ALL_PROPERTIES,
+      ...(properties.data ?? []).map((p) => ({ value: p.id, label: p.name })),
+    ],
+    [properties.data],
+  );
+
+  const showPropertyInLabel = !property || property.value === ALL_PROPERTIES.value;
 
   const unitOptions = useMemo(
     () =>
-      (units.data?.items ?? []).map((u) => ({
-        value: u.id,
-        label: `${u.property?.name ?? 'Property'} - ${u.unitNumber}`,
-      })),
-    [units.data],
+      (units.data?.items ?? [])
+        .filter((u) => showPropertyInLabel || u.propertyId === property?.value)
+        .map((u) => ({
+          value: u.id,
+          label: showPropertyInLabel
+            ? `${u.property?.name ?? 'Property'} - ${u.unitNumber}`
+            : u.unitNumber,
+        })),
+    [units.data, showPropertyInLabel, property?.value],
   );
+
+  const onPropertyChange = (opt?: Option) => {
+    setProperty(opt);
+    setUnit(undefined);
+  };
 
   // Distinct tenants derived from existing tenancies (MVP: no directory endpoint yet).
   const tenantOptions = useMemo(() => {
@@ -60,23 +99,28 @@ export function CreateTenancyDialog({ open, onOpenChange }: CreateTenancyDialogP
   }, [existing.data]);
 
   const onSubmit = () => {
-    if (!unit || !tenant || !rent.trim() || !startDate.trim()) return;
+    if (!unit || !tenant || !rent.trim() || !startDate) return;
     createTenancy.mutate(
       {
         unitId: unit.value,
         tenantId: tenant.value,
         rentAmount: Number(rent),
-        startDate: new Date(startDate).toISOString(),
-        endDate: endDate.trim() ? new Date(endDate).toISOString() : undefined,
+        startDate: toIsoDate(startDate),
+        endDate: endDate ? toIsoDate(endDate) : undefined,
       },
       {
         onSuccess: () => {
+          onToast('Tenancy created successfully', 'success');
+          setProperty(ALL_PROPERTIES);
           setUnit(undefined);
           setTenant(undefined);
           setRent('');
-          setStartDate('');
-          setEndDate('');
+          setStartDate(undefined);
+          setEndDate(undefined);
           onOpenChange(false);
+        },
+        onError: (error) => {
+          onToast((error as Error).message, 'error');
         },
       },
     );
@@ -91,6 +135,24 @@ export function CreateTenancyDialog({ open, onOpenChange }: CreateTenancyDialogP
         </DialogHeader>
 
         <View className="gap-4">
+          {hasMultipleProperties ? (
+            <View className="gap-2">
+              <Label>Property</Label>
+              <Select value={property} onValueChange={onPropertyChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All properties" />
+                </SelectTrigger>
+                <SelectContent>
+                  {propertyOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value} label={opt.label}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </View>
+          ) : null}
+
           <View className="gap-2">
             <Label>Unit</Label>
             <Select value={unit} onValueChange={setUnit}>
@@ -131,17 +193,27 @@ export function CreateTenancyDialog({ open, onOpenChange }: CreateTenancyDialogP
           <View className="flex-row gap-3">
             <View className="flex-1 gap-2">
               <Label>Start date</Label>
-              <Input value={startDate} onChangeText={setStartDate} placeholder="2026-01-01" />
+              <DatePicker
+                value={startDate}
+                onChange={(date) => {
+                  setStartDate(date);
+                  if (date && endDate && endDate < date) setEndDate(undefined);
+                }}
+                placeholder="Start date"
+                maximumDate={endDate}
+              />
             </View>
             <View className="flex-1 gap-2">
               <Label>End date</Label>
-              <Input value={endDate} onChangeText={setEndDate} placeholder="2027-01-01" />
+              <DatePicker
+                value={endDate}
+                onChange={setEndDate}
+                placeholder="End date"
+                minimumDate={startDate}
+                clearable
+              />
             </View>
           </View>
-
-          {createTenancy.isError ? (
-            <Text className="text-sm text-red-600">{(createTenancy.error as Error).message}</Text>
-          ) : null}
         </View>
 
         <DialogFooter>
@@ -151,7 +223,7 @@ export function CreateTenancyDialog({ open, onOpenChange }: CreateTenancyDialogP
           <Button
             onPress={onSubmit}
             disabled={
-              createTenancy.isPending || !unit || !tenant || !rent.trim() || !startDate.trim()
+              createTenancy.isPending || !unit || !tenant || !rent.trim() || !startDate
             }>
             <Text>{createTenancy.isPending ? 'Creating…' : 'Create'}</Text>
           </Button>

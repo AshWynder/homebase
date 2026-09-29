@@ -1,51 +1,16 @@
-import { Tabs } from 'expo-router';
-
-import { Icon } from '@/components/ui/icon';
-import { Building2, FileText, Users, Wallet } from 'lucide-react-native';
+import { Stack } from 'expo-router';
 
 export default function OwnerLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#0F766E',
-        tabBarInactiveTintColor: '#94A3B8',
-        tabBarStyle: {
-          borderTopColor: '#E2E8F0',
-          backgroundColor: '#FFFFFF',
-        },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-      }}>
-      <Tabs.Screen
-        name="properties"
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen
+        name="tenancy/[id]"
         options={{
-          title: 'Properties',
-          tabBarIcon: ({ color, size }) => (
-            <Icon as={Building2} color={color} size={size} />
-          ),
+          animation: 'slide_from_right',
+          gestureEnabled: true,
         }}
       />
-      <Tabs.Screen
-        name="tenancies"
-        options={{
-          title: 'Tenancies',
-          tabBarIcon: ({ color, size }) => <Icon as={Users} color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="invoices"
-        options={{
-          title: 'Invoices',
-          tabBarIcon: ({ color, size }) => <Icon as={FileText} color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="payments"
-        options={{
-          title: 'Payments',
-          tabBarIcon: ({ color, size }) => <Icon as={Wallet} color={color} size={size} />,
-        }}
-      />
-    </Tabs>
+    </Stack>
   );
 }

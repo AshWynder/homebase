@@ -14,14 +14,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
 import { useGenerateInvoices } from '@/hooks/queries/use-invoices';
+import type { ToastFunction } from '@/hooks/use-toast';
 
 interface GenerateInvoicesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onToast: ToastFunction;
 }
 
 /** Generates invoices for a billing period (defaults to the current month). */
-export function GenerateInvoicesDialog({ open, onOpenChange }: GenerateInvoicesDialogProps) {
+export function GenerateInvoicesDialog({ open, onOpenChange, onToast }: GenerateInvoicesDialogProps) {
   const now = new Date();
   const [month, setMonth] = useState(String(now.getMonth() + 1));
   const [year, setYear] = useState(String(now.getFullYear()));
@@ -34,7 +36,14 @@ export function GenerateInvoicesDialog({ open, onOpenChange }: GenerateInvoicesD
     generate.mutate(
       { month: m, year: y },
       {
-        onSuccess: () => onOpenChange(false),
+        onSuccess: (data) => {
+          const message = `Created ${data.total} invoice(s)${data.skipped ? `, skipped ${data.skipped}` : ''}.`;
+          onToast(message, 'success');
+          onOpenChange(false);
+        },
+        onError: (error) => {
+          onToast((error as Error).message, 'error');
+        },
       },
     );
   };
@@ -61,16 +70,6 @@ export function GenerateInvoicesDialog({ open, onOpenChange }: GenerateInvoicesD
               <Input value={year} onChangeText={setYear} keyboardType="numeric" placeholder="2026" />
             </View>
           </View>
-
-          {generate.isSuccess ? (
-            <Text className="text-sm text-emerald-700">
-              Created {generate.data.total} invoice(s)
-              {generate.data.skipped ? `, skipped ${generate.data.skipped}` : ''}.
-            </Text>
-          ) : null}
-          {generate.isError ? (
-            <Text className="text-sm text-red-600">{(generate.error as Error).message}</Text>
-          ) : null}
         </View>
 
         <DialogFooter>
