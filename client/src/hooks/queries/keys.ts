@@ -1,4 +1,4 @@
-import type { QueryInvoicesInput } from '@/api/invoices';
+import type { QueryInvoicesInput, QueryInvoiceSummaryInput } from '@/api/invoices';
 import type { QueryMetersInput } from '@/api/meters';
 import type { QueryPaymentsInput } from '@/api/payments';
 import type { QueryTenanciesInput } from '@/api/tenancies';
@@ -28,6 +28,10 @@ export const queryKeys = {
     all: ['invoices'] as const,
     list: (params: QueryInvoicesInput) =>
       [...queryKeys.invoices.all, 'list', params] as const,
+    // Nested under `all` so the existing invalidations on generate and payment
+    // refresh the dashboard tiles for free.
+    summary: (params: QueryInvoiceSummaryInput) =>
+      [...queryKeys.invoices.all, 'summary', params] as const,
     detail: (id: string) => [...queryKeys.invoices.all, 'detail', id] as const,
   },
   meters: {

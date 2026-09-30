@@ -1,6 +1,5 @@
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 import { ScreenHeader } from '@/components/owner/screen-header';
 import { Button } from '@/components/ui/button';
@@ -13,11 +12,7 @@ export default function AccountScreen() {
   const profile = useStore((s) => s.profile);
   const signOut = useSignOut();
 
-  const onSignOut = () => {
-    signOut.mutate(undefined, {
-      onSuccess: () => router.replace('/(auth)/sign-in'),
-    });
-  };
+  const onSignOut = () => signOut.mutate();
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>

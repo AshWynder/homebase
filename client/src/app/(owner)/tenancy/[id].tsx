@@ -1,7 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
   ScrollView,
   View,
@@ -18,13 +17,12 @@ import {
   FileText,
   Home,
   IdCard,
-  Mail,
-  Phone,
   Smartphone,
   User,
 } from 'lucide-react-native';
 
 import { ListMessage } from '@/components/owner/list-state';
+import { TenantContactActions } from '@/components/owner/tenant-contact-actions';
 import { Badge } from '@/components/ui/badge';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -222,20 +220,7 @@ export default function TenancyDetailScreen() {
               </View>
             </View>
 
-            <View className="flex-row gap-2">
-              <ActionChip
-                icon={Phone}
-                label="Call"
-                disabled={!phone}
-                onPress={() => phone && void Linking.openURL(`tel:${phone}`)}
-              />
-              <ActionChip
-                icon={Mail}
-                label="Email"
-                disabled={!email}
-                onPress={() => email && void Linking.openURL(`mailto:${email}`)}
-              />
-            </View>
+            <TenantContactActions phone={phone} email={email} name={name} />
 
             <View className="gap-1 rounded-2xl bg-teal-50 p-4">
               <Text className="text-[11px] font-medium uppercase tracking-wide text-teal-700">
@@ -318,31 +303,6 @@ export default function TenancyDetailScreen() {
         </ScrollView>
       )}
     </SafeAreaView>
-  );
-}
-
-function ActionChip({
-  icon,
-  label,
-  onPress,
-  disabled,
-}: {
-  icon: typeof Phone;
-  label: string;
-  onPress: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      className={cn(
-        'flex-1 flex-row items-center justify-center gap-2 rounded-2xl bg-teal-50 py-2.5',
-        disabled && 'opacity-40',
-      )}>
-      <Icon as={icon} size={15} className="text-teal-800" />
-      <Text className="text-sm font-semibold text-teal-900">{label}</Text>
-    </Pressable>
   );
 }
 

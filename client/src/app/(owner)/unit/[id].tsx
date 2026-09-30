@@ -20,6 +20,7 @@ import {
 import { AssignMeterModal } from '@/components/owner/assign-meter-modal';
 import { AssignTenantModal } from '@/components/owner/assign-tenant-modal';
 import { ListMessage } from '@/components/owner/list-state';
+import { TenantContactActions } from '@/components/owner/tenant-contact-actions';
 import { RecordReadingDialog } from '@/components/owner/record-reading-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -274,25 +275,16 @@ export default function UnitDetailScreen() {
                 </Badge>
               </View>
               <View className="gap-1">
-                <InfoRow
-                  icon={User}
-                  label="Tenant Name"
-                  value={tenantName(activeTenancy)}
-                />
-                {activeTenancy.tenant?.phone && (
-                  <InfoRow
-                    icon={User}
-                    label="Phone"
-                    value={activeTenancy.tenant.phone}
-                  />
-                )}
-                {activeTenancy.tenant?.user?.email && (
-                  <InfoRow
-                    icon={User}
-                    label="Email"
-                    value={activeTenancy.tenant.user.email}
-                  />
-                )}
+              <InfoRow
+                icon={User}
+                label="Tenant Name"
+                value={tenantName(activeTenancy)}
+              />
+              <TenantContactActions
+                phone={activeTenancy.tenant?.phone}
+                email={activeTenancy.tenant?.user?.email}
+                name={tenantName(activeTenancy)}
+              />
                 <InfoRow
                   icon={Receipt}
                   label="Rent Amount"

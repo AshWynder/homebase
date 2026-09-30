@@ -11,6 +11,11 @@ export default function OwnerLayout() {
           gestureEnabled: true,
         }}
       />
+      {/* Activity drill-downs. These are pushed on top of the tabs rather than
+          rendered as tab screens, so the hub stays a single scrolling list. */}
+      <Stack.Screen name="maintenance/[id]" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="notices/[id]" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="chats/[id]" options={{ animation: 'slide_from_right' }} />
     </Stack>
   );
 }

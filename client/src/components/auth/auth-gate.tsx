@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { router, useSegments } from 'expo-router';
 
-import { homeRouteFor } from '@/lib/auth-routing';
+import { hasSession, homeRouteFor } from '@/lib/auth-routing';
 import { useStore } from '@/stores/use-store';
 
 /**
@@ -18,7 +18,6 @@ import { useStore } from '@/stores/use-store';
 export function AuthGate({ children }: { children: ReactNode }) {
   const token = useStore((s) => s.token);
   const profile = useStore((s) => s.profile);
-  const activeRole = useStore((s) => s.activeRole);
   const segments = useSegments();
   const [hydrated, setHydrated] = useState(useStore.persist.hasHydrated());
 
@@ -31,19 +30,20 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
+  const isSignedIn = hasSession(token, profile);
   const inAuthGroup = segments[0] === '(auth)';
 
   useEffect(() => {
     if (!hydrated) return;
 
-    if (!token && !inAuthGroup) {
+    if (!isSignedIn && !inAuthGroup) {
       // Signed out or session invalidated (401) → back to login.
       router.replace('/(auth)/sign-in');
-    } else if (token && inAuthGroup) {
+    } else if (isSignedIn && inAuthGroup) {
       // Authenticated but still on an auth screen → into the right role's home.
-      router.replace(homeRouteFor(profile, activeRole));
+      router.replace(homeRouteFor(profile));
     }
-  }, [token, hydrated, inAuthGroup, profile, activeRole]);
+  }, [isSignedIn, hydrated, inAuthGroup, profile]);
 
   // Hold the UI (splash covers the blank) until the session has rehydrated,
   // so a persisted token is never mistaken for "signed out".

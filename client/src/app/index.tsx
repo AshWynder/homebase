@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
 
-import { homeRouteFor } from '@/lib/auth-routing';
+import { hasSession, homeRouteFor } from '@/lib/auth-routing';
 import { useStore } from '@/stores/use-store';
 
 /**
@@ -15,7 +15,6 @@ export default function Index() {
   // All hooks are declared before any early return to keep hook order stable.
   const token = useStore((s) => s.token);
   const profile = useStore((s) => s.profile);
-  const activeRole = useStore((s) => s.activeRole);
   const [hydrated, setHydrated] = useState(useStore.persist.hasHydrated());
 
   useEffect(() => {
@@ -30,6 +29,8 @@ export default function Index() {
   if (!hydrated) return null;
 
   return (
-    <Redirect href={token ? homeRouteFor(profile, activeRole) : '/(auth)/sign-in'} />
+    <Redirect
+      href={hasSession(token, profile) ? homeRouteFor(profile) : '/(auth)/sign-in'}
+    />
   );
 }

@@ -81,7 +81,7 @@ export function AssignTenantModal({
 
   const onSubmit = (data: AssignTenantFormData) => {
     if (!startDate) {
-      onToast('Start date is required', 'error');
+      toast.error('Start date is required');
       return;
     }
 

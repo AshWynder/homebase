@@ -31,7 +31,6 @@ import { Text } from '@/components/ui/text';
 import type { Role } from '@/api/types';
 import { useSignIn, useSignUp } from '@/hooks/queries/use-auth';
 import { homeRouteFor } from '@/lib/auth-routing';
-import { useStore } from '@/stores/use-store';
 
 type Mode = 'sign-in' | 'sign-up';
 
@@ -313,11 +312,10 @@ function SignInForm() {
     signIn.mutate(
       { email: values.email.trim(), password: values.password },
       {
-        // The store is updated synchronously in the mutation's success handler,
-        // so read the fresh session to route to the correct role's home.
-        onSuccess: () => {
-          const { profile, activeRole } = useStore.getState();
-          router.replace(homeRouteFor(profile, activeRole));
+        // Route off the mutation result: the profile (and therefore the role)
+        // is guaranteed fresh, and the store can't disagree with it.
+        onSuccess: (session) => {
+          router.replace(homeRouteFor(session.profile));
         },
       },
     );
@@ -409,9 +407,8 @@ function SignUpForm() {
         nationalId: values.nationalId.trim() || undefined,
       },
       {
-        onSuccess: () => {
-          const { profile, activeRole } = useStore.getState();
-          router.replace(homeRouteFor(profile, activeRole));
+        onSuccess: (data) => {
+          router.replace(homeRouteFor(data.profile));
         },
       },
     );

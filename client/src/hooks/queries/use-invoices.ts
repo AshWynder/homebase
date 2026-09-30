@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { invoicesApi, type QueryInvoicesInput } from '@/api/invoices';
+import { invoicesApi, type QueryInvoicesInput, type QueryInvoiceSummaryInput } from '@/api/invoices';
 import type { GenerateInvoicesInput } from '@/api/types';
 
 import { queryKeys } from './keys';
@@ -17,6 +17,14 @@ export function useInvoice(id: string) {
     queryKey: queryKeys.invoices.detail(id),
     queryFn: () => invoicesApi.get(id),
     enabled: !!id,
+  });
+}
+
+/** Money totals for the Money tab's status tiles. */
+export function useInvoiceSummary(params: QueryInvoiceSummaryInput = {}) {
+  return useQuery({
+    queryKey: queryKeys.invoices.summary(params),
+    queryFn: () => invoicesApi.summary(params),
   });
 }
 

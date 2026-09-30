@@ -48,8 +48,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiResponse<unknown>>) => {
-    // Expired/invalid token → drop the session (the AuthGate then redirects
-    // to login) and wipe cached data from the previous session.
+    // Expired/invalid token → drop the session (the mounted AuthGate then
+    // redirects to login) and wipe cached data from the previous session.
     if (error.response?.status === 401) {
       useStore.getState().clearSession();
       queryClient.clear();

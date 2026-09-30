@@ -109,6 +109,24 @@ export interface InvoiceLineItem {
   createdAt: string;
 }
 
+/**
+ * The slice of an invoice that `GET /payments` nests on each payment, so a
+ * payment row can show its tenant, unit and period without a second request.
+ * Optional because the invoice-detail endpoint returns payments bare.
+ */
+export interface PaymentInvoice {
+  id: string;
+  status: InvoiceStatus;
+  amount: string;
+  balanceDue: string;
+  periodStart: string;
+  periodEnd: string;
+  unit?: Pick<Unit, 'id' | 'unitNumber'> & {
+    property?: Pick<Property, 'id' | 'name'> | null;
+  };
+  tenancy?: { tenant?: { user?: User | null } | null } | null;
+}
+
 export interface Payment {
   id: string;
   invoiceId: string;
@@ -122,8 +140,23 @@ export interface Payment {
   authorizationUrl?: string | null;
   failureReason?: string | null;
   paidAt?: string | null;
+  invoice?: PaymentInvoice;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface InvoiceStatusSummary {
+  count: number;
+  /** Money owed, except for PAID where it is the collected amount. */
+  total: string;
+}
+
+export interface InvoiceSummary {
+  byStatus: Record<InvoiceStatus, InvoiceStatusSummary>;
+  totals: {
+    billed: string;
+    outstanding: string;
+  };
 }
 
 export interface Invoice {

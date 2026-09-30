@@ -53,9 +53,9 @@ export default function TenantTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="messages"
+        name="chats"
         options={{
-          title: 'Messages',
+          title: 'Chats',
           tabBarIcon: ({ color, size }) => (
             <Icon as={MessageSquare} color={color} size={size} />
           ),

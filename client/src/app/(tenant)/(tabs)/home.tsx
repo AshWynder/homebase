@@ -269,7 +269,7 @@ export default function TenantHomeScreen() {
               activeOpacity={0.7}
               className="items-center"
               style={{ width: '22%' }}
-              onPress={() => router.push('/(tenant)/(tabs)/messages')}>
+              onPress={() => router.push('/(tenant)/(tabs)/chats')}>
               <View className="h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 border border-purple-100">
                 <Icon as={MessageSquare} size={22} className="text-purple-600" />
               </View>

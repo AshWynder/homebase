@@ -27,5 +27,13 @@ export const authApi = {
   signOut: () =>
     api.post('/api/auth/sign-out').then((res) => res.data as unknown),
 
-  me: () => unwrap<MeResponse>(api.get('/api/auth/me')),
+  /**
+   * `token` overrides the store's token via an explicit header. `useSignIn`
+   * passes the freshly issued token so the profile can be fetched *before* any
+   * session is written to the store.
+   */
+  me: (token?: string) =>
+    unwrap<MeResponse>(
+      api.get('/api/auth/me', token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+    ),
 };

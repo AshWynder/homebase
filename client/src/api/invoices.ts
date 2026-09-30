@@ -4,6 +4,7 @@ import type {
     GenerateInvoicesInput,
     Invoice,
     InvoiceStatus,
+    InvoiceSummary,
     Paginated,
 } from './types';
 
@@ -16,6 +17,10 @@ export interface QueryInvoicesInput {
     limit?: number;
 }
 
+export interface QueryInvoiceSummaryInput {
+    propertyId?: string;
+}
+
 export interface GenerateInvoicesResult {
     items: Invoice[];
     total: number;
@@ -26,6 +31,8 @@ export const invoicesApi = {
     list: (params: QueryInvoicesInput = {}) =>
         unwrap<Paginated<Invoice>>(api.get('/invoices', {params})),
     get: (id: string) => unwrap<Invoice>(api.get(`/invoices/${id}`)),
+    summary: (params: QueryInvoiceSummaryInput = {}) =>
+        unwrap<InvoiceSummary>(api.get('/invoices/summary', {params})),
     generate: (input: GenerateInvoicesInput = {}) =>
         unwrap<GenerateInvoicesResult>(api.post('/invoices/generate', input)),
     refresh: (id: string) => unwrap<Invoice>(api.post(`/invoices/${id}/refresh`)),
