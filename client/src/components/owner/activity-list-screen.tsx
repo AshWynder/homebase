@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DetailHeader } from '@/components/owner/detail-header';
+import { DetailHeader } from '@/components/common/detail-header';
 import { PropertyFilterBar } from '@/components/owner/property-filter-bar';
 import { ListMessage } from '@/components/owner/list-state';
 import { activityByKind, type ActivityKind } from '@/lib/activity';

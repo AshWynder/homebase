@@ -22,6 +22,7 @@ import { useTenancies } from '@/hooks/queries/use-tenancies';
 import { useInvoices } from '@/hooks/queries/use-invoices';
 import { usePayments } from '@/hooks/queries/use-payments';
 import { useSignOut } from '@/hooks/queries/use-auth';
+import { useUnreadNoticeCount } from '@/hooks/queries/use-notices';
 import { formatDateLong, formatKes } from '@/lib/format';
 
 export default function TenantHomeScreen() {
@@ -36,6 +37,9 @@ export default function TenantHomeScreen() {
     limit: 1,
   });
   const activeTenancy = tenancyQuery.data?.items?.[0];
+
+  // Drives the bell badge, so it is refetched with everything else on refresh.
+  const unreadNotices = useUnreadNoticeCount();
 
   // Fetch invoices for tenancy
   const invoicesQuery = useInvoices(
@@ -74,9 +78,12 @@ export default function TenantHomeScreen() {
       tenancyQuery.refetch(),
       invoicesQuery.refetch(),
       paymentsQuery.refetch(),
+      unreadNotices.refetch(),
     ]);
     setRefreshing(false);
   };
+
+  const unread = unreadNotices.data ?? 0;
 
   const displayName = user?.name?.trim() || 'Resident';
   const initials = displayName
@@ -130,9 +137,19 @@ export default function TenantHomeScreen() {
             <TouchableOpacity
               activeOpacity={0.7}
               className="relative h-10 w-10 items-center justify-center rounded-full bg-slate-100"
+              accessibilityRole="button"
+              accessibilityLabel={
+                unread > 0
+                  ? `Notices, ${unread} unread`
+                  : 'Notices'
+              }
               onPress={() => router.push('/(tenant)/(tabs)/notices')}>
               <Icon as={Bell} size={20} className="text-slate-700" />
-              <View className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-cyan-500" />
+              {/* Only rendered when something is actually unread — an always-on
+                  dot would train the tenant to ignore it. */}
+              {unread > 0 ? (
+                <View className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-cyan-500" />
+              ) : null}
             </TouchableOpacity>
 
             <TouchableOpacity

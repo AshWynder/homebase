@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -16,18 +16,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  type Option,
-} from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
-import { useCreateTenancy, useTenancies } from '@/hooks/queries/use-tenancies';
-import { tenantName } from '@/lib/format';
+import { useCreateTenancy } from '@/hooks/queries/use-tenancies';
 import { assignTenantFormSchema, type AssignTenantFormData } from '@/lib/schemas';
+import type { UserProfile } from '@/api/types';
+
+import { TenantPicker } from './tenant-picker';
 
 interface AssignTenantModalProps {
   open: boolean;
@@ -49,7 +43,10 @@ export function AssignTenantModal({
   unitId,
 }: AssignTenantModalProps) {
   const createTenancy = useCreateTenancy();
-  const tenanciesQuery = useTenancies({ limit: 100 });
+  // The picker works with the whole profile so it can render the choice after a
+  // search narrows it out of the list; the form still holds the bare id,
+  // because that is what Tenancy.tenantId references.
+  const [selectedTenant, setSelectedTenant] = useState<UserProfile | null>(null);
 
   const {
     control,
@@ -70,15 +67,6 @@ export function AssignTenantModal({
   const startDateValue = watch('startDate');
   const startDate = startDateValue ? new Date(startDateValue) : undefined;
 
-  // Distinct tenants derived from existing tenancies
-  const tenantOptions = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const t of tenanciesQuery.data?.items ?? []) {
-      if (!seen.has(t.tenantId)) seen.set(t.tenantId, tenantName(t));
-    }
-    return Array.from(seen, ([value, label]) => ({ value, label }));
-  }, [tenanciesQuery.data]);
-
   const onSubmit = (data: AssignTenantFormData) => {
     if (!startDate) {
       toast.error('Start date is required');
@@ -97,6 +85,7 @@ export function AssignTenantModal({
       onSuccess: () => {
         toast.success('Tenant assigned successfully');
         reset();
+        setSelectedTenant(null);
         onOpenChange(false);
       },
       onError: (error) => {
@@ -107,6 +96,7 @@ export function AssignTenantModal({
 
   const handleClose = () => {
     reset();
+    setSelectedTenant(null);
     onOpenChange(false);
   };
 
@@ -118,110 +108,101 @@ export function AssignTenantModal({
           <DialogDescription>Assign a tenant to this vacant unit.</DialogDescription>
         </DialogHeader>
 
-        <View className="gap-4">
-          {/* Tenant Selection */}
-          <View className="gap-2">
-            <Label>Tenant</Label>
+        <ScrollView
+          className="max-h-[420px]"
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag">
+          <View className="gap-4">
+            {/* Tenant Selection */}
             <Controller
               control={control}
               name="tenantId"
-              render={({ field: { value, onChange } }) => (
-                <Select
-                  value={
-                    value ? { value, label: tenantOptions.find((o) => o.value === value)?.label || value } : undefined
-                  }
-                  onValueChange={(opt?: Option) => onChange(opt?.value ?? '')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a tenant" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tenantOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value} label={opt.label}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.tenantId && (
-              <Text className="text-xs text-red-600">{errors.tenantId.message}</Text>
-            )}
-          </View>
-
-          {/* Rent Amount */}
-          <View className="gap-2">
-            <Label>Rent (KES)</Label>
-            <Controller
-              control={control}
-              name="rentAmount"
-              render={({ field: { value, onChange } }) => (
-                <Input
-                  value={String(value)}
-                  onChangeText={onChange}
-                  keyboardType="numeric"
-                  placeholder="25000"
+              render={({ field: { onChange } }) => (
+                <TenantPicker
+                  selected={selectedTenant}
+                  onChange={(profile) => {
+                    setSelectedTenant(profile);
+                    onChange(profile?.id ?? '');
+                  }}
+                  error={errors.tenantId?.message}
                 />
               )}
             />
-            {errors.rentAmount && (
-              <Text className="text-xs text-red-600">{errors.rentAmount.message}</Text>
-            )}
-          </View>
 
-          {/* Dates */}
-          <View className="flex-row gap-3">
-            <View className="flex-1 gap-2">
-              <Label>Start date</Label>
+            {/* Rent Amount */}
+            <View className="gap-2">
+              <Label>Rent (KES)</Label>
               <Controller
                 control={control}
-                name="startDate"
+                name="rentAmount"
                 render={({ field: { value, onChange } }) => (
-                  <DatePicker
-                    value={value ? new Date(value) : undefined}
-                    onChange={(date) => {
-                      if (date) {
-                        onChange(toIsoDate(date));
-                      } else {
-                        onChange('');
-                      }
-                    }}
-                    placeholder="Start date"
+                  <Input
+                    value={String(value)}
+                    onChangeText={onChange}
+                    keyboardType="numeric"
+                    placeholder="25000"
                   />
                 )}
               />
-              {errors.startDate && (
-                <Text className="text-xs text-red-600">{errors.startDate.message}</Text>
+              {errors.rentAmount && (
+                <Text className="text-xs text-red-600">{errors.rentAmount.message}</Text>
               )}
             </View>
 
-            <View className="flex-1 gap-2">
-              <Label>End date (optional)</Label>
-              <Controller
-                control={control}
-                name="endDate"
-                render={({ field: { value, onChange } }) => (
-                  <DatePicker
-                    value={value ? new Date(value) : undefined}
-                    onChange={(date) => {
-                      if (date) {
-                        onChange(toIsoDate(date));
-                      } else {
-                        onChange('');
-                      }
-                    }}
-                    placeholder="End date"
-                    minimumDate={startDate}
-                    clearable
-                  />
+            {/* Dates */}
+            <View className="flex-row gap-3">
+              <View className="flex-1 gap-2">
+                <Label>Start date</Label>
+                <Controller
+                  control={control}
+                  name="startDate"
+                  render={({ field: { value, onChange } }) => (
+                    <DatePicker
+                      value={value ? new Date(value) : undefined}
+                      onChange={(date) => {
+                        if (date) {
+                          onChange(toIsoDate(date));
+                        } else {
+                          onChange('');
+                        }
+                      }}
+                      placeholder="Start date"
+                    />
+                  )}
+                />
+                {errors.startDate && (
+                  <Text className="text-xs text-red-600">{errors.startDate.message}</Text>
                 )}
-              />
-              {errors.endDate && (
-                <Text className="text-xs text-red-600">{errors.endDate.message}</Text>
-              )}
+              </View>
+
+              <View className="flex-1 gap-2">
+                <Label>End date (optional)</Label>
+                <Controller
+                  control={control}
+                  name="endDate"
+                  render={({ field: { value, onChange } }) => (
+                    <DatePicker
+                      value={value ? new Date(value) : undefined}
+                      onChange={(date) => {
+                        if (date) {
+                          onChange(toIsoDate(date));
+                        } else {
+                          onChange('');
+                        }
+                      }}
+                      placeholder="End date"
+                      minimumDate={startDate}
+                      clearable
+                    />
+                  )}
+                />
+                {errors.endDate && (
+                  <Text className="text-xs text-red-600">{errors.endDate.message}</Text>
+                )}
+              </View>
             </View>
           </View>
-        </View>
+        </ScrollView>
 
         <DialogFooter>
           <Button variant="outline" onPress={handleClose}>

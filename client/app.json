@@ -33,7 +33,15 @@
           "imageWidth": 76
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Haven to attach photos of your maintenance requests so the landlord can see the problem.",
+          "cameraPermission": "Allow Haven to use your camera to photograph maintenance issues you want to report.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

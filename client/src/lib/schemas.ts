@@ -86,3 +86,52 @@ export const recordReadingFormSchema = z.object({
 });
 
 export type RecordReadingFormData = z.infer<typeof recordReadingFormSchema>;
+
+/**
+ * Notice composition, mirroring CreateNoticeDto.
+ *
+ * The scoping rule is a cross-field constraint — a target is required for
+ * PROPERTY and TENANT and must be absent otherwise — so it is expressed as one
+ * flat object with a `superRefine` rather than a discriminated union. A union
+ * would model the rule more precisely, but react-hook-form resolves its
+ * `defaultValues`, `watch` and `Controller` names against a single object type,
+ * and narrowing that across three unions costs more at every call site than it
+ * buys. The invariant is enforced here once, so the submit handler can still
+ * trust the shape it builds.
+ */
+export const sendNoticeFormSchema = z
+  .object({
+    audience: z.enum(['ALL_PROPERTIES', 'PROPERTY', 'TENANT']),
+    title: z
+      .string()
+      .trim()
+      .min(1, 'Give the notice a title')
+      .max(140, 'Title cannot exceed 140 characters'),
+    message: z
+      .string()
+      .trim()
+      .min(1, 'Write the notice message')
+      .max(4000, 'Message cannot exceed 4000 characters'),
+    /** Only sent when audience is PROPERTY. */
+    propertyId: z.string().optional(),
+    /** Only sent when audience is TENANT. */
+    tenantId: z.string().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.audience === 'PROPERTY' && !value.propertyId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['propertyId'],
+        message: 'Choose the property to notify',
+      });
+    }
+    if (value.audience === 'TENANT' && !value.tenantId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['tenantId'],
+        message: 'Choose the tenant to notify',
+      });
+    }
+  });
+
+export type SendNoticeFormData = z.infer<typeof sendNoticeFormSchema>;

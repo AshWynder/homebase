@@ -1,8 +1,12 @@
 import type { QueryInvoicesInput, QueryInvoiceSummaryInput } from '@/api/invoices';
+import type { QueryUsersInput } from '@/api/auth';
+import type { QueryMaintenanceTicketsInput } from '@/api/maintenance';
 import type { QueryMetersInput } from '@/api/meters';
+import type { QueryNoticesInput } from '@/api/notices';
 import type { QueryPaymentsInput } from '@/api/payments';
 import type { QueryTenanciesInput } from '@/api/tenancies';
 import type { QueryUnitsInput } from '@/api/units';
+import type { MaintenanceStatus } from '@/api/types';
 
 export const queryKeys = {
   properties: {
@@ -45,5 +49,32 @@ export const queryKeys = {
     list: (params: QueryPaymentsInput) =>
       [...queryKeys.payments.all, 'list', params] as const,
     detail: (id: string) => [...queryKeys.payments.all, 'detail', id] as const,
+  },
+  // The infinite list and the detail view are both nested under `all` so a
+  // single invalidation after a create refreshes everything the tenant sees.
+  maintenance: {
+    all: ['maintenance'] as const,
+    list: (params: QueryMaintenanceTicketsInput) =>
+      [...queryKeys.maintenance.all, 'list', params] as const,
+    // The infinite list keys pages under `list`, so an unfiltered key has to be
+    // a prefix of every filtered one for invalidation to reach all of them.
+    infinite: (status: MaintenanceStatus | undefined) =>
+      [...queryKeys.maintenance.all, 'infinite', status ?? 'all'] as const,
+    detail: (id: string) => [...queryKeys.maintenance.all, 'detail', id] as const,
+  },
+  notices: {
+    all: ['notices'] as const,
+    /** Owner's sent list. Distinct from `received` because the row shape differs. */
+    list: (params: QueryNoticesInput) => [...queryKeys.notices.all, 'list', params] as const,
+    received: (unreadOnly: boolean) =>
+      [...queryKeys.notices.all, 'received', unreadOnly] as const,
+    count: () => [...queryKeys.notices.all, 'count'] as const,
+    detail: (id: string) => [...queryKeys.notices.all, 'detail', id] as const,
+  },
+  // Params are part of the key, so each distinct search term caches separately
+  // and backspacing through past terms is instant.
+  users: {
+    all: ['users'] as const,
+    list: (params: QueryUsersInput) => [...queryKeys.users.all, 'list', params] as const,
   },
 };

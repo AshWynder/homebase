@@ -6,9 +6,17 @@ import { ChevronRight } from 'lucide-react-native';
 import { Icon } from '@/components/ui/icon';
 import { ScreenHeader } from '@/components/owner/screen-header';
 import { Text } from '@/components/ui/text';
+import { useSentNotices } from '@/hooks/queries/use-notices';
 import { ACTIVITY_DESTINATIONS } from '@/lib/activity';
 
 export default function ActivityScreen() {
+  // Only notices have a count endpoint the hub can afford to ask for; the other
+  // two destinations fall back to hiding their badge rather than claiming zero.
+  const noticesQuery = useSentNotices({});
+  const counts: Partial<Record<(typeof ACTIVITY_DESTINATIONS)[number]['kind'], number>> = {
+    notices: noticesQuery.data?.pages[0]?.total,
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
       <ScreenHeader title="Activity" />
@@ -17,7 +25,11 @@ export default function ActivityScreen() {
         className="flex-1"
         contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 12 }}
         showsVerticalScrollIndicator={false}>
-        {ACTIVITY_DESTINATIONS.map((destination) => (
+        {ACTIVITY_DESTINATIONS.map((destination) => {
+          const liveCount = counts[destination.kind];
+          const count = liveCount ?? destination.count ?? 0;
+
+          return (
           <Pressable
             key={destination.kind}
             onPress={() => router.push(destination.href)}
@@ -35,15 +47,16 @@ export default function ActivityScreen() {
               <Text className="text-xs text-slate-500">{destination.description}</Text>
             </View>
 
-            {destination.count > 0 ? (
-              <View className="min-w-6 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5">
-                <Text className="text-xs font-bold text-white">{destination.count}</Text>
+            {count > 0 ? (
+              <View className="min-w-6 items-center justify-center rounded-full bg-teal-700 px-1.5 py-0.5">
+                <Text className="text-xs font-bold text-white">{count}</Text>
               </View>
             ) : null}
 
             <Icon as={ChevronRight} size={18} className="text-slate-400" />
           </Pressable>
-        ))}
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );

@@ -10,11 +10,11 @@ export interface ActivityDestination {
   description: string;
   icon: LucideIcon;
   /**
-   * Unread/total count shown as a badge on the hub row. There is no activity
-   * backend yet, so these stay 0 and the badge stays hidden; phase 2 replaces
-   * them with the counts from the corresponding query.
+   * Static badge count, used only where the live number is not available at the
+   * hub's single query budget. Omitted rather than defaulted to 0 so the hub row
+   * hides its badge instead of asserting "nothing" it has not checked.
    */
-  count: number;
+  count?: number;
   emptyTitle: string;
   emptyBody: string;
 }
@@ -33,7 +33,6 @@ export const ACTIVITY_DESTINATIONS: readonly ActivityDestination[] = [
     title: 'Maintenance',
     description: 'Repairs reported by your tenants',
     icon: Wrench,
-    count: 0,
     emptyTitle: 'No maintenance requests',
     emptyBody: 'Repairs your tenants report will be listed here.',
   },
@@ -43,7 +42,6 @@ export const ACTIVITY_DESTINATIONS: readonly ActivityDestination[] = [
     title: 'Notices',
     description: 'Announcements you have sent',
     icon: Megaphone,
-    count: 0,
     emptyTitle: 'No notices sent',
     emptyBody: 'Announcements you send to your tenants will be listed here.',
   },
@@ -53,7 +51,6 @@ export const ACTIVITY_DESTINATIONS: readonly ActivityDestination[] = [
     title: 'Chats',
     description: 'Conversations with your tenants',
     icon: MessageSquare,
-    count: 0,
     emptyTitle: 'No conversations',
     emptyBody: 'Chats between you and your tenants will be listed here.',
   },

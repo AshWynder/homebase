@@ -21,6 +21,43 @@ export type PaymentMethod = 'MPESA_STK' | 'MPESA_C2B' | 'CARD';
 export type PaymentStatus = 'SUCCESS' | 'FAILED' | 'PENDING';
 export type PaymentProvider = 'DARAJA' | 'PAYSTACK';
 
+export type MaintenanceStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+
+/**
+ * A repair request raised against a unit. The nested `unit.property` and
+ * `tenant.user` mirrors the server's include set, so a tenant sees which home
+ * the ticket is filed against without a second request.
+ */
+export interface MaintenanceTicket {
+  id: string;
+  unitId: string;
+  tenantId?: string | null;
+  description: string;
+  status: MaintenanceStatus;
+  /** Absolute R2 URLs, already decorated by the server (the DB holds keys). */
+  photoUrls: string[];
+  resolvedAt?: string | null;
+  unit: Unit & { property?: Pick<Property, 'id' | 'name' | 'address'> | null };
+  tenant?: {
+    id: string;
+    user?: Pick<User, 'id' | 'name' | 'email'> | null;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** A photo staged on-device before upload. `uri` is already compressed to JPEG. */
+export interface StagedPhoto {
+  id: string;
+  uri: string;
+  fileName: string;
+}
+
+export interface CreateMaintenanceTicketInput {
+  description: string;
+  photos?: StagedPhoto[];
+}
+
 export interface User {
   id: string;
   name: string;
@@ -291,4 +328,95 @@ export interface InitiateStkPaymentInput {
 export interface InitiateCardPaymentInput {
   invoiceId: string;
   callbackUrl?: string;
+}
+export type NoticeAudience = 'ALL_PROPERTIES' | 'PROPERTY' | 'TENANT';
+
+/** The property a notice is scoped to, null for a portfolio-wide notice. */
+export interface NoticeProperty {
+  id: string;
+  name: string;
+  address: string;
+}
+
+/**
+ * The sending owner, flattened one level: `author` is a UserProfile row, so the
+ * display name lives on its nested `user`.
+ */
+export interface NoticeAuthor {
+  id: string;
+  userId: string;
+  role: Role;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface Notice {
+  id: string;
+  title: string;
+  message: string;
+  audience: NoticeAudience;
+  propertyId: string | null;
+  authorId: string;
+  property: NoticeProperty | null;
+  author: NoticeAuthor;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * A row in the send-time delivery list. The owner side receives these with
+ * `tenantId` only — the UI presents read totals rather than a named roster,
+ * since the response deliberately does not carry recipient profiles.
+ */
+export interface NoticeRecipient {
+  id: string;
+  tenantId: string;
+  isRead: boolean;
+}
+
+/**
+ * What POST /notices/:id/read returns: the caller's own receipt and nothing
+ * else. It is not a notice, so it cannot stand in for one.
+ */
+export interface NoticeReceipt {
+  id: string;
+  isRead: boolean;
+  readAt: string | null;
+}
+
+/** An owner's row in GET /notices — aggregate read progress, no receipts. */
+export interface SentNotice extends Notice {
+  recipientCount: number;
+  readCount: number;
+}
+
+/** A tenant's row in GET /notices — their own read state, flattened onto the notice. */
+export interface ReceivedNotice extends Notice {
+  isRead: boolean;
+  readAt: string | null;
+}
+
+/**
+ * GET/POST /notices/:id. `recipients` is only present for the author, so the
+ * tenant inbox can never load a roster it has no business seeing.
+ */
+export interface NoticeDetail extends Notice {
+  recipientCount: number;
+  readCount: number;
+  isRead: boolean;
+  readAt: string | null;
+  recipients?: NoticeRecipient[];
+}
+
+export interface CreateNoticeInput {
+  title: string;
+  message: string;
+  audience: NoticeAudience;
+  /** Required when audience is PROPERTY, and rejected otherwise. */
+  propertyId?: string;
+  /** Required when audience is TENANT, and rejected otherwise. */
+  tenantId?: string;
 }

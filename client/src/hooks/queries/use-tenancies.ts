@@ -34,6 +34,10 @@ export function useCreateTenancy() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.tenancies.all });
       void queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });
+      // The tenant just assigned now holds an active tenancy, so the server
+      // drops them from the user directory. Without this the picker would keep
+      // offering someone who is already housed.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
     },
   });
 }

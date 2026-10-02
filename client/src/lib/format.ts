@@ -97,3 +97,20 @@ export function tenantName(tenancy?: {
 } | null): string {
   return tenancy?.tenant?.user?.name ?? 'Unknown tenant';
 }
+
+/**
+ * Display name for a bare UserProfile, for pickers that search profiles
+ * directly rather than going through a tenancy.
+ *
+ * `name` is optional on the better-auth user, so this falls back to the phone
+ * number (always present and unique on UserProfile) rather than rendering an
+ * empty row.
+ */
+export function profileDisplayName(profile?: {
+  user?: { name?: string | null } | null;
+  phone?: string | null;
+} | null): string {
+  const name = profile?.user?.name?.trim();
+  if (name) return name;
+  return profile?.phone ?? 'Unknown user';
+}

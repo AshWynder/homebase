@@ -1,9 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 
-import { authApi } from '@/api/auth';
+import { authApi, type QueryUsersInput } from '@/api/auth';
 import type { MeResponse, RegisterInput } from '@/api/types';
 import { useStore } from '@/stores/use-store';
+
+import { queryKeys } from './keys';
 
 /**
  * Sign in via Better Auth, then fetch the linked UserProfile (/api/auth/me).
@@ -39,6 +41,20 @@ export function useSignIn() {
       setSession(session);
       return session;
     },
+  });
+}
+
+/**
+ * User profiles for the owner-side pickers.
+ *
+ * Server-side search, not a client-side filter over a prefetched page — the
+ * unassigned-tenant list is unbounded, so filtering locally would mean
+ * downloading every profile on each keystroke.
+ */
+export function useUsers(params: QueryUsersInput = {}) {
+  return useQuery({
+    queryKey: queryKeys.users.list(params),
+    queryFn: () => authApi.listUsers(params),
   });
 }
 

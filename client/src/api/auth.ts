@@ -2,10 +2,20 @@ import { api, unwrap } from '@/lib/axios';
 
 import type {
   MeResponse,
+  Paginated,
   RegisterInput,
   RegisterResponse,
+  Role,
   SignInResponse,
+  UserProfile,
 } from './types';
+
+export interface QueryUsersInput {
+  role?: Role;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
 
 /**
  * Auth endpoints.
@@ -36,4 +46,15 @@ export const authApi = {
     unwrap<MeResponse>(
       api.get('/api/auth/me', token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
     ),
+
+  /**
+   * User profiles for the owner-side pickers.
+   *
+   * Not a tenancy list: this is backed by `userProfile`, so it can find a
+   * tenant who has never been assigned a unit. For `role: 'TENANT'` the server
+   * returns only people with no *active* tenancy, which is what makes the result
+   * safe to offer for assignment.
+   */
+  listUsers: (params: QueryUsersInput = {}) =>
+    unwrap<Paginated<UserProfile>>(api.get('/api/auth/users', { params })),
 };

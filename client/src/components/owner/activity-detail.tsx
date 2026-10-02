@@ -1,7 +1,7 @@
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DetailHeader } from '@/components/owner/detail-header';
+import { DetailHeader } from '@/components/common/detail-header';
 import { ListMessage } from '@/components/owner/list-state';
 import { Text } from '@/components/ui/text';
 import { activityByKind, type ActivityKind } from '@/lib/activity';
