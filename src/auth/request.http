@@ -1,0 +1,59 @@
+### Auth — Homebase API
+### Base URL: http://localhost:3000
+### Registration creates both User (better-auth) and linked UserProfile (phone, role, nationalId)
+
+### 1. Register a Property Owner
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "owner@example.com",
+  "password": "password123",
+  "phone": "+254700000001",
+  "role": "OWNER",
+  "nationalId": "12345678"
+}
+
+### 2. Register a Caretaker
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Jane Smith",
+  "email": "caretaker@example.com",
+  "password": "password123",
+  "phone": "+254700000002",
+  "role": "CARETAKER",
+  "nationalId": "23456789"
+}
+
+### 3. Register a Tenant
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Alice Tenant",
+  "email": "tenant@example.com",
+  "password": "password123",
+  "phone": "+254700000003",
+  "role": "TENANT",
+  "nationalId": "34567890"
+}
+
+### 4. Sign In (Better Auth)
+POST http://localhost:3000/api/auth/sign-in/email
+Content-Type: application/json
+
+{
+  "email": "owner@example.com",
+  "password": "password123"
+}
+
+### 5. Get Current Session / User
+GET http://localhost:3000/api/auth/get-session
+Content-Type: application/json
+
+### 6. Sign Out (Better Auth)
+POST http://localhost:3000/api/auth/sign-out
+Content-Type: application/json
