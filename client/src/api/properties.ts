@@ -1,6 +1,11 @@
 import { api, unwrap } from '@/lib/axios';
 
-import type { CreatePropertyInput, Property, UpdatePropertyInput } from './types';
+import type {
+  AssignCaretakerInput,
+  CreatePropertyInput,
+  Property,
+  UpdatePropertyInput,
+} from './types';
 
 export const propertiesApi = {
   list: () => unwrap<Property[]>(api.get('/properties')),
@@ -9,4 +14,8 @@ export const propertiesApi = {
   update: (id: string, input: UpdatePropertyInput) =>
     unwrap<Property>(api.patch(`/properties/${id}`, input)),
   remove: (id: string) => unwrap<Property>(api.delete(`/properties/${id}`)),
+  assignCaretaker: (id: string, input: AssignCaretakerInput) =>
+    unwrap<Property>(api.post(`/properties/${id}/caretaker`, input)),
+  removeCaretaker: (id: string) =>
+    unwrap<Property>(api.delete(`/properties/${id}/caretaker`)),
 };

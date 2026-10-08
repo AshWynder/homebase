@@ -11,7 +11,11 @@ import {
   maintenanceApi,
   type QueryMaintenanceTicketsInput,
 } from '@/api/maintenance';
-import type { CreateMaintenanceTicketInput, MaintenanceStatus } from '@/api/types';
+import type {
+  CreateMaintenanceTicketInput,
+  MaintenanceStatus,
+  UpdateMaintenanceTicketInput,
+} from '@/api/types';
 
 import { queryKeys } from './keys';
 
@@ -86,6 +90,22 @@ export function useCreateMaintenanceTicket() {
   return useMutation({
     mutationFn: (input: CreateMaintenanceTicketInput) => maintenanceApi.create(input),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.maintenance.all });
+    },
+  });
+}
+
+/**
+ * Applies a status change (with the remarks the server requires for
+ * IN_PROGRESS/RESOLVED) or a description edit.
+ */
+export function useUpdateMaintenanceTicket() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateMaintenanceTicketInput }) =>
+      maintenanceApi.update(id, input),
+    onSuccess: (ticket) => {
+      queryClient.setQueryData(queryKeys.maintenance.detail(ticket.id), ticket);
       void queryClient.invalidateQueries({ queryKey: queryKeys.maintenance.all });
     },
   });

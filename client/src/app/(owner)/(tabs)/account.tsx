@@ -1,55 +1,70 @@
-import { View } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LogOut, ChevronRight, ShieldCheck } from 'lucide-react-native';
 
 import { ScreenHeader } from '@/components/owner/screen-header';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
-import { useSignOut } from '@/hooks/queries/use-auth';
+import { Icon } from '@/components/ui/icon';
+import { Badge } from '@/components/ui/badge';
+import { ProfilePhotoPicker } from '@/components/account/profile-photo-picker';
+import { ProfileForm } from '@/components/account/profile-form';
+import { SignOutDialog } from '@/components/account/sign-out-dialog';
 import { useStore } from '@/stores/use-store';
 
 export default function AccountScreen() {
   const user = useStore((s) => s.user);
   const profile = useStore((s) => s.profile);
-  const signOut = useSignOut();
-
-  const onSignOut = () => signOut.mutate();
+  const [signOutOpen, setSignOutOpen] = useState(false);
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
       <ScreenHeader title="Account" />
 
-      <View className="gap-4 p-5">
-        <View className="gap-4 rounded-2xl border border-slate-200 bg-white p-4">
-          <View className="gap-1">
-            <Text className="text-sm text-slate-500">Name</Text>
-            <Text className="text-base font-semibold text-slate-900">
-              {user?.name ?? '—'}
-            </Text>
-          </View>
-          <View className="gap-1">
-            <Text className="text-sm text-slate-500">Email</Text>
-            <Text className="text-base font-semibold text-slate-900">
-              {user?.email ?? '—'}
-            </Text>
-          </View>
-          <View className="gap-1">
-            <Text className="text-sm text-slate-500">Phone</Text>
-            <Text className="text-base font-semibold text-slate-900">
-              {profile?.phone ?? '—'}
-            </Text>
-          </View>
-          <View className="gap-1">
-            <Text className="text-sm text-slate-500">Role</Text>
-            <Text className="text-base font-semibold text-slate-900">
-              {profile?.role ?? '—'}
-            </Text>
-          </View>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 20, paddingBottom: 60, gap: 18 }}
+        showsVerticalScrollIndicator={false}>
+        {/* Profile Card Header */}
+        <View className="items-center bg-white rounded-2xl border border-slate-200 p-4">
+          <ProfilePhotoPicker />
+          <Text className="text-lg font-bold text-slate-900 mt-1">
+            {user?.name ?? 'Property Owner'}
+          </Text>
+          <Text className="text-xs text-slate-500">{user?.email ?? ''}</Text>
+          <Badge variant="secondary" className="mt-2 bg-teal-50 border-teal-200">
+            <Text className="text-[11px] font-semibold text-teal-700">Property Owner</Text>
+          </Badge>
         </View>
 
-        <Button variant="destructive" onPress={onSignOut} disabled={signOut.isPending}>
-          <Text>{signOut.isPending ? 'Signing out…' : 'Sign out'}</Text>
-        </Button>
-      </View>
+        {/* Profile Details & Password Form */}
+        <ProfileForm />
+
+        {/* Session / Sign Out Card */}
+        <Card className="rounded-2xl border-slate-200 bg-white">
+          <CardContent className="p-4">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setSignOutOpen(true)}
+              className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-3">
+                <View className="h-10 w-10 items-center justify-center rounded-xl bg-rose-50 border border-rose-100">
+                  <Icon as={LogOut} size={18} className="text-rose-600" />
+                </View>
+                <View>
+                  <Text className="text-sm font-bold text-rose-600">Sign Out</Text>
+                  <Text className="text-xs text-slate-400">Log out of your account</Text>
+                </View>
+              </View>
+              <Icon as={ChevronRight} size={18} className="text-slate-300" />
+            </TouchableOpacity>
+          </CardContent>
+        </Card>
+      </ScrollView>
+
+      {/* Sign Out Confirmation Modal */}
+      <SignOutDialog open={signOutOpen} onOpenChange={setSignOutOpen} />
     </SafeAreaView>
   );
 }

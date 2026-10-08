@@ -6,6 +6,7 @@ import type {
   MaintenanceTicket,
   Paginated,
   StagedPhoto,
+  UpdateMaintenanceTicketInput,
 } from './types';
 
 /** Server-side caps, mirrored so the UI can reject before a wasted upload. */
@@ -77,4 +78,6 @@ export const maintenanceApi = {
     unwrap<Paginated<MaintenanceTicket>>(api.get('/maintenance', { params })),
   get: (id: string) => unwrap<MaintenanceTicket>(api.get(`/maintenance/${id}`)),
   create,
+  update: (id: string, input: UpdateMaintenanceTicketInput) =>
+    unwrap<MaintenanceTicket>(api.patch(`/maintenance/${id}`, input)),
 };

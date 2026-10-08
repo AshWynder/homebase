@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { BellRing, Building2, CalendarClock, Megaphone, UserRound } from 'lucide-react-native';
 
+import { StartDirectChatButton } from '@/components/chat/start-chat-button';
 import { DetailHeader } from '@/components/common/detail-header';
 import { AudienceBadge, noticeScopeLabel } from '@/components/notice/notice-parts';
 import { Icon } from '@/components/ui/icon';
@@ -105,6 +106,16 @@ export default function TenantNoticeDetailScreen() {
                 icon={UserRound}
                 label="From"
                 value={notice.author.user.name || notice.author.user.email}
+              />
+
+              {/* Replying to a notice in the app rather than by phone or email:
+                  the thread keeps the answer next to the question, which a
+                  phone call does not. Always offered — a tenant may message both
+                  an owner and a caretaker, and the server authorises both. */}
+              <StartDirectChatButton
+                profileId={notice.author.id}
+                name={notice.author.user.name || notice.author.user.email}
+                variant="chip"
               />
               <MetaRow
                 icon={notice.audience === 'PROPERTY' ? Building2 : Megaphone}

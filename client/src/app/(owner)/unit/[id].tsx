@@ -284,6 +284,7 @@ export default function UnitDetailScreen() {
                 phone={activeTenancy.tenant?.phone}
                 email={activeTenancy.tenant?.user?.email}
                 name={tenantName(activeTenancy)}
+                profileId={activeTenancy.tenant?.id}
               />
                 <InfoRow
                   icon={Receipt}

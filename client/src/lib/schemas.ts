@@ -135,3 +135,27 @@ export const sendNoticeFormSchema = z
   });
 
 export type SendNoticeFormData = z.infer<typeof sendNoticeFormSchema>;
+
+// Caretaker assignment form. Mirrors AssignCaretakerDto on the server: the
+// server enforces which fields are required per mode, this enforces the form's
+// own shape (and the confirm-password check, which the server never sees).
+export const assignCaretakerFormSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Enter the caretaker's full name"),
+    email: z.string().trim().email('Must be a valid email address'),
+    phone: z
+      .string()
+      .trim()
+      .min(9, 'Enter a valid phone number'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((value) => value.password === value.confirmPassword, {
+    message: 'Passwords must match',
+    path: ['confirmPassword'],
+  });
+
+export type AssignCaretakerFormData = z.infer<typeof assignCaretakerFormSchema>;

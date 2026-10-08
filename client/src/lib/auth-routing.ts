@@ -17,16 +17,23 @@ export function isTenantSession(profile: UserProfile | null): boolean {
   return profile?.role === 'TENANT';
 }
 
+/** True when the session belongs to a caretaker rather than an owner. */
+export function isCaretakerSession(profile: UserProfile | null): boolean {
+  return profile?.role === 'CARETAKER';
+}
+
 /**
  * A session is only routable once the token *and* the profile are known — the
- * role lives on the profile, so a token without one cannot be placed in either
+ * role lives on the profile, so a token without one cannot be placed in any
  * role group and is treated as signed out.
  */
 export function hasSession(token: string | null, profile: UserProfile | null): boolean {
   return !!token && !!profile;
 }
 
-/** Landing route for a given session: tenant tabs vs owner properties. */
+/** Landing route for a given session: tenant, caretaker or owner tabs. */
 export function homeRouteFor(profile: UserProfile | null): Href {
-  return isTenantSession(profile) ? '/(tenant)/(tabs)/home' : '/(owner)/(tabs)/portfolio';
+  if (isTenantSession(profile)) return '/(tenant)/(tabs)/home';
+  if (isCaretakerSession(profile)) return '/(caretaker)/(tabs)/properties';
+  return '/(owner)/(tabs)/portfolio';
 }

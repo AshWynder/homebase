@@ -1,9 +1,5 @@
-import { useLocalSearchParams } from 'expo-router';
+import { ConversationThreadScreen } from '@/components/chat/conversation-thread-screen';
 
-import { ActivityDetail } from '@/components/owner/activity-detail';
-
-export default function ChatsDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-
-  return <ActivityDetail kind="chats" id={id} title="Chats" />;
+export default function OwnerConversationScreen() {
+  return <ConversationThreadScreen />;
 }

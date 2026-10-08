@@ -4,6 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Building2, DollarSign, Home, Plus, Users, Zap } from 'lucide-react-native';
 
+import { StartGroupChatButton } from '@/components/chat/start-chat-button';
 import { CreateUnitDialog } from '@/components/owner/create-unit-dialog';
 import { ListMessage, ListSkeleton } from '@/components/owner/list-state';
 import { Badge } from '@/components/ui/badge';
@@ -95,6 +96,15 @@ export default function PropertyUnitsScreen() {
         <Text className="flex-1 text-base font-bold text-slate-900">
           {property?.name || 'Property Units'}
         </Text>
+
+        {/* The one place a group thread can be reached for the first time: nobody
+            else in the app creates one, and the server does it lazily. */}
+        {propertyId ? (
+          <StartGroupChatButton
+            propertyId={propertyId}
+            onError={(m) => showToast(m, 'error')}
+          />
+        ) : null}
       </View>
 
       {isLoading ? (

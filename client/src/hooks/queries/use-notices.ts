@@ -70,6 +70,19 @@ export function useReceivedNotices(unreadOnly: boolean) {
   });
 }
 
+/**
+ * A handful of notices for a feed — the home screen's recent activity needs a
+ * few rows, not the inbox's full page size, and sharing the inbox key would
+ * mean two different page sizes fighting over one cache entry.
+ */
+export function useRecentNotices(limit = 5) {
+  return useQuery({
+    queryKey: queryKeys.notices.recent(),
+    queryFn: () => noticesApi.list<ReceivedNotice>({ page: 1, limit }),
+    staleTime: 30000,
+  });
+}
+
 export function useNotice(id: string) {
   return useQuery({
     queryKey: queryKeys.notices.detail(id),

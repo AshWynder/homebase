@@ -56,12 +56,30 @@ api.interceptors.response.use(
     }
 
     const payload = error.response?.data;
-    const message =
-      (payload && typeof payload === 'object' && 'message' in payload
-        ? String((payload as { message: unknown }).message)
-        : undefined) ??
-      error.message ??
-      'Something went wrong';
+    const raw =
+      payload && typeof payload === 'object' && 'message' in payload
+        ? (payload as { message: unknown }).message
+        : undefined;
+
+    /**
+     * A validation failure arrives as `message: string[]`; other thrown
+     * exceptions arrive as a plain string. Arrays are joined with semicolons
+     * rather than left to `String()`, which would comma-join them — these
+     * strings go straight into alert bodies and list subtitles, so
+     * "profileId must be a valid UUID; search must be 80 characters or fewer"
+     * reads as two problems rather than one garbled one.
+     */
+    let message: string | undefined;
+    if (Array.isArray(raw)) {
+      const parts = raw.filter((part): part is string => typeof part === 'string');
+      message = parts.length > 0 ? parts.join('; ') : undefined;
+    } else if (typeof raw === 'string' && raw.length > 0) {
+      message = raw;
+    } else if (raw !== undefined && raw !== null) {
+      message = String(raw);
+    }
+
+    if (!message) message = error.message ?? 'Something went wrong';
     return Promise.reject(new ApiError(message, error.response?.status));
   },
 );

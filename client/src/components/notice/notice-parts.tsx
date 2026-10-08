@@ -75,12 +75,14 @@ export function audienceLabel(audience: NoticeAudience): string {
  */
 export function noticeScopeLabel(
   notice: Pick<Notice, 'audience' | 'property'>,
-  viewer: 'owner' | 'tenant',
+  viewer: 'owner' | 'tenant' | 'caretaker',
 ): string {
   if (notice.audience === 'ALL_PROPERTIES') return 'All properties';
   if (notice.audience === 'PROPERTY') return notice.property?.name ?? 'One property';
 
-  return viewer === 'owner' ? 'One tenant' : 'Sent directly to you';
+  // Owner and caretaker are both on the sending side of the notice; only the
+  // tenant reads it as addressed to them.
+  return viewer === 'tenant' ? 'Sent directly to you' : 'One tenant';
 }
 
 /**

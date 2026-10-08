@@ -86,7 +86,7 @@ export function TenantOutstandingCard({
     return (
       <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 6 }}>
         <LinearGradient
-          colors={['#075E54', '#0B776B', '#087B6D']}
+          colors={['#0E7490', '#0F766E', '#115E59']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
@@ -170,7 +170,7 @@ export function TenantOutstandingCard({
   return (
     <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 6 }}>
       <LinearGradient
-        colors={['#075E54', '#0B776B', '#087B6D']}
+        colors={['#0E7490', '#0F766E', '#115E59']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{

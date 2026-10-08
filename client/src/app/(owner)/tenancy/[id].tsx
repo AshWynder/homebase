@@ -220,7 +220,12 @@ export default function TenancyDetailScreen() {
               </View>
             </View>
 
-            <TenantContactActions phone={phone} email={email} name={name} />
+            <TenantContactActions
+              phone={phone}
+              email={email}
+              name={name}
+              profileId={tenancy.tenant?.id}
+            />
 
             <View className="gap-1 rounded-2xl bg-teal-50 p-4">
               <Text className="text-[11px] font-medium uppercase tracking-wide text-teal-700">

@@ -1,12 +1,5 @@
-import { ComingSoonScreen } from '@/components/tenant/coming-soon';
-import { MessageSquare } from 'lucide-react-native';
+import { ConversationInboxScreen } from '@/components/chat/conversation-inbox-screen';
 
-export default function ChatsScreen() {
-  return (
-    <ComingSoonScreen
-      title="Chats"
-      subtitle="Direct chat with property managers and caretakers for immediate assistance."
-      icon={MessageSquare}
-    />
-  );
+export default function TenantChatsScreen() {
+  return <ConversationInboxScreen basePath="/(tenant)/chats" />;
 }

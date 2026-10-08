@@ -7,6 +7,7 @@ import { PortfolioSnapshot } from '@/components/owner/portfolio-snapshot';
 import { PropertyFilterBar } from '@/components/owner/property-filter-bar';
 import { StatPill } from '@/components/owner/stat-pill';
 import { UpdatePropertyDialog } from '@/components/owner/update-property-dialog';
+import { AssignCaretakerDialog } from '@/components/owner/assign-caretaker-dialog';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Toast } from '@/components/ui/toast';
@@ -18,7 +19,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useActiveTenancies } from '@/hooks/queries/use-tenancies';
-import { useDeleteProperty, useProperties } from '@/hooks/queries/use-properties';
+import {
+  useDeleteProperty,
+  useProperties,
+  useRemoveCaretaker,
+} from '@/hooks/queries/use-properties';
 import { useUnits } from '@/hooks/queries/use-units';
 import { formatKes } from '@/lib/format';
 import { useStore } from '@/stores/use-store';
@@ -29,6 +34,9 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  UserCog,
+  UserMinus,
+  UserPlus,
   Users,
   Wallet,
 } from 'lucide-react-native';
@@ -48,6 +56,7 @@ const EMPTY_STATS: PropertyStats = { units: 0, active: 0, revenue: 0 };
  */
 export function PropertyList() {
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [assignCaretakerOpen, setAssignCaretakerOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const selectedPropertyId = useStore((s) => s.selectedPropertyId);
 
@@ -55,6 +64,7 @@ export function PropertyList() {
   const units = useUnits({ limit: 100 });
   const tenancies = useActiveTenancies();
   const deleteProperty = useDeleteProperty();
+  const removeCaretaker = useRemoveCaretaker();
   const { visible, message, type, showToast, hideToast } = useToast();
 
   const statsByProperty = useMemo(() => {
@@ -116,6 +126,27 @@ export function PropertyList() {
     );
   };
 
+  const handleRemoveCaretaker = (property: Property) => {
+    const name = property.caretaker?.user?.name ?? 'this caretaker';
+    Alert.alert(
+      'Remove Caretaker',
+      `Remove ${name} from "${property.name}"? They will lose access to the property and its group chat.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            removeCaretaker.mutate(property.id, {
+              onSuccess: () => showToast('Caretaker removed'),
+              onError: (error) => showToast((error as Error).message, 'error'),
+            });
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View className="flex-1">
       <PropertyFilterBar />
@@ -164,6 +195,14 @@ export function PropertyList() {
                         <Text className="text-sm text-slate-500">{item.address}</Text>
                       </View>
                     ) : null}
+                    {item.caretaker ? (
+                      <View className="flex-row items-center gap-1">
+                        <Icon as={UserCog} size={13} className="text-teal-600" />
+                        <Text className="text-sm text-slate-500">
+                          Caretaker · {item.caretaker.user?.name ?? 'Assigned'}
+                        </Text>
+                      </View>
+                    ) : null}
                   </View>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -185,6 +224,24 @@ export function PropertyList() {
                         <Icon as={Pencil} size={16} className="text-slate-600" />
                         <Text>Update</Text>
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onPress={() => {
+                          setSelectedProperty(item);
+                          setAssignCaretakerOpen(true);
+                        }}>
+                        <Icon as={UserPlus} size={16} className="text-slate-600" />
+                        <Text>
+                          {item.caretaker ? 'Change caretaker' : 'Assign caretaker'}
+                        </Text>
+                      </DropdownMenuItem>
+                      {item.caretaker ? (
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onPress={() => handleRemoveCaretaker(item)}>
+                          <Icon as={UserMinus} size={16} className="text-red-600" />
+                          <Text>Remove caretaker</Text>
+                        </DropdownMenuItem>
+                      ) : null}
                       <DropdownMenuItem
                         variant="destructive"
                         onPress={() => handleDelete(item)}>
@@ -221,6 +278,11 @@ export function PropertyList() {
         onOpenChange={setUpdateOpen}
         property={selectedProperty}
         onToast={showToast}
+      />
+      <AssignCaretakerDialog
+        open={assignCaretakerOpen}
+        onOpenChange={setAssignCaretakerOpen}
+        property={selectedProperty}
       />
       <Toast visible={visible} message={message} type={type} onDismiss={hideToast} />
     </View>

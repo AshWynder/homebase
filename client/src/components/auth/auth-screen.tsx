@@ -43,6 +43,7 @@ const BARE_INPUT =
 const ROLE_OPTIONS: { value: Role; label: string; icon: LucideIcon }[] = [
   { value: 'TENANT', label: 'Tenant', icon: KeyRound },
   { value: 'OWNER', label: 'Property Mgr', icon: Building2 },
+  { value: 'CARETAKER', label: 'Caretaker', icon: Home },
 ];
 
 interface SignInValues {

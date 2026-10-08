@@ -1,12 +1,14 @@
 import { api, unwrap } from '@/lib/axios';
 
 import type {
+  ChangePasswordInput,
   MeResponse,
   Paginated,
   RegisterInput,
   RegisterResponse,
   Role,
   SignInResponse,
+  UpdateProfileInput,
   UserProfile,
 } from './types';
 
@@ -20,10 +22,10 @@ export interface QueryUsersInput {
 /**
  * Auth endpoints.
  *
- * NOTE: `/api/auth/register` and `/api/auth/me` are custom NestJS routes and
- * return the `{ success, data }` envelope (use `unwrap`). The Better Auth
- * passthrough routes (`sign-in/email`, `sign-out`) are handled by
- * `toNodeHandler` and return raw JSON — no envelope.
+ * NOTE: `/api/auth/register`, `/api/auth/me`, `/api/auth/profile`, `/api/auth/avatar`,
+ * and `/api/auth/change-password` are custom NestJS routes and return the `{ success, data }`
+ * envelope (use `unwrap`). The Better Auth passthrough routes (`sign-in/email`, `sign-out`)
+ * are handled by `toNodeHandler` and return raw JSON — no envelope.
  */
 export const authApi = {
   register: (input: RegisterInput) =>
@@ -47,13 +49,23 @@ export const authApi = {
       api.get('/api/auth/me', token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
     ),
 
+  updateProfile: (input: UpdateProfileInput) =>
+    unwrap<MeResponse>(api.patch('/api/auth/profile', input)),
+
+  uploadAvatar: (formData: FormData) =>
+    unwrap<MeResponse>(
+      api.post('/api/auth/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+    ),
+
+  changePassword: (input: ChangePasswordInput) =>
+    unwrap<{ success: boolean; message: string }>(
+      api.post('/api/auth/change-password', input),
+    ),
+
   /**
    * User profiles for the owner-side pickers.
-   *
-   * Not a tenancy list: this is backed by `userProfile`, so it can find a
-   * tenant who has never been assigned a unit. For `role: 'TENANT'` the server
-   * returns only people with no *active* tenancy, which is what makes the result
-   * safe to offer for assignment.
    */
   listUsers: (params: QueryUsersInput = {}) =>
     unwrap<Paginated<UserProfile>>(api.get('/api/auth/users', { params })),

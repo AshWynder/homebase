@@ -6,6 +6,7 @@ import type { QueryNoticesInput } from '@/api/notices';
 import type { QueryPaymentsInput } from '@/api/payments';
 import type { QueryTenanciesInput } from '@/api/tenancies';
 import type { QueryUnitsInput } from '@/api/units';
+import type { QueryConversationsInput } from '@/api/chat';
 import type { MaintenanceStatus } from '@/api/types';
 
 export const queryKeys = {
@@ -68,8 +69,45 @@ export const queryKeys = {
     list: (params: QueryNoticesInput) => [...queryKeys.notices.all, 'list', params] as const,
     received: (unreadOnly: boolean) =>
       [...queryKeys.notices.all, 'received', unreadOnly] as const,
+    /** Small first page for feeds (home's recent activity), not the inbox. */
+    recent: () => [...queryKeys.notices.all, 'recent'] as const,
     count: () => [...queryKeys.notices.all, 'count'] as const,
     detail: (id: string) => [...queryKeys.notices.all, 'detail', id] as const,
+  },
+  chat: {
+    all: ['chat'] as const,
+    /** Inbox. Params are part of the key so each search term caches separately. */
+    list: (params: QueryConversationsInput) =>
+      [...queryKeys.chat.all, 'list', params] as const,
+    /**
+     * Every inbox variant at once, for invalidation.
+     *
+     * A separate key rather than an optional param on `list`, because `list()` and
+     * `list({})` are different cache entries to React Query — and the inbox is
+     * read under whatever search term is in the box, which is not knowable from
+     * outside the screen. Invalidation is by prefix, so this prefix matches every
+     * cached search term.
+     */
+    listAll: () => [...queryKeys.chat.all, 'list'] as const,
+    count: () => [...queryKeys.chat.all, 'count'] as const,
+    detail: (id: string) => [...queryKeys.chat.all, 'detail', id] as const,
+    /**
+     * History is keyed per thread and *not* per page. The socket appends live
+     * messages into the newest page, so page identity cannot be part of the key —
+     * it would give the live append a different cache entry to write into than the
+     * one the screen is reading.
+     */
+    messages: (id: string) => [...queryKeys.chat.all, 'messages', id] as const,
+    /**
+     * The "start a chat" picker's two lists.
+     *
+     * Separate keys rather than one, because they are fetched on different
+     * schedules: the group list is the default tab and loads when the sheet opens,
+     * the people list only when the user switches to it. Opening a thread changes
+     * neither, so neither is ever invalidated by a send.
+     */
+    groups: () => [...queryKeys.chat.all, 'groups'] as const,
+    people: () => [...queryKeys.chat.all, 'people'] as const,
   },
   // Params are part of the key, so each distinct search term caches separately
   // and backspacing through past terms is instant.

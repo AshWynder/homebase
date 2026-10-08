@@ -2,19 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 
 import { authApi, type QueryUsersInput } from '@/api/auth';
-import type { MeResponse, RegisterInput } from '@/api/types';
+import type { ChangePasswordInput, MeResponse, RegisterInput, UpdateProfileInput } from '@/api/types';
 import { useStore } from '@/stores/use-store';
 
 import { queryKeys } from './keys';
 
 /**
  * Sign in via Better Auth, then fetch the linked UserProfile (/api/auth/me).
- *
- * The profile is fetched with an explicit bearer header and the store is
- * written once, at the end, with a complete session. Storing the token first
- * and reconciling afterwards left a window where the store held a token with no
- * profile, which `hasSession`/`isTenantSession` have to reject — and the sign-in
- * screen's redirect read that half-built state and routed to the owner app.
  */
 export function useSignIn() {
   const setSession = useStore((s) => s.setSession);
@@ -23,13 +17,10 @@ export function useSignIn() {
     mutationFn: async (input: { email: string; password: string }) => {
       const signIn = await authApi.signIn(input);
 
-      // The sign-in response carries the better-auth user + token, but not the
-      // UserProfile id/role/phone, and the role decides which app to mount.
       let me: MeResponse;
       try {
         me = await authApi.me(signIn.token);
       } catch {
-        // Surface it rather than signing into an app picked at random.
         throw new Error('Signed in, but your profile could not be loaded. Please try again.');
       }
 
@@ -46,10 +37,6 @@ export function useSignIn() {
 
 /**
  * User profiles for the owner-side pickers.
- *
- * Server-side search, not a client-side filter over a prefetched page — the
- * unassigned-tenant list is unbounded, so filtering locally would mean
- * downloading every profile on each keystroke.
  */
 export function useUsers(params: QueryUsersInput = {}) {
   return useQuery({
@@ -59,8 +46,7 @@ export function useUsers(params: QueryUsersInput = {}) {
 }
 
 /**
- * Register via the custom endpoint — the response already includes the token
- * and the profile, so the session is complete in one round trip.
+ * Register via the custom endpoint.
  */
 export function useSignUp() {
   const setSession = useStore((s) => s.setSession);
@@ -74,12 +60,51 @@ export function useSignUp() {
 }
 
 /**
+ * Update user details (name, email, phone, nationalId).
+ */
+export function useUpdateProfile() {
+  const updateUser = useStore((s) => s.updateUser);
+  const updateProfile = useStore((s) => s.updateProfile);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateProfileInput) => authApi.updateProfile(input),
+    onSuccess: (data) => {
+      updateUser(data.user);
+      updateProfile(data.profile);
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+    },
+  });
+}
+
+/**
+ * Upload profile photo avatar.
+ */
+export function useUploadAvatar() {
+  const updateUser = useStore((s) => s.updateUser);
+  const updateProfile = useStore((s) => s.updateProfile);
+
+  return useMutation({
+    mutationFn: (formData: FormData) => authApi.uploadAvatar(formData),
+    onSuccess: (data) => {
+      updateUser(data.user);
+      updateProfile(data.profile);
+    },
+  });
+}
+
+/**
+ * Change account password.
+ */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (input: ChangePasswordInput) => authApi.changePassword(input),
+  });
+}
+
+/**
  * Revoke the Better Auth session server-side, then wipe local state, cache and
  * the persisted store, and land on sign-in.
- *
- * The redirect lives here so every sign-out entry point agrees: previously the
- * tenant screens called `signOut.mutate()` bare, leaving the router parked on a
- * route whose group had just been unmounted.
  */
 export function useSignOut() {
   const clearSession = useStore((s) => s.clearSession);

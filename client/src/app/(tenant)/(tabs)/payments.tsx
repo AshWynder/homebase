@@ -29,89 +29,8 @@ import { useTenancies } from '@/hooks/queries/use-tenancies';
 import { useInvoices } from '@/hooks/queries/use-invoices';
 import { usePayments } from '@/hooks/queries/use-payments';
 import { formatDateLong, formatKes, shortId } from '@/lib/format';
-import type { Invoice, Payment } from '@/api/types';
 
 type BillingFilter = 'all' | 'unpaid' | 'paid';
-
-// Fallback dummy data to test appearance if no backend items exist
-const DUMMY_INVOICES: Invoice[] = [
-  {
-    id: 'inv-2026-0904-4b',
-    unitId: 'unit-4b',
-    tenancyId: 'ten-4b',
-    periodStart: '2026-10-01T00:00:00.000Z',
-    periodEnd: '2026-10-31T23:59:59.000Z',
-    amount: '48500',
-    balanceDue: '48500',
-    dueDate: '2026-10-05T00:00:00.000Z',
-    status: 'UNPAID',
-    lineItems: [
-      {
-        id: 'li-1',
-        invoiceId: 'inv-2026-0904-4b',
-        type: 'RENT',
-        description: 'Base Apartment Rent (Apt 4B)',
-        amount: '40000',
-        createdAt: '2026-09-25T00:00:00.000Z',
-      },
-      {
-        id: 'li-2',
-        invoiceId: 'inv-2026-0904-4b',
-        type: 'WATER',
-        description: 'Metered Water (14.2 m³)',
-        amount: '4260',
-        createdAt: '2026-09-25T00:00:00.000Z',
-      },
-      {
-        id: 'li-3',
-        invoiceId: 'inv-2026-0904-4b',
-        type: 'ELECTRICITY',
-        description: 'Postpaid Electricity Sub-meter',
-        amount: '3190',
-        createdAt: '2026-09-25T00:00:00.000Z',
-      },
-      {
-        id: 'li-4',
-        invoiceId: 'inv-2026-0904-4b',
-        type: 'SERVICE_CHARGE',
-        description: 'Amenities & Security Surcharge',
-        amount: '1050',
-        createdAt: '2026-09-25T00:00:00.000Z',
-      },
-    ],
-    createdAt: '2026-09-25T00:00:00.000Z',
-    updatedAt: '2026-09-25T00:00:00.000Z',
-  },
-];
-
-const DUMMY_PAYMENTS: Payment[] = [
-  {
-    id: 'pay-001',
-    invoiceId: 'inv-2026-0801',
-    amount: '48500',
-    method: 'MPESA_STK',
-    provider: 'DARAJA',
-    transactionRef: 'QK892X019',
-    mpesaReceiptNumber: 'QK892X019',
-    status: 'SUCCESS',
-    paidAt: '2026-09-01T08:30:00.000Z',
-    createdAt: '2026-09-01T08:30:00.000Z',
-    updatedAt: '2026-09-01T08:30:00.000Z',
-  },
-  {
-    id: 'pay-002',
-    invoiceId: 'inv-2026-0701',
-    amount: '47900',
-    method: 'MPESA_STK',
-    provider: 'DARAJA',
-    transactionRef: 'PJ441A992',
-    mpesaReceiptNumber: 'PJ441A992',
-    status: 'SUCCESS',
-    paidAt: '2026-08-01T10:15:00.000Z',
-    createdAt: '2026-08-01T10:15:00.000Z',
-    updatedAt: '2026-08-01T10:15:00.000Z',
-  },
-];
 
 export default function TenantPaymentsScreen() {
   const profile = useStore((s) => s.profile);
@@ -129,13 +48,11 @@ export default function TenantPaymentsScreen() {
   const invoicesQuery = useInvoices(
     activeTenancy ? { tenancyId: activeTenancy.id, limit: 50 } : { limit: 1 },
   );
-  const apiInvoices = invoicesQuery.data?.items ?? [];
-  const invoices = apiInvoices.length > 0 ? apiInvoices : DUMMY_INVOICES;
+  const invoices = invoicesQuery.data?.items ?? [];
 
   // Payments for tenancy
   const paymentsQuery = usePayments({ limit: 50 });
-  const apiPayments = paymentsQuery.data?.items ?? [];
-  const payments = apiPayments.length > 0 ? apiPayments : DUMMY_PAYMENTS;
+  const payments = paymentsQuery.data?.items ?? [];
 
   const [activeTab, setActiveTab] = useState<BillingFilter>('all');
   const [autoPayEnabled, setAutoPayEnabled] = useState(true);

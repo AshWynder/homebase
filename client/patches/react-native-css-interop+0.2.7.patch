@@ -1,0 +1,63 @@
+diff --git a/node_modules/react-native-css-interop/dist/runtime/native/render-component.js b/node_modules/react-native-css-interop/dist/runtime/native/render-component.js
+index 88d2ec1..4784847 100644
+--- a/node_modules/react-native-css-interop/dist/runtime/native/render-component.js
++++ b/node_modules/react-native-css-interop/dist/runtime/native/render-component.js
+@@ -119,10 +119,34 @@ function createAnimatedComponent(Component) {
+     return AnimatedComponent;
+ }
+ function printUpgradeWarning(warning, originalProps) {
+-    console.log(`CssInterop upgrade warning.\n\n${warning}.\n\nThis warning was caused by a component with the props:\n${stringify(originalProps)}\n\nIf adding or removing sibling components caused this warning you should add a unique "key" prop to your components. https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key\n`);
++    let details;
++    try {
++        details = stringify(originalProps);
++    } catch (error) {
++        details = `[unable to serialize props: ${error}]`;
++    }
++    console.log(`CssInterop upgrade warning.\n\n${warning}.\n\nThis warning was caused by a component with the props:\n${details}\n\nIf adding or removing sibling components caused this warning you should add a unique "key" prop to your components. https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key\n`);
+ }
+ function stringify(object) {
+     const seen = new WeakSet();
++    function safeEntries(value) {
++        const entries = [];
++        for (const key of Object.keys(value)) {
++            try {
++                const descriptor = Object.getOwnPropertyDescriptor(value, key);
++                // Accessor getters (e.g. React Navigation context defaults) may throw
++                // when read, which must never crash a dev-only log line.
++                if (descriptor && typeof descriptor.get === "function" && !("value" in descriptor)) {
++                    entries.push([key, "[Getter]"]);
++                    continue;
++                }
++                entries.push([key, value[key]]);
++            } catch  {
++                entries.push([key, "[Unavailable]"]);
++            }
++        }
++        return entries;
++    }
+     return JSON.stringify(object, function replace(_, value) {
+         if (!(value !== null && typeof value === "object")) {
+             return value;
+@@ -131,12 +155,17 @@ function stringify(object) {
+             return "[Circular]";
+         }
+         seen.add(value);
+-        const newValue = Array.isArray(value) ? [] : {};
+-        for (const entry of Object.entries(value)) {
+-            newValue[entry[0]] = replace(entry[0], entry[1]);
++        try {
++            const newValue = Array.isArray(value) ? [] : {};
++            for (const entry of safeEntries(value)) {
++                newValue[entry[0]] = replace(entry[0], entry[1]);
++            }
++            return newValue;
++        } catch (error) {
++            return `[Unserializable: ${error}]`;
++        } finally {
++            seen.delete(value);
+         }
+-        seen.delete(value);
+-        return newValue;
+     }, 2);
+ }
+ function getDebugReplacer() {

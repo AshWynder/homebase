@@ -3,6 +3,10 @@ import { FlatList, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { ListMessage, ListSkeleton } from '@/components/owner/list-state';
+import {
+  METER_TYPE_LABELS,
+  MeterRecencyBadge,
+} from '@/components/owner/meter-recency-badge';
 import { PropertyFilterBar } from '@/components/owner/property-filter-bar';
 import { Badge } from '@/components/ui/badge';
 import { Icon } from '@/components/ui/icon';
@@ -10,6 +14,7 @@ import { Text } from '@/components/ui/text';
 import { useTenancies } from '@/hooks/queries/use-tenancies';
 import { formatDate, formatKes, tenantName } from '@/lib/format';
 import { useStore } from '@/stores/use-store';
+import type { Unit } from '@/api/types';
 import { ChevronRight, Clock } from 'lucide-react-native';
 
 /**
@@ -86,15 +91,38 @@ export function TenancyList() {
                 </View>
               </View>
 
-              <View className="border-t border-slate-100 pt-3">
+              <View className="gap-2 border-t border-slate-100 pt-3">
                 <Text className="text-lg font-bold text-slate-900">
                   {formatKes(item.rentAmount)}
                 </Text>
+                <UnitMeterBadges unit={item.unit} />
               </View>
             </Pressable>
           )}
         />
       )}
+    </View>
+  );
+}
+
+/**
+ * Reading recency for every meter on the tenant's unit, so an owner scanning
+ * the list can see which units' rounds are slipping without opening any of
+ * them. Units with no meter show nothing — a tenancy does not imply utilities.
+ */
+function UnitMeterBadges({ unit }: { unit?: Unit }) {
+  const meters = unit?.utilityMeters;
+  if (!meters?.length) return null;
+
+  return (
+    <View className="flex-row flex-wrap items-center gap-1.5">
+      {meters.map((meter) => (
+        <MeterRecencyBadge
+          key={meter.id}
+          date={meter.lastReadingAt}
+          label={METER_TYPE_LABELS[meter.meterType]}
+        />
+      ))}
     </View>
   );
 }
