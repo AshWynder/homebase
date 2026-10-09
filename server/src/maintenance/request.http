@@ -1,0 +1,109 @@
+### Maintenance — Homebase API
+### Base URL: http://localhost:3000
+###
+### Photos are uploaded as multipart/form-data under the field name "photos"
+### (repeat the field for multiple files). A ticket accepts up to 5 images of
+### 8 MB each. Tenants may omit unitId/tenantId — both are derived from their
+### active tenancy. Owners filing on a tenant's behalf must send both.
+
+@baseUrl = http://localhost:3000
+@unitId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f3
+@tenantId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f1
+@propertyId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f5
+@ticketId = REPLACE_WITH_TICKET_ID
+
+### 1. Report a fault as a tenant (unit + tenant derived server-side)
+POST {{baseUrl}}/maintenance
+Content-Type: multipart/form-data; boundary=----homebase
+
+------homebase
+Content-Disposition: form-data; name="description"
+
+Kitchen tap is leaking continuously.
+------homebase
+Content-Disposition: form-data; name="photos"; filename="tap.jpg"
+Content-Type: image/jpeg
+
+< ./photos/tap.jpg
+------homebase--
+
+### 2. File on a tenant's behalf as the owner (unitId + tenantId required)
+POST {{baseUrl}}/maintenance
+Content-Type: multipart/form-data; boundary=----homebase
+
+------homebase
+Content-Disposition: form-data; name="description"
+
+Bathroom door lock broken.
+------homebase
+Content-Disposition: form-data; name="unitId"
+
+{{unitId}}
+------homebase
+Content-Disposition: form-data; name="tenantId"
+
+{{tenantId}}
+------homebase
+Content-Disposition: form-data; name="photos"; filename="door.jpg"
+Content-Type: image/jpeg
+
+< ./photos/door.jpg
+------homebase--
+
+### 3. Report a fault with no photos at all
+POST {{baseUrl}}/maintenance
+Content-Type: application/x-www-form-urlencoded
+
+description=Bulb in the corridor is out
+&unitId={{unitId}}
+&tenantId={{tenantId}}
+
+### 4. List tickets (scoped to the caller's role automatically)
+GET {{baseUrl}}/maintenance
+
+### 5. List only open tickets
+GET {{baseUrl}}/maintenance?status=OPEN
+
+### 6. List tickets for one property
+GET {{baseUrl}}/maintenance?propertyId={{propertyId}}
+
+### 7. Paginated
+GET {{baseUrl}}/maintenance?page=1&limit=20
+
+### 8. Single ticket (photoUrls are returned as absolute URLs)
+GET {{baseUrl}}/maintenance/{{ticketId}}
+
+### 9. Move a ticket into progress
+PATCH {{baseUrl}}/maintenance/{{ticketId}}
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS"
+}
+
+### 10. Resolve a ticket (stamps resolvedAt)
+PATCH {{baseUrl}}/maintenance/{{ticketId}}
+Content-Type: application/json
+
+{
+  "status": "RESOLVED"
+}
+
+### 11. Reopen a resolved ticket (clears resolvedAt)
+PATCH {{baseUrl}}/maintenance/{{ticketId}}
+Content-Type: application/json
+
+{
+  "status": "OPEN"
+}
+
+### 12. Edit the description only
+PATCH {{baseUrl}}/maintenance/{{ticketId}}
+Content-Type: application/json
+
+{
+  "description": "Tap replaced, checking the sink trap for a slow leak."
+}
+
+### 13. Delete a ticket (also deletes its objects from R2)
+DELETE {{baseUrl}}/maintenance/{{ticketId}}

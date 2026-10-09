@@ -1,0 +1,150 @@
+### Notices — Homebase API
+### Base URL: http://localhost:3000
+###
+### Owners send, tenants receive. Recipients are resolved server-side and
+### materialised on the notice at send time, so the audience a request names is
+### validated against the sender's own properties and tenants.
+###
+### Only owners may POST /notices. A tenant calling it gets 403, and the list at
+### GET /notices means "what I sent" for an owner and "what I received" for a
+### tenant. All audiences resolve to ACTIVE tenancies only, so a terminated
+### tenant is never addressed.
+###
+### Before sending, replace the tokens below with:
+###   @ownerToken       the OWNER's bearer token
+###   @tenantToken      one of that owner's TENANTS' bearer tokens
+###   @otherOwnerToken  a DIFFERENT owner's bearer token (used to prove a notice
+###                     cannot be read, marked read, or deleted by a stranger)
+
+@baseUrl = http://localhost:3000
+@ownerToken = REPLACE_WITH_OWNER_TOKEN
+@tenantToken = REPLACE_WITH_TENANT_TOKEN
+@otherOwnerToken = REPLACE_WITH_OTHER_OWNER_TOKEN
+@propertyId = REPLACE_WITH_OWNER_PROPERTY_ID
+@tenantId = REPLACE_WITH_YOUR_TENANT_ID
+@noticeId = REPLACE_WITH_NOTICE_ID
+
+### 1. Send to every tenant across all your properties
+### Resolves to each distinct tenant with an active tenancy anywhere you own.
+### Neither propertyId nor tenantId may be sent with this audience.
+POST {{baseUrl}}/notices
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+{
+  "title": "Water shutoff on Friday",
+  "message": "Supply will be off from 9am to 1pm on Friday for tank maintenance. Please store water in advance.",
+  "audience": "ALL_PROPERTIES"
+}
+
+### 2. Send to every tenant in one property
+### The property must belong to you: a foreign id returns 404, not 403, so it
+### cannot be probed for existence.
+POST {{baseUrl}}/notices
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+{
+  "title": "Gate code change",
+  "message": "The main gate code changes to 4417 on Monday. Please update it if you have given it out to anyone.",
+  "audience": "PROPERTY",
+  "propertyId": "{{propertyId}}"
+}
+
+### 3. Send to one tenant
+### The target must hold an active tenancy on one of YOUR properties. An
+### unrelated tenant returns 404 — this is what stops an owner reaching any
+### registered tenant on the platform.
+POST {{baseUrl}}/notices
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+{
+  "title": "Your meter reading is due",
+  "message": "Please submit your meter reading before the 5th so the invoice is accurate.",
+  "audience": "TENANT",
+  "tenantId": "{{tenantId}}"
+}
+
+### 4. Rejected: PROPERTY without a propertyId (400)
+POST {{baseUrl}}/notices
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+{
+  "title": "Missing scope",
+  "message": "This cannot be sent because no property was named.",
+  "audience": "PROPERTY"
+}
+
+### 5. Rejected: a tenant may not send (403)
+POST {{baseUrl}}/notices
+Authorization: Bearer {{tenantToken}}
+Content-Type: application/json
+
+{
+  "title": "Hello neighbours",
+  "message": "I am a tenant and this must be rejected.",
+  "audience": "ALL_PROPERTIES"
+}
+
+### 6. List the notices you sent (owner)
+### Each row carries recipientCount and readCount for the per-row summary.
+### `propertyId` narrows to notices addressed to that property and excludes
+### portfolio-wide notices; `audience` narrows by scope.
+GET {{baseUrl}}/notices?page=1&limit=20
+Authorization: Bearer {{ownerToken}}
+
+### 7. List the notices you sent for one property
+GET {{baseUrl}}/notices?propertyId={{propertyId}}
+Authorization: Bearer {{ownerToken}}
+
+### 8. Your inbox (tenant)
+### isRead/readAt are flattened onto each notice from your own receipt. The
+### recipient list is withheld — who else a notice went to is not yours to see.
+### unreadOnly=true backs the unread filter.
+GET {{baseUrl}}/notices?unreadOnly=true
+Authorization: Bearer {{tenantToken}}
+
+### 9. Unread count (tenant)
+### The single number behind the home bell dot. A non-tenant gets 403.
+GET {{baseUrl}}/notices/count
+Authorization: Bearer {{tenantToken}}
+
+### 10. Read a notice you received
+### Idempotent: re-opening keeps the first readAt, so it reflects when you
+### actually first saw it rather than when you last looked.
+POST {{baseUrl}}/notices/{{noticeId}}/read
+Authorization: Bearer {{tenantToken}}
+
+### 11. Read it as the owner (403) — read state belongs to the recipient
+POST {{baseUrl}}/notices/{{noticeId}}/read
+Authorization: Bearer {{ownerToken}}
+
+### 12. Open a notice as its recipient (tenant)
+GET {{baseUrl}}/notices/{{noticeId}}
+Authorization: Bearer {{tenantToken}}
+
+### 13. Open it as the owner (full recipient list and read states)
+GET {{baseUrl}}/notices/{{noticeId}}
+Authorization: Bearer {{ownerToken}}
+
+### 14. Open a notice you were not addressed (404, not 403)
+### Send notice 2 to one property only, then try to read it from a tenant in a
+### different property: the id is reported missing so it cannot be confirmed.
+GET {{baseUrl}}/notices/{{noticeId}}
+Authorization: Bearer {{tenantToken}}
+
+### 15. Read or delete another owner's notice (404, not 403)
+### A 403 here would confirm the id exists and leak the presence of another
+### landlord's announcements.
+GET {{baseUrl}}/notices/{{noticeId}}
+Authorization: Bearer {{otherOwnerToken}}
+
+### 16. Delete a notice you sent (recipient rows cascade away)
+DELETE {{baseUrl}}/notices/{{noticeId}}
+Authorization: Bearer {{ownerToken}}
+
+### 17. Delete it as a tenant (404) — tenants cannot retract a notice
+DELETE {{baseUrl}}/notices/{{noticeId}}
+Authorization: Bearer {{tenantToken}}

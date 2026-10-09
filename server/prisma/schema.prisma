@@ -1,0 +1,565 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ENUMS
+enum Role {
+  OWNER
+  CARETAKER
+  TENANT
+}
+
+enum MeterType {
+  WATER
+  ELECTRICITY
+}
+
+enum InvoiceLineItemType {
+  RENT
+  WATER
+  ELECTRICITY
+  GARBAGE
+  SERVICE_CHARGE
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+
+enum PaymentMethod {
+  MPESA_STK
+  MPESA_C2B
+  CARD
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum PaymentProvider {
+  DARAJA
+  PAYSTACK
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+// Who a notice was resolved to when it was sent. The audience is stored on the
+// notice so the scope a sender chose stays legible after the fact, while the
+// recipient rows it produced remain the authoritative delivery list.
+enum NoticeAudience {
+  // Every tenant with an active tenancy on any property the author owns.
+  ALL_PROPERTIES
+  // Every tenant with an active tenancy in one property the author owns.
+  PROPERTY
+  // One tenant with an active tenancy on one of the author's properties.
+  TENANT
+}
+
+// How a conversation is shaped. Deliberately only two kinds: a direct thread is
+// a chat between exactly two people, and a group is the standing thread for
+// one property. Both are stored in the same tables so there is a single message
+// history query and a single socket event shape no matter what the client is
+// looking at — the cost of a new kind of chat is a rule, not a new schema.
+enum ConversationType {
+  // One-to-one between a landlord and a tenant, a landlord and a caretaker, or
+  // a tenant and the caretaker of their property. See ChatService.canMessage.
+  DIRECT
+  // The standing thread for one property: its owner, its caretaker and every
+  // tenant with an active tenancy in it.
+  GROUP
+}
+
+// better-auth models
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  sessions      Session[]
+  accounts      Account[]
+
+  profile UserProfile?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime @map("expires_at")
+  token     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Jwks {
+  id         String    @id
+  publicKey  String    @map("public_key")
+  privateKey String    @map("private_key")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  expiresAt  DateTime? @map("expires_at")
+  alg        String?
+  crv        String?
+
+  @@map("jwks")
+}
+
+// user identity models
+model UserProfile {
+  id String @id @default(uuid(7))
+
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  phone      String  @unique
+  role       Role    @default(TENANT)
+  nationalId String? @unique @map("national_id")
+
+  ownedProperties   Property[]          @relation("OwnerProperties")
+  managedProperties Property[]          @relation("CaretakerProperties")
+  tenancies         Tenancy[]
+  notices           NoticeRecipient[]
+  sentNotices       Notice[]            @relation("SentNotices")
+  reportedTickets   MaintenanceTicket[] @relation("ReportedTickets")
+
+  // Chat membership is materialised per conversation rather than derived from
+  // the tenancy graph on every read, so authorising a send is one indexed
+  // lookup on (profile_id, conversation_id) instead of a join through units and
+  // properties. Group rows are added on tenancy start and removed on
+  // terminate; direct rows are created with the thread.
+  conversations    ConversationParticipant[]
+  sentChatMessages Message[]                 @relation("SentChatMessages")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_profile")
+}
+
+// property
+model Property {
+  id      String  @id @default(uuid(7))
+  name    String
+  address String?
+
+  ownerId String      @map("owner_id")
+  owner   UserProfile @relation("OwnerProperties", fields: [ownerId], references: [id])
+
+  caretakerId String?      @map("caretaker_id")
+  caretaker   UserProfile? @relation("CaretakerProperties", fields: [caretakerId], references: [id])
+
+  units   Unit[]
+  notices Notice[]
+
+  // The property's standing group chat. Unique so a property can only ever
+  // have one: the group is not created per-tenant-list, it is the property.
+  conversation Conversation?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("property")
+}
+
+model Unit {
+  id         String  @id @default(uuid(7))
+  unitNumber String  @map("unit_number")
+  blockName  String? @map("block_name")
+
+  propertyId String   @map("property_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  tenancies          Tenancy[]
+  utilityMeters      UtilityMeter[]
+  invoices           Invoice[]
+  maintenanceTickets MaintenanceTicket[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("unit")
+}
+
+model Tenancy {
+  id String @id @default(uuid(7))
+
+  tenantId String      @map("tenant_id")
+  tenant   UserProfile @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  unitId String @map("unit_id")
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  rentAmount             Decimal   @map("rent_amount") @db.Decimal(12, 2)
+  startDate              DateTime  @map("start_date")
+  endDate                DateTime? @map("end_date")
+  isActive               Boolean   @default(true) @map("is_active")
+  terminationReason      String?   @map("termination_reason")
+  terminationNotes       String?   @map("termination_notes")
+  terminationRequestedAt DateTime? @map("termination_requested_at")
+
+  invoices Invoice[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("tenancy")
+}
+
+// billing & finance
+model UtilityMeter {
+  id String @id @default(uuid(7))
+
+  unitId String @map("unit_id")
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  meterType    MeterType @default(WATER) @map("meter_type")
+  meterNumber  String?   @unique @map("meter_number")
+  lastReading  Int       @default(0) @map("last_reading")
+  pricePerUnit Decimal   @default(150.00) @map("price_per_unit") @db.Decimal(10, 2)
+
+  readings MeterReading[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([unitId, meterType])
+  @@map("utility_meter")
+}
+
+model MeterReading {
+  id String @id @default(uuid(7))
+
+  meterId String       @map("meter_id")
+  meter   UtilityMeter @relation(fields: [meterId], references: [id], onDelete: Cascade)
+
+  currentReading  Int      @map("current_reading")
+  unitsConsumed   Int      @map("units_consumed")
+  pricePerUnit    Decimal  @map("price_per_unit") @db.Decimal(10, 2)
+  consumptionCost Decimal  @map("consumption_cost") @db.Decimal(12, 2)
+  readingDate     DateTime @default(now()) @map("reading_date")
+
+  lineItem InvoiceLineItem?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("meter_reading")
+}
+
+model Invoice {
+  id String @id @default(uuid(7))
+
+  unitId String @map("unit_id")
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  tenancyId String  @map("tenancy_id")
+  tenancy   Tenancy @relation(fields: [tenancyId], references: [id], onDelete: Cascade)
+
+  periodStart DateTime      @map("period_start")
+  periodEnd   DateTime      @map("period_end")
+  amount      Decimal       @db.Decimal(12, 2)
+  balanceDue  Decimal       @map("balance_due") @db.Decimal(12, 2)
+  dueDate     DateTime      @map("due_date")
+  status      InvoiceStatus @default(UNPAID)
+
+  lineItems InvoiceLineItem[]
+  payments  Payment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenancyId, periodStart])
+  @@index([unitId])
+  @@index([status])
+  @@map("invoice")
+}
+
+model InvoiceLineItem {
+  id String @id @default(uuid(7))
+
+  invoiceId String  @map("invoice_id")
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  type        InvoiceLineItemType @default(RENT)
+  description String
+  amount      Decimal             @db.Decimal(12, 2)
+
+  meterReadingId String?       @unique @map("meter_reading_id")
+  meterReading   MeterReading? @relation(fields: [meterReadingId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("invoice_line_item")
+}
+
+model Payment {
+  id String @id @default(uuid(7))
+
+  invoiceId String  @map("invoice_id")
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  amount         Decimal         @db.Decimal(12, 2)
+  method         PaymentMethod
+  provider       PaymentProvider
+  transactionRef String          @unique @map("transaction_ref")
+  phoneNumber    String?         @map("phone_number")
+  status         PaymentStatus   @default(PENDING)
+
+  // Daraja (M-Pesa)
+  checkoutRequestId  String? @unique @map("checkout_request_id")
+  merchantRequestId  String? @map("merchant_request_id")
+  mpesaReceiptNumber String? @map("mpesa_receipt_number")
+
+  // Paystack (Card)
+  authorizationUrl String? @map("authorization_url")
+
+  failureReason String?   @map("failure_reason")
+  paidAt        DateTime? @map("paid_at")
+  rawPayload    Json?     @map("raw_payload")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([invoiceId])
+  @@index([status])
+  @@map("payment")
+}
+
+// operational models
+model MaintenanceTicket {
+  id String @id @default(uuid(7))
+
+  unitId String @map("unit_id")
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  // Who reported it. Named tenantId to match Tenancy/NoticeRecipient; it is a
+  // profile, not a user, because tenancy is what scopes a profile to a unit.
+  tenantId String      @map("tenant_id")
+  tenant   UserProfile @relation("ReportedTickets", fields: [tenantId], references: [id], onDelete: Cascade)
+
+  description String
+  // R2 object keys, stored as bare keys rather than full URLs so the storage
+  // host can change without rewriting rows. A maintenance job can legitimately
+  // have several photos (e.g. before/after), so this is a list, not a column.
+  photoUrls   String[]     @default([]) @map("photo_urls")
+  status      TicketStatus @default(OPEN)
+  // Set when status first becomes RESOLVED, cleared if it is reopened, so the
+  // time-to-resolve can be reported without scanning updatedAt.
+  resolvedAt  DateTime?    @map("resolved_at")
+  // Latest caretaker/owner note on the ticket's progress ("parts ordered").
+  // Overwritten on each status change that carries remarks rather than kept as
+  // a history — the UI shows the current note, not a log.
+  remarks     String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([unitId])
+  @@index([tenantId])
+  @@index([status])
+  @@map("maintenance_ticket")
+}
+
+model Notice {
+  id      String @id @default(uuid(7))
+  title   String
+  message String
+
+  audience NoticeAudience @default(ALL_PROPERTIES)
+
+  // Retained on the notice rather than inferred from the recipients, so a
+  // property announcement stays labelled by its property even if every tenancy
+  // in it ends before anyone opens it. Null unless audience = PROPERTY.
+  propertyId String?   @map("property_id")
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  // The sender. Every read and write on this row is scoped through it, so it is
+  // required rather than optional: without it a notice cannot be attributed.
+  authorId String      @map("author_id")
+  author   UserProfile @relation("SentNotices", fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Materialised at send time. A notice is a point-in-time announcement rather
+  // than a standing mailing list, so a tenant who moves into a property after
+  // it was sent is deliberately not a recipient.
+  recipients NoticeRecipient[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([authorId])
+  @@index([propertyId])
+  @@map("notice")
+}
+
+model NoticeRecipient {
+  id String @id @default(uuid(7))
+
+  noticeId String @map("notice_id")
+  notice   Notice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+
+  tenantId String      @map("tenant_id")
+  tenant   UserProfile @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  isRead Boolean   @default(false) @map("is_read")
+  readAt DateTime? @map("read_at")
+
+  // Reading a tenant's inbox is the hot path — every list the tenant opens
+  // filters on tenant_id — and the notice_id side backs the cascade sweep and
+  // the owner-side read counts.
+  @@index([tenantId])
+  @@index([noticeId])
+  @@map("notice_recipient")
+}
+
+// Chat. A Conversation is the thread; Message rows hang off it; the
+// ConversationParticipant rows are both the membership check and the read
+// state. Replacing the old pairwise chat_message table (sender_id/receiver_id)
+// because that shape cannot represent a property group at all and had no
+// indexes — its table held zero rows when this schema was written.
+model Conversation {
+  id String @id @default(uuid(7))
+
+  type ConversationType
+
+  // GROUP only. Ties the thread to the property whose owner, caretaker and
+  // tenants make up its membership, and keeps it to exactly one per property.
+  // A Postgres unique index still allows many NULLs, so DIRECT rows — which
+  // leave this null — are unaffected by the uniqueness.
+  propertyId String?   @unique @map("property_id")
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  // DIRECT only. Built from the two participants' profile ids, sorted, so both
+  // sides of a conversation derive the same string. Without it, two people who
+  // tap "message" at the same moment race and end up with two threads.
+  directKey String? @unique @map("direct_key")
+
+  // Group threads are labelled by their property name; direct threads are
+  // labelled by the other participant at render time instead.
+  name String?
+
+  // Denormalised from the newest message so the inbox can be ordered without
+  // reaching into every conversation's history. Kept up to date in the same
+  // transaction that inserts the message.
+  lastMessageAt DateTime? @map("last_message_at")
+
+  messages     Message[]
+  participants ConversationParticipant[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Backs the inbox ordering for every conversation a profile is in.
+  @@index([lastMessageAt])
+  @@index([type])
+  @@map("conversation")
+}
+
+// One person's seat in a conversation. Also carries their read cursor, so the
+// unread badge is "messages newer than my lastReadAt" rather than a separate
+// per-message read receipt table.
+model ConversationParticipant {
+  id String @id @default(uuid(7))
+
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  profileId String      @map("profile_id")
+  profile   UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // Null means the participant has never opened the thread, which is what a
+  // newly added group member looks like.
+  lastReadAt DateTime? @map("last_read_at")
+  joinedAt   DateTime  @default(now()) @map("joined_at")
+
+  // A profile holds one seat per conversation; this is also the membership
+  // lookup every send and subscribe performs, so profile_id is indexed for the
+  // "list my conversations" query on the other side.
+  @@unique([conversationId, profileId])
+  @@index([profileId])
+  @@map("conversation_participant")
+}
+
+model Message {
+  id String @id @default(uuid(7))
+
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String      @map("sender_id")
+  sender   UserProfile @relation("SentChatMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  content String
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // History pagination. The default uuid(7) is what makes this simple: v7 puts
+  // a timestamp in the leading bits and Postgres compares uuid bytewise, so ids
+  // sort chronologically. That lets history page with "id < :before ORDER BY id
+  // DESC" straight off this index, with no composite (created_at, id) cursor and
+  // no risk of two messages sharing a timestamp landing in both pages.
+  @@index([conversationId, id])
+  @@map("message")
+}

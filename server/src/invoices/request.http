@@ -1,0 +1,74 @@
+### Invoices — Homebase API
+### Base URL: http://localhost:3000
+
+@baseUrl = http://localhost:3000
+@tenancyId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f7
+@propertyId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f5
+@invoiceId = 0192f58e-4a61-7bf0-8e6f-47dc2e0f49f9
+
+### 1. Generate Invoices for Current Month (all active tenancies)
+POST {{baseUrl}}/invoices/generate
+Content-Type: application/json
+
+{}
+
+### 2. Generate Invoices for a Specific Month
+POST {{baseUrl}}/invoices/generate
+Content-Type: application/json
+
+{
+  "year": 2026,
+  "month": 9
+}
+
+### 3. Generate Invoices for a Specific Tenancy
+POST {{baseUrl}}/invoices/generate
+Content-Type: application/json
+
+{
+  "tenancyId": "{{tenancyId}}",
+  "year": 2026,
+  "month": 9
+}
+
+### 4. Generate Invoices for a Property
+POST {{baseUrl}}/invoices/generate
+Content-Type: application/json
+
+{
+  "propertyId": "{{propertyId}}",
+  "year": 2026,
+  "month": 9
+}
+
+### 5. Get All Invoices (with Pagination)
+GET {{baseUrl}}/invoices?page=1&limit=10
+
+### 6. Get Invoices Filtered by Status
+GET {{baseUrl}}/invoices?status=UNPAID
+
+### 7. Get Invoices for a Tenancy
+GET {{baseUrl}}/invoices?tenancyId={{tenancyId}}
+
+### 8. Get Invoices for a Property
+GET {{baseUrl}}/invoices?propertyId={{propertyId}}
+
+### 9. Get Invoice Details (with line items & payments)
+GET {{baseUrl}}/invoices/{{invoiceId}}
+
+### 9a. Get Invoice Summary (Money tab tiles, all properties)
+GET {{baseUrl}}/invoices/summary
+
+### 9b. Get Invoice Summary for a Single Property
+GET {{baseUrl}}/invoices/summary?propertyId={{propertyId}}
+
+### 10. Update Invoice (e.g. due date)
+PATCH {{baseUrl}}/invoices/{{invoiceId}}
+Content-Type: application/json
+
+{
+  "dueDate": "2026-09-10T00:00:00.000Z"
+}
+
+### 11. Refresh Invoice (append new meter readings in period)
+POST {{baseUrl}}/invoices/{{invoiceId}}/refresh
