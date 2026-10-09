@@ -39,7 +39,7 @@ export const ACTIVITY_DESTINATIONS: readonly ActivityDestination[] = [
   },
   {
     kind: 'tenancy_notices',
-    href: '/portfolio',
+    href: '/tenancy',
     category: 'Tenancy',
     title: 'Move-Out & Leases',
     description: 'Vacate notices, ending leases & occupancy changes',

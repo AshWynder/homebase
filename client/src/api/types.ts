@@ -132,6 +132,9 @@ export interface Tenancy {
   startDate: string;
   endDate?: string | null;
   isActive: boolean;
+  terminationReason?: string | null;
+  terminationNotes?: string | null;
+  terminationRequestedAt?: string | null;
   tenant?: UserProfile;
   unit?: Unit;
   createdAt: string;

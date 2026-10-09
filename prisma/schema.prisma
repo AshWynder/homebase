@@ -216,6 +216,9 @@ model Tenancy {
   startDate  DateTime  @map("start_date")
   endDate    DateTime? @map("end_date")
   isActive   Boolean   @default(true) @map("is_active")
+  terminationReason      String?   @map("termination_reason")
+  terminationNotes       String?   @map("termination_notes")
+  terminationRequestedAt DateTime? @map("termination_requested_at")
 
   invoices Invoice[]
 

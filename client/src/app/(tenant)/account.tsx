@@ -8,25 +8,27 @@ import {
   ChevronRight,
   LogOut,
   FileMinus,
-  HelpCircle,
-  Shield,
 } from 'lucide-react-native';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
+import { Toast } from '@/components/ui/toast';
 import { ProfilePhotoPicker } from '@/components/account/profile-photo-picker';
 import { ProfileForm } from '@/components/account/profile-form';
 import { SignOutDialog } from '@/components/account/sign-out-dialog';
+import { TerminateTenancyDialog } from '@/components/tenant/terminate-tenancy-dialog';
 import { useStore } from '@/stores/use-store';
 import { useTenancies } from '@/hooks/queries/use-tenancies';
+import { useToast } from '@/hooks/use-toast';
 
 export default function TenantAccountScreen() {
   const profile = useStore((s) => s.profile);
   const user = useStore((s) => s.user);
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const [terminateOpen, setTerminateOpen] = useState(false);
+  const { visible, message, type, showToast, hideToast } = useToast();
 
   const tenanciesQuery = useTenancies({
     tenantId: profile?.id,
@@ -101,31 +103,38 @@ export default function TenantAccountScreen() {
                 </Badge>
               </View>
 
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => router.push('/(tenant)/tenancy/terminate')}
-                className="flex-row items-center justify-between rounded-xl border border-rose-100 bg-rose-50/50 p-3.5">
-                <View className="flex-row items-center gap-3">
-                  <View className="h-8 w-8 items-center justify-center rounded-lg bg-rose-100">
-                    <Icon as={FileMinus} size={16} className="text-rose-700" />
-                  </View>
-                  <View>
-                    <Text className="text-xs font-bold text-rose-900">
-                      Terminate Tenancy / Vacate
-                    </Text>
-                    <Text className="text-[11px] text-rose-700">
-                      Submit move-out notice to landlord
-                    </Text>
-                  </View>
-                </View>
-                <Icon as={ChevronRight} size={18} className="text-rose-400" />
-              </TouchableOpacity>
             </CardContent>
           </Card>
         ) : null}
 
         {/* Profile Information & Security Forms */}
         <ProfileForm />
+
+        {activeTenancy ? (
+          <Card className="rounded-2xl border-rose-100 bg-white">
+            <CardContent className="p-4">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setTerminateOpen(true)}
+                className="flex-row items-center justify-between">
+                <View className="flex-1 flex-row items-center gap-3">
+                  <View className="h-10 w-10 items-center justify-center rounded-xl border border-rose-100 bg-rose-50">
+                    <Icon as={FileMinus} size={18} className="text-rose-600" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-sm font-bold text-rose-700">
+                      Terminate tenancy
+                    </Text>
+                    <Text className="text-xs text-slate-500">
+                      Send move-out date and remarks to the property team
+                    </Text>
+                  </View>
+                </View>
+                <Icon as={ChevronRight} size={18} className="text-rose-300" />
+              </TouchableOpacity>
+            </CardContent>
+          </Card>
+        ) : null}
 
         {/* Session / Sign Out Card */}
         <Card className="rounded-2xl border-slate-200 bg-white">
@@ -149,8 +158,19 @@ export default function TenantAccountScreen() {
         </Card>
       </ScrollView>
 
+      {activeTenancy ? (
+        <TerminateTenancyDialog
+          open={terminateOpen}
+          onOpenChange={setTerminateOpen}
+          tenancy={activeTenancy}
+          onSuccess={(toastMessage) => showToast(toastMessage)}
+          onError={(toastMessage) => showToast(toastMessage, 'error')}
+        />
+      ) : null}
+
       {/* Sign Out Confirmation Modal */}
       <SignOutDialog open={signOutOpen} onOpenChange={setSignOutOpen} />
+      <Toast visible={visible} message={message} type={type} onDismiss={hideToast} />
     </SafeAreaView>
   );
 }

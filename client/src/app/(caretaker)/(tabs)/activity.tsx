@@ -8,6 +8,7 @@ import { ScreenHeader } from '@/components/owner/screen-header';
 import { Text } from '@/components/ui/text';
 import { useUnreadTotal } from '@/hooks/queries/use-chat';
 import { useSentNotices } from '@/hooks/queries/use-notices';
+import { useTenancies } from '@/hooks/queries/use-tenancies';
 import { activityDestinations } from '@/lib/activity';
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; iconBg: string; iconColor: string }> = {
@@ -39,8 +40,10 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; iconBg: string
 
 export default function CaretakerActivityScreen() {
   const noticesQuery = useSentNotices({});
+  const moveOutQuery = useTenancies({ isActive: false, limit: 1 });
   const chatsUnread = useUnreadTotal();
   const counts: Partial<Record<string, number>> = {
+    tenancy_notices: moveOutQuery.data?.total,
     notices: noticesQuery.data?.pages[0]?.total,
     chats: chatsUnread,
   };

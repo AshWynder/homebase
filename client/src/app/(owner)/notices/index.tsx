@@ -69,6 +69,7 @@ export default function NoticesListScreen() {
     <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
       <ScreenHeader
         title="Notices"
+        showBack
         onAdd={() => setComposeOpen(true)}
         addLabel="Send a notice"
       />

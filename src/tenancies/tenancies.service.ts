@@ -298,6 +298,9 @@ export class TenanciesService {
       data: {
         isActive: false,
         endDate,
+        terminationReason: dto.reason?.trim() || null,
+        terminationNotes: dto.notes?.trim() || null,
+        terminationRequestedAt: new Date(),
       },
       include: {
         tenant: {

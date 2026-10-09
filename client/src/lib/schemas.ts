@@ -33,6 +33,23 @@ export const assignTenantFormSchema = z.object({
 
 export type AssignTenantFormData = z.infer<typeof assignTenantFormSchema>;
 
+export const terminateTenancyFormSchema = z.object({
+  moveOutDate: z.date({ error: 'Choose your move-out date' }),
+  reason: z
+    .string()
+    .trim()
+    .min(3, 'Tell us why you are moving out')
+    .max(160, 'Reason cannot exceed 160 characters'),
+  notes: z
+    .string()
+    .trim()
+    .max(1000, 'Remarks cannot exceed 1000 characters')
+    .optional()
+    .or(z.literal('')),
+});
+
+export type TerminateTenancyFormData = z.infer<typeof terminateTenancyFormSchema>;
+
 // Meter assignment schema based on CreateMeterDto
 export const assignMeterFormSchema = z.object({
   meterType: z

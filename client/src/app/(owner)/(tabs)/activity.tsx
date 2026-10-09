@@ -6,9 +6,9 @@ import { ChevronRight } from 'lucide-react-native';
 import { Icon } from '@/components/ui/icon';
 import { ScreenHeader } from '@/components/owner/screen-header';
 import { Text } from '@/components/ui/text';
-import { Badge } from '@/components/ui/badge';
 import { useUnreadTotal } from '@/hooks/queries/use-chat';
 import { useSentNotices } from '@/hooks/queries/use-notices';
+import { useTenancies } from '@/hooks/queries/use-tenancies';
 import { ACTIVITY_DESTINATIONS } from '@/lib/activity';
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; iconBg: string; iconColor: string }> = {
@@ -40,8 +40,10 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; iconBg: string
 
 export default function ActivityScreen() {
   const noticesQuery = useSentNotices({});
+  const moveOutQuery = useTenancies({ isActive: false, limit: 1 });
   const chatsUnread = useUnreadTotal();
   const counts: Partial<Record<(typeof ACTIVITY_DESTINATIONS)[number]['kind'], number>> = {
+    tenancy_notices: moveOutQuery.data?.total,
     notices: noticesQuery.data?.pages[0]?.total,
     chats: chatsUnread,
   };

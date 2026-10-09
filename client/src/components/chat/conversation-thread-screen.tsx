@@ -385,9 +385,9 @@ export function ConversationThreadScreen() {
         scrollToBottomComponent={() => (
           <Icon as={ChevronDown} size={20} className="text-slate-600" />
         )}
-        // Avatars were never part of this thread's design; the library renders
-        // initials otherwise, which reads as a different product.
-        renderAvatar={() => null}
+        // Avatars were never part of this thread's design; passing null removes
+        // the avatar component and its grouping indentation completely.
+        renderAvatar={null}
         listProps={{
           // GiftedChat's `renderChatEmpty` wrapper returns its content bare, so the
           // counter-flip RN injects into `ListEmptyComponent` — to undo the inverted

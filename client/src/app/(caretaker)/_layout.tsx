@@ -12,6 +12,10 @@ export default function CaretakerLayout() {
         name="unit/[id]"
         options={{ animation: 'slide_from_right', gestureEnabled: true }}
       />
+      <Stack.Screen
+        name="tenancy/index"
+        options={{ animation: 'slide_from_right', gestureEnabled: true }}
+      />
       {/* Activity drill-downs, pushed on top of the tabs. */}
       <Stack.Screen name="maintenance/index" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen
