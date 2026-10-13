@@ -30,6 +30,7 @@ import {
   useMaintenanceTickets,
 } from '@/hooks/queries/use-maintenance';
 import { formatDateLong, formatKes, formatMonthYear } from '@/lib/format';
+import { runRefresh } from '@/lib/refresh';
 import type { LucideIcon } from 'lucide-react-native';
 
 type ActivityKind = 'payment' | 'invoice' | 'maintenance' | 'notice' | 'tenancy';
@@ -140,17 +141,18 @@ export default function TenantHomeScreen() {
   const recentNoticesQuery = useRecentNotices(5);
 
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await Promise.all([
-      tenancyQuery.refetch(),
-      invoicesQuery.refetch(),
-      paymentsQuery.refetch(),
-      maintenanceQuery.refetch(),
-      recentNoticesQuery.refetch(),
-      unreadNotices.refetch(),
-    ]);
-    setRefreshing(false);
+  const onRefresh = () => {
+    return runRefresh(
+      [
+        tenancyQuery.refetch(),
+        invoicesQuery.refetch(),
+        paymentsQuery.refetch(),
+        maintenanceQuery.refetch(),
+        recentNoticesQuery.refetch(),
+        unreadNotices.refetch(),
+      ],
+      setRefreshing,
+    );
   };
 
   /**

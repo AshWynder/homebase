@@ -17,15 +17,19 @@ import {
   FileText,
   Home,
   IdCard,
+  Plus,
   Smartphone,
   User,
 } from 'lucide-react-native';
 
+import { GenerateTenancyInvoiceDialog } from '@/components/owner/generate-tenancy-invoice-dialog';
 import { ListMessage } from '@/components/owner/list-state';
 import { TenantContactActions } from '@/components/owner/tenant-contact-actions';
 import { Badge } from '@/components/ui/badge';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { Toast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 import { useInvoices } from '@/hooks/queries/use-invoices';
 import { useTenancy } from '@/hooks/queries/use-tenancies';
 import {
@@ -108,6 +112,9 @@ export default function TenancyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const tenancyId = typeof id === 'string' ? id : id?.[0] ?? '';
   const [tab, setTab] = useState<DetailTab>('all');
+  const [generateOpen, setGenerateOpen] = useState(false);
+
+  const { visible, message, type, showToast, hideToast } = useToast();
 
   const tenancyQuery = useTenancy(tenancyId);
   const invoicesQuery = useInvoices({ tenancyId, limit: 100 });
@@ -296,6 +303,7 @@ export default function TenancyDetailScreen() {
                   ? (invoicesQuery.error as Error).message
                   : undefined
               }
+              onGenerate={() => setGenerateOpen(true)}
             />
           ) : null}
 
@@ -307,6 +315,17 @@ export default function TenancyDetailScreen() {
           ) : null}
         </ScrollView>
       )}
+
+      <GenerateTenancyInvoiceDialog
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        onToast={showToast}
+        tenancyId={tenancyId}
+        tenantName={name}
+        monthlyRent={tenancy?.rentAmount ?? ''}
+      />
+
+      <Toast visible={visible} message={message} type={type} onDismiss={hideToast} />
     </SafeAreaView>
   );
 }
@@ -420,25 +439,38 @@ function InvoicesSection({
   loading,
   error,
   errorMessage,
+  onGenerate,
 }: {
   invoices: Invoice[];
   pendingCount: number;
   loading: boolean;
   error: boolean;
   errorMessage?: string;
+  onGenerate?: () => void;
 }) {
   return (
     <View>
       <SectionHeader
         title="Invoices & Status"
         trailing={
-          pendingCount > 0 ? (
-            <Badge variant="secondary" className="bg-red-100">
-              <Text className="text-[10px] font-semibold text-red-700">
-                {pendingCount} Pending
+          <View className="flex-row items-center gap-2">
+            {pendingCount > 0 ? (
+              <Badge variant="secondary" className="bg-red-100">
+                <Text className="text-[10px] font-semibold text-red-700">
+                  {pendingCount} Pending
+                </Text>
+              </Badge>
+            ) : null}
+            <Pressable
+              onPress={onGenerate}
+              className="flex-row items-center gap-1 rounded-full bg-teal-700 px-3 py-1.5 active:bg-teal-800"
+              accessibilityLabel="Generate invoice for this tenant">
+              <Icon as={Plus} size={12} className="text-white" />
+              <Text className="text-[10px] font-semibold text-white">
+                Generate
               </Text>
-            </Badge>
-          ) : null
+            </Pressable>
+          </View>
         }
       />
 
@@ -447,10 +479,20 @@ function InvoicesSection({
       ) : error ? (
         <ListMessage title="Couldn't load invoices" subtitle={errorMessage} />
       ) : invoices.length === 0 ? (
-        <View className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8">
+        <View className="items-center rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8">
           <Text className="text-center text-sm text-slate-500">
             No invoices for this tenancy yet.
           </Text>
+          {onGenerate ? (
+            <Pressable
+              onPress={onGenerate}
+              className="mt-4 flex-row items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2.5 active:bg-teal-800">
+              <Icon as={Plus} size={14} className="text-white" />
+              <Text className="text-xs font-semibold text-white">
+                Create first invoice
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : (
         <View className="gap-3">

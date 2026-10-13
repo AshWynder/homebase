@@ -15,6 +15,7 @@ import { useProperties } from '@/hooks/queries/use-properties';
 import { useUnits } from '@/hooks/queries/use-units';
 import { useStore } from '@/stores/use-store';
 import type { Property } from '@/api/types';
+import { runRefresh } from '@/lib/refresh';
 
 interface PropertyStats {
   units: number;
@@ -66,13 +67,11 @@ export default function CaretakerPropertiesScreen() {
   const isLoading = properties.isLoading || units.isLoading || tenancies.isLoading;
   const isFiltered = selectedPropertyId !== null;
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([properties.refetch(), units.refetch(), tenancies.refetch()]);
-    } finally {
-      setRefreshing(false);
-    }
+  const onRefresh = () => {
+    return runRefresh(
+      [properties.refetch(), units.refetch(), tenancies.refetch()],
+      setRefreshing,
+    );
   };
 
   return (

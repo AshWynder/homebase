@@ -24,6 +24,7 @@ import {
   useUnreadNoticeCount,
 } from '@/hooks/queries/use-notices';
 import { formatDateLong } from '@/lib/format';
+import { runRefresh } from '@/lib/refresh';
 import { cn } from '@/lib/utils';
 import type { ReceivedNotice } from '@/api/types';
 
@@ -42,17 +43,12 @@ export default function NoticesScreen() {
   );
 
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await noticesQuery.refetch();
-      // Pulled alongside the list: the badge is the number the tenant is about to
-      // act on, and a pull-to-refresh that left it stale would be a small lie.
-      await unreadCount.refetch();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [noticesQuery, unreadCount]);
+  const onRefresh = useCallback(
+    // Pulled alongside the list: the badge is the number the tenant is about to
+    // act on, and a pull-to-refresh that left it stale would be a small lie.
+    () => runRefresh([noticesQuery.refetch(), unreadCount.refetch()], setRefreshing),
+    [noticesQuery, unreadCount],
+  );
 
   const total = noticesQuery.data?.pages[0]?.total ?? 0;
   const unread = unreadCount.data ?? 0;

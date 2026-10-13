@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useMarkNoticeRead, useNotice } from '@/hooks/queries/use-notices';
 import { formatDateTime, shortId } from '@/lib/format';
+import { runRefresh } from '@/lib/refresh';
 
 export default function TenantNoticeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,14 +40,10 @@ export default function TenantNoticeDetailScreen() {
   }, [notice, markRead]);
 
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await noticeQuery.refetch();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [noticeQuery]);
+  const onRefresh = useCallback(
+    () => runRefresh([noticeQuery.refetch()], setRefreshing),
+    [noticeQuery],
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'bottom']}>

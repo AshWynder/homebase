@@ -47,10 +47,18 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiResponse<unknown>>) => {
+  async (error: AxiosError<ApiResponse<unknown>>) => {
     // Expired/invalid token → drop the session (the mounted AuthGate then
     // redirects to login) and wipe cached data from the previous session.
-    if (error.response?.status === 401) {
+    //
+    // Guard on a still-present token so a burst of parallel 401s (e.g. every
+    // refetch in a pull-to-refresh) clears the session exactly once instead of
+    // tearing the query cache down mid-refetch — that repeated clearing is what
+    // turned an in-flight refetch promise into a rejected one and stranded the
+    // refresh spinner. Cancelling in-flight queries first lets observers settle
+    // before the cache is wiped.
+    if (error.response?.status === 401 && useStore.getState().token) {
+      await queryClient.cancelQueries();
       useStore.getState().clearSession();
       queryClient.clear();
     }

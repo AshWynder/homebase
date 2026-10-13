@@ -14,20 +14,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useMaintenanceTicket } from '@/hooks/queries/use-maintenance';
 import { formatDateTime, shortId } from '@/lib/format';
+import { runRefresh } from '@/lib/refresh';
 
 export default function MaintenanceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const ticketQuery = useMaintenanceTicket(String(id ?? ''));
 
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await ticketQuery.refetch();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [ticketQuery]);
+  const onRefresh = useCallback(
+    () => runRefresh([ticketQuery.refetch()], setRefreshing),
+    [ticketQuery],
+  );
 
   const ticket = ticketQuery.data;
 

@@ -32,6 +32,7 @@ import {
   useUpdateMaintenanceTicket,
 } from '@/hooks/queries/use-maintenance';
 import { formatDateTime, shortId } from '@/lib/format';
+import { runRefresh } from '@/lib/refresh';
 import { useToast } from '@/hooks/use-toast';
 import { Toast } from '@/components/ui/toast';
 import type { MaintenanceStatus } from '@/api/types';
@@ -83,14 +84,10 @@ export default function CaretakerMaintenanceDetailScreen() {
   const [remarks, setRemarks] = useState('');
 
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await ticketQuery.refetch();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [ticketQuery]);
+  const onRefresh = useCallback(
+    () => runRefresh([ticketQuery.refetch()], setRefreshing),
+    [ticketQuery],
+  );
 
   const ticket = ticketQuery.data;
   const actions = ticket ? availableActions(ticket.status) : [];

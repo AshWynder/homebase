@@ -14,6 +14,7 @@ import { Toast } from '@/components/ui/toast';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useToast } from '@/hooks/use-toast';
 import { useConversations } from '@/hooks/queries/use-chat';
+import { runRefresh } from '@/lib/refresh';
 import type { ConversationSummary } from '@/api/types';
 
 interface ConversationInboxScreenProps {
@@ -50,6 +51,7 @@ export function ConversationInboxScreen({
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const { visible, message, type, showToast, hideToast } = useToast();
 
   // Debounced because every keystroke would otherwise be a request: the server
@@ -61,7 +63,6 @@ export function ConversationInboxScreen({
     isLoading,
     isError,
     refetch,
-    isRefetching,
     isFetchingNextPage,
     hasNextPage: hasMore,
     fetchNextPage,
@@ -120,8 +121,8 @@ export function ConversationInboxScreen({
           onEndReached={() => {
             if (hasMore && !isFetchingNextPage) fetchNextPage();
           }}
-          refreshing={isRefetching}
-          onRefresh={refetch}
+          refreshing={refreshing}
+          onRefresh={() => runRefresh([refetch()], setRefreshing)}
           /* Lifts the last row clear of the FAB, which floats over the bottom of
              the list — otherwise the newest thread sits under it. */
           contentContainerStyle={{ paddingBottom: 96 }}

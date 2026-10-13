@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   View,
   RefreshControl,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,11 +12,8 @@ import {
   Download,
   ArrowRight,
   CheckCircle2,
-  Lock,
   Smartphone,
-  CreditCard,
   MoreVertical,
-  RotateCw,
   FileText,
   Clock,
 } from 'lucide-react-native';
@@ -29,6 +25,7 @@ import { useTenancies } from '@/hooks/queries/use-tenancies';
 import { useInvoices } from '@/hooks/queries/use-invoices';
 import { usePayments } from '@/hooks/queries/use-payments';
 import { formatDateLong, formatKes, shortId } from '@/lib/format';
+import { runRefresh } from '@/lib/refresh';
 
 type BillingFilter = 'all' | 'unpaid' | 'paid';
 
@@ -55,17 +52,17 @@ export default function TenantPaymentsScreen() {
   const payments = paymentsQuery.data?.items ?? [];
 
   const [activeTab, setActiveTab] = useState<BillingFilter>('all');
-  const [autoPayEnabled, setAutoPayEnabled] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await Promise.all([
-      tenancyQuery.refetch(),
-      invoicesQuery.refetch(),
-      paymentsQuery.refetch(),
-    ]);
-    setRefreshing(false);
+  const onRefresh = () => {
+    return runRefresh(
+      [
+        tenancyQuery.refetch(),
+        invoicesQuery.refetch(),
+        paymentsQuery.refetch(),
+      ],
+      setRefreshing,
+    );
   };
 
   // Outstanding invoice
@@ -420,56 +417,6 @@ export default function TenantPaymentsScreen() {
                     </Text>
                   </View>
                 )}
-
-                {/* Security deposit escrow item */}
-                <View className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
-                  <View className="flex-row items-center justify-between mb-3">
-                    <View className="flex-row items-center gap-3">
-                      <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100">
-                        <Icon as={Lock} size={20} className="text-indigo-600" />
-                      </View>
-                      <View>
-                        <Text className="text-base font-bold text-slate-900">
-                          Initial Security Deposit
-                        </Text>
-                        <Text className="text-xs text-slate-600">
-                          Move-in Escrow • Protected by Haven
-                        </Text>
-                      </View>
-                    </View>
-                    <View className="rounded-full bg-indigo-50 px-2.5 py-1 border border-indigo-100">
-                      <Text className="text-[11px] font-bold text-indigo-700">
-                        Held In Escrow
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View className="flex-row items-center justify-between pt-2 border-t border-slate-100">
-                    <View>
-                      <Text className="text-[11px] font-medium text-slate-600">
-                        Vault #DEP-10029
-                      </Text>
-                      <Text className="text-base font-extrabold text-slate-900">
-                        {activeTenancy
-                          ? formatKes(activeTenancy.rentAmount)
-                          : 'KES 40,000'}
-                      </Text>
-                    </View>
-
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      className="flex-row items-center gap-1 rounded-xl bg-slate-100 px-3 py-2">
-                      <Icon
-                        as={CheckCircle2}
-                        size={14}
-                        className="text-slate-700"
-                      />
-                      <Text className="text-xs font-semibold text-slate-700">
-                        View Terms
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
               </View>
             </View>
           )}
@@ -487,72 +434,29 @@ export default function TenantPaymentsScreen() {
               </TouchableOpacity>
             </View>
 
-            <View className="gap-3">
-              {/* Method 1: M-Pesa Express */}
-              <View className="flex-row items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
-                <View className="flex-row items-center gap-3">
-                  <View className="h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100">
-                    <Icon as={Smartphone} size={20} className="text-emerald-600" />
-                  </View>
-                  <View>
-                    <View className="flex-row items-center gap-2">
-                      <Text className="text-sm font-bold text-slate-900">
-                        M-Pesa Express
+            {/* Method 1: M-Pesa Express */}
+            <View className="flex-row items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
+              <View className="flex-row items-center gap-3">
+                <View className="h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100">
+                  <Icon as={Smartphone} size={20} className="text-emerald-600" />
+                </View>
+                <View>
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-sm font-bold text-slate-900">
+                      M-Pesa Express
+                    </Text>
+                    <View className="rounded-md bg-teal-100 px-1.5 py-0.5">
+                      <Text className="text-[10px] font-bold text-teal-800">
+                        Default
                       </Text>
-                      <View className="rounded-md bg-teal-100 px-1.5 py-0.5">
-                        <Text className="text-[10px] font-bold text-teal-800">
-                          Default
-                        </Text>
-                      </View>
                     </View>
-                    <Text className="text-xs font-medium text-slate-600">
-                      {maskedMpesaPhone}
-                    </Text>
                   </View>
+                  <Text className="text-xs font-medium text-slate-600">
+                    {maskedMpesaPhone}
+                  </Text>
                 </View>
-                <Icon as={MoreVertical} size={18} className="text-slate-400" />
               </View>
-
-              {/* Method 2: Card */}
-              <View className="flex-row items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
-                <View className="flex-row items-center gap-3">
-                  <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100">
-                    <Icon as={CreditCard} size={20} className="text-indigo-600" />
-                  </View>
-                  <View>
-                    <Text className="text-sm font-bold text-slate-900">
-                      NCBA Loop Visa
-                    </Text>
-                    <Text className="text-xs font-medium text-slate-600">
-                      •••• •••• •••• 8821
-                    </Text>
-                  </View>
-                </View>
-                <Icon as={MoreVertical} size={18} className="text-slate-400" />
-              </View>
-
-              {/* Auto-pay card */}
-              <View className="flex-row items-center justify-between rounded-2xl border border-slate-200 bg-white p-4">
-                <View className="flex-row items-center gap-3 flex-1 pr-3">
-                  <View className="h-8 w-8 items-center justify-center rounded-lg bg-teal-50">
-                    <Icon as={RotateCw} size={16} className="text-teal-700" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-sm font-bold text-slate-900">
-                      Auto-Pay on 1st of month
-                    </Text>
-                    <Text className="text-xs text-slate-600">
-                      Triggers automated M-Pesa push prompt
-                    </Text>
-                  </View>
-                </View>
-                <Switch
-                  value={autoPayEnabled}
-                  onValueChange={setAutoPayEnabled}
-                  trackColor={{ false: '#CBD5E1', true: '#0F766E' }}
-                  thumbColor="#FFFFFF"
-                />
-              </View>
+              <Icon as={MoreVertical} size={18} className="text-slate-400" />
             </View>
           </View>
         </View>

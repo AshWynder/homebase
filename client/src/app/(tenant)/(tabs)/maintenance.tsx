@@ -25,6 +25,7 @@ import {
 } from '@/hooks/queries/use-maintenance';
 import { formatDateLong, shortId } from '@/lib/format';
 import type { MaintenanceStatus, MaintenanceTicket } from '@/api/types';
+import { runRefresh } from '@/lib/refresh';
 
 type Filter = 'all' | MaintenanceStatus;
 
@@ -47,14 +48,10 @@ export default function MaintenanceScreen() {
   );
 
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await ticketsQuery.refetch();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [ticketsQuery]);
+  const onRefresh = useCallback(
+    () => runRefresh([ticketsQuery.refetch()], setRefreshing),
+    [ticketsQuery],
+  );
 
   const countFor = (key: Filter) => {
     if (key === 'all') return counts.all;

@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useMeters } from '@/hooks/queries/use-meters';
 import type { MeterType, UtilityMeter } from '@/api/types';
+import { runRefresh } from '@/lib/refresh';
 
 const METER_TYPE_CONFIG: Record<
   MeterType,
@@ -68,13 +69,8 @@ export default function CaretakerMetersScreen() {
     return [...byProperty.entries()];
   }, [meters]);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await metersQuery.refetch();
-    } finally {
-      setRefreshing(false);
-    }
+  const onRefresh = () => {
+    return runRefresh([metersQuery.refetch()], setRefreshing);
   };
 
   const openReading = (meter: UtilityMeter) => {

@@ -176,3 +176,20 @@ export const assignCaretakerFormSchema = z
   });
 
 export type AssignCaretakerFormData = z.infer<typeof assignCaretakerFormSchema>;
+
+/**
+ * Kenyan mobile number used to trigger an STK prompt. Mirrors
+ * InitiateStkPaymentDto.phoneNumber on the server
+ * (`/^(?:\+?254|0)?([17]\d{8})$/`) so the client catches it before a round-trip:
+ * optional +254 or leading 0, then a 7/1 prefix and eight digits.
+ */
+export const mpesaPhoneSchema = z
+  .string()
+  .trim()
+  .min(10, 'Enter a phone number, e.g. 0712345678')
+  .regex(
+    /^(?:\+?254|0)?([17]\d{8})$/,
+    'Enter a valid Kenyan Safaricom number, e.g. 0712345678',
+  );
+
+export type MpesaPhoneFormData = z.infer<typeof mpesaPhoneSchema>;

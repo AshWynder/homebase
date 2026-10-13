@@ -23,6 +23,7 @@ import { ScreenHeader } from '@/components/owner/screen-header';
 import { SendNoticeDialog } from '@/components/owner/send-notice-dialog';
 import { flattenNoticePages, useSentNotices } from '@/hooks/queries/use-notices';
 import { formatDateLong } from '@/lib/format';
+import { runRefresh } from '@/lib/refresh';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/stores/use-store';
 import type { NoticeAudience, SentNotice } from '@/api/types';
@@ -53,14 +54,10 @@ export default function NoticesListScreen() {
   );
 
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await noticesQuery.refetch();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [noticesQuery]);
+  const onRefresh = useCallback(
+    () => runRefresh([noticesQuery.refetch()], setRefreshing),
+    [noticesQuery],
+  );
 
   const total = noticesQuery.data?.pages[0]?.total ?? 0;
   const isFirstLoad = noticesQuery.isPending && !noticesQuery.data;
