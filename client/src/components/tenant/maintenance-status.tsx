@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { CheckCircle2, CircleDashed, Clock, Wrench } from 'lucide-react-native';
 import { View } from 'react-native';
 
@@ -142,10 +143,14 @@ export function MaintenanceStatusTracker({
 
 /** Thumbnail slot for a ticket with no photos. */
 export function TicketPlaceholderTile({ size = 56 }: { size?: number }) {
+  // Memoized: NativeWind's native interop identity-checks `style` on every
+  // render, so an inline literal re-dispatches from inside the render phase.
+  const boxStyle = useMemo(() => ({ width: size, height: size }), [size]);
+
   return (
     <View
       className="items-center justify-center rounded-xl bg-teal-50 border border-teal-100"
-      style={{ width: size, height: size }}>
+      style={boxStyle}>
       <Icon as={Wrench} size={size * 0.38} className="text-teal-600" />
     </View>
   );

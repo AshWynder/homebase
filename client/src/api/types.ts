@@ -17,9 +17,9 @@ export interface Paginated<T> {
 export type Role = 'OWNER' | 'CARETAKER' | 'TENANT';
 export type MeterType = 'WATER' | 'ELECTRICITY';
 export type InvoiceStatus = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE';
-export type PaymentMethod = 'MPESA_STK' | 'MPESA_C2B' | 'CARD';
+export type PaymentMethod = 'MPESA_STK' | 'MPESA_C2B' | 'CARD' | 'CASH' | 'BANK' | 'MPESA';
 export type PaymentStatus = 'SUCCESS' | 'FAILED' | 'PENDING';
-export type PaymentProvider = 'DARAJA' | 'PAYSTACK';
+export type PaymentProvider = 'DARAJA' | 'PAYSTACK' | 'MANUAL';
 
 export type MaintenanceStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
 
@@ -380,8 +380,17 @@ export interface GenerateInvoicesInput {
   tenancyId?: string;
 }
 
+export type ManualPaymentMethod = 'CASH' | 'BANK' | 'MPESA';
+
+export interface RecordManualPaymentInput {
+  amountPaid: number;
+  method: ManualPaymentMethod;
+  note?: string;
+}
+
 export interface InitiateStkPaymentInput {
-  invoiceId: string;
+  invoiceId?: string;
+  invoiceIds?: string[];
   phoneNumber: string;
 }
 

@@ -51,7 +51,7 @@ export function InvoiceList() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 20, gap: 12 }}
+          contentContainerClassName="p-5 gap-3"
           ListEmptyComponent={
             <ListMessage
               title={isFiltered ? 'No invoices found' : 'No invoices'}

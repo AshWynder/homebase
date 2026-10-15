@@ -58,7 +58,7 @@ export default function NoticesScreen() {
     <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerClassName="pb-[100px]"
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

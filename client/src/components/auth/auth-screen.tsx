@@ -1,18 +1,17 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import {
   ArrowRight,
   Building2,
   Check,
-  Clock,
   CreditCard,
   Eye,
   EyeOff,
+  HelpCircle,
   Home,
   KeyRound,
   Lock,
@@ -27,7 +26,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
+import { LinearGradient } from '@/components/ui/linear-gradient';
 import { Text } from '@/components/ui/text';
+import { cn } from '@/lib/utils';
 import type { Role } from '@/api/types';
 import { useSignIn, useSignUp } from '@/hooks/queries/use-auth';
 import { homeRouteFor } from '@/lib/auth-routing';
@@ -73,45 +74,87 @@ interface AuthScreenProps {
  */
 export function AuthScreen({ mode }: AuthScreenProps) {
   const isSignUp = mode === 'sign-up';
+  const insets = useSafeAreaInsets();
+
+  // Memoized: NativeWind's native interop identity-checks `style` every render,
+  // so an inline literal re-dispatches from inside the render phase and hangs
+  // the app on any state change.
+  const headerTopStyle = useMemo(
+    () => ({ paddingTop: insets.top + 12 }),
+    [insets.top],
+  );
+  const footerBottomStyle = useMemo(
+    () => ({ paddingBottom: Math.max(insets.bottom, 12) }),
+    [insets.bottom],
+  );
 
   return (
     <View className="flex-1 bg-white">
       <StatusBar style="light" />
 
-      <LinearGradient colors={['#115E59', '#0D9488']} className="pb-28">
-        <SafeAreaView edges={['top']} className="px-6 mb-5">
+      {/* The gradient runs full-bleed to the top edge so the status bar sits on
+          colour, then the card below overlaps it to lift the sheet forward. */}
+      <LinearGradient
+        colors={['#115E59', '#0D7A6E', '#0D9488']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        className="px-6 pb-32">
+        <View style={headerTopStyle}>
+          {/* Brand row: icon + wordmark + badge, and the help action opposite. */}
           <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3">
-              <View className="h-11 w-11 items-center justify-center rounded-xl bg-white/20">
-                <Icon as={Home} size={22} className="text-white" />
+            <View className="flex-1 flex-row items-center gap-3 pr-3">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+                <Icon as={Home} size={20} className="text-white" />
               </View>
-              <Text className="text-2xl font-bold text-white">Homebase</Text>
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-lg font-bold leading-6 text-white">
+                    Homebase
+                  </Text>
+                  <View className="rounded-full bg-white/20 px-2 py-0.5">
+                    <Text className="text-[10px] font-bold tracking-wide text-white/90">
+                      OS
+                    </Text>
+                  </View>
+                </View>
+                <Text className="mt-0.5 text-[11px] leading-4 text-teal-100/80">
+                  Modern residence operations
+                </Text>
+              </View>
             </View>
-            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-white/15">
-              <Icon as={Clock} size={20} className="text-white/80" />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Help"
+              className="h-9 w-9 items-center justify-center rounded-full bg-white/15">
+              <Icon as={HelpCircle} size={18} className="text-white/90" />
             </Pressable>
           </View>
 
-          <Text className="mt-8 text-3xl font-bold text-white">
+          {/* Hero */}
+          <Text className="mt-9 text-[28px] font-bold leading-8 text-white">
             {isSignUp ? 'Create Account 🚀' : 'Welcome Back 👋'}
           </Text>
-          <Text className="mt-2 text-sm text-teal-100">
+          <Text className="mt-2 pr-6 text-sm leading-5 text-teal-50/85">
             {isSignUp
               ? 'Join Homebase to manage or lease modern residences.'
               : 'Sign in to continue managing your residences.'}
           </Text>
-        </SafeAreaView>
+        </View>
       </LinearGradient>
 
-      <View className="-mt-2 flex-1 rounded-t-[28px] bg-white px-6 pt-6">
+      {/* Sheet overlaps the gradient by -mt-8, so the rounded top corners read
+          as a fold rather than a hard seam. */}
+      <View className="-mt-8 flex-1 rounded-t-[32px] bg-white px-5 pt-6">
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerClassName="grow pb-8"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           <SegmentedToggle mode={mode} />
           {isSignUp ? <SignUpForm /> : <SignInForm />}
 
-          <View className="mt-auto items-center pt-8">
+          {/* mt-auto pins the footer to the bottom of a short form; pb keeps it
+              clear of the home indicator. */}
+          <View className="mt-auto items-center pt-10" style={footerBottomStyle}>
             <Text className="text-xs text-slate-400">
               Managed by Homebase • v1.0.0
             </Text>
@@ -126,40 +169,49 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
 function SegmentedToggle({ mode }: { mode: Mode }) {
   const isSignUp = mode === 'sign-up';
+
+  const tab = (active: boolean) =>
+    cn(
+      'flex-1 flex-row items-center justify-center gap-2 rounded-xl py-2.5',
+      active ? 'bg-white shadow-sm' : 'bg-transparent',
+    );
+
   return (
-    <View className="flex-row rounded-full bg-slate-100 p-1">
+    <View className="flex-row rounded-2xl bg-slate-100 p-1">
       <Pressable
+        accessibilityRole="tab"
+        accessibilityState={{ selected: !isSignUp }}
         onPress={() => !isSignUp || router.replace('/(auth)/sign-in')}
-        className={`flex-1 flex-row items-center justify-center gap-2 rounded-full py-2.5 ${
-          isSignUp ? '' : 'bg-white shadow-sm'
-        }`}>
+        className={tab(!isSignUp)}>
         <Icon
           as={LogIn}
           size={15}
-          className={isSignUp ? 'text-slate-500' : 'text-teal-700'}
+          className={isSignUp ? 'text-slate-400' : 'text-teal-700'}
         />
         <Text
-          className={`text-sm font-semibold ${
-            isSignUp ? 'text-slate-500' : 'text-slate-900'
-          }`}>
+          className={cn(
+            'text-sm font-semibold',
+            isSignUp ? 'text-slate-400' : 'text-slate-900',
+          )}>
           Log In
         </Text>
       </Pressable>
 
       <Pressable
+        accessibilityRole="tab"
+        accessibilityState={{ selected: isSignUp }}
         onPress={() => isSignUp || router.replace('/(auth)/sign-up')}
-        className={`flex-1 flex-row items-center justify-center gap-2 rounded-full py-2.5 ${
-          isSignUp ? 'bg-white shadow-sm' : ''
-        }`}>
+        className={tab(isSignUp)}>
         <Icon
           as={UserPlus}
           size={15}
-          className={isSignUp ? 'text-teal-700' : 'text-slate-500'}
+          className={isSignUp ? 'text-teal-700' : 'text-slate-400'}
         />
         <Text
-          className={`text-sm font-semibold ${
-            isSignUp ? 'text-slate-900' : 'text-slate-500'
-          }`}>
+          className={cn(
+            'text-sm font-semibold',
+            isSignUp ? 'text-slate-900' : 'text-slate-400',
+          )}>
           Sign Up
         </Text>
       </Pressable>
@@ -178,16 +230,24 @@ interface FieldProps {
 
 function Field({ label, icon, error, children }: FieldProps) {
   return (
-    <View className="gap-1.5">
-      <Text className="text-sm font-semibold text-slate-800">{label}</Text>
+    <View>
+      {/* mb-1.5 rather than gap-1.5 so the label keeps its rhythm even when an
+          error message appears and shifts the row below it. */}
+      <Text className="mb-1.5 text-sm font-bold text-slate-800">{label}</Text>
       <View
-        className={`flex-row items-center gap-2.5 rounded-xl border bg-slate-50 px-3.5 ${
-          error ? 'border-red-400' : 'border-slate-200'
-        }`}>
+        className={cn(
+          'flex-row items-center gap-2.5 rounded-xl border bg-slate-50 px-3.5',
+          // min-h-12 (vs the input's own h-11) centres the leading and trailing
+          // icons on the taller row the padding produces.
+          'min-h-12',
+          error ? 'border-red-400' : 'border-slate-200/80',
+        )}>
         <Icon as={icon} size={18} className="text-slate-400" />
         {children}
       </View>
-      {error ? <Text className="text-xs text-red-500">{error}</Text> : null}
+      {error ? (
+        <Text className="mt-1 text-xs text-red-500">{error}</Text>
+      ) : null}
     </View>
   );
 }
@@ -213,8 +273,17 @@ function SecureInput({ value, onChangeText, onBlur, placeholder }: SecureInputPr
         autoCapitalize="none"
         placeholder={placeholder}
       />
-      <Pressable onPress={() => setSecure((s) => !s)} hitSlop={8} className="p-1">
-        <Icon as={secure ? Eye : EyeOff} size={18} className="text-slate-400" />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={secure ? 'Show password' : 'Hide password'}
+        onPress={() => setSecure((s) => !s)}
+        hitSlop={8}
+        className="p-1">
+        <Icon
+          as={secure ? Eye : EyeOff}
+          size={18}
+          className="text-slate-400"
+        />
       </Pressable>
     </>
   );
@@ -370,7 +439,7 @@ function SignInForm() {
       <Button
         onPress={handleSubmit(onSubmit)}
         disabled={signIn.isPending}
-        className="h-12 rounded-xl bg-teal-700 active:bg-teal-800">
+        className="h-12 rounded-2xl bg-teal-700 gap-x-2 active:bg-teal-800 shadow-md shadow-teal-900/20">
         <Text>{signIn.isPending ? 'Logging in…' : 'Log In'}</Text>
         <Icon as={ArrowRight} size={18} className="text-white" />
       </Button>
@@ -415,7 +484,7 @@ function SignUpForm() {
     );
 
   return (
-    <View className="mt-5 gap-4">
+    <View className="mt-6 gap-4">
       <RolePicker value={role} onChange={(r) => setValue('role', r)} />
 
       <Controller
@@ -558,7 +627,7 @@ function SignUpForm() {
       <Button
         onPress={handleSubmit(onSubmit)}
         disabled={signUp.isPending}
-        className="h-12 rounded-xl bg-teal-700 active:bg-teal-800">
+        className="h-12 rounded-2xl bg-teal-700 gap-x-2 active:bg-teal-800 shadow-md shadow-teal-900/20">
         <Text>{signUp.isPending ? 'Creating account…' : 'Create Homebase Account'}</Text>
         <Icon as={ArrowRight} size={18} className="text-white" />
       </Button>

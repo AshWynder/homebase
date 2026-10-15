@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
@@ -16,6 +16,12 @@ import { useToast } from '@/hooks/use-toast';
 import { ApiError } from '@/lib/axios';
 import { pickMaintenancePhotos, promptForPhotoSource } from '@/lib/maintenance-photos';
 import type { StagedPhoto } from '@/api/types';
+
+const styles = StyleSheet.create({
+  // Hoisted: NativeWind's native interop identity-checks `style` on every render,
+  // so an inline literal re-dispatches from inside the render phase and hangs the app.
+  descriptionBox: { minHeight: 120, fontSize: 15, lineHeight: 22 },
+});
 
 export default function ReportMaintenanceScreen() {
   const [description, setDescription] = useState('');
@@ -86,7 +92,7 @@ export default function ReportMaintenanceScreen() {
       <ScrollView
         className="flex-1"
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 40 }}>
+        contentContainerClassName="pb-10">
         <View className="px-5 pt-5">
           {/* What happens next, up front. */}
           <View className="mb-5 flex-row items-start gap-3 rounded-2xl border border-teal-100 bg-teal-50 p-4">
@@ -120,7 +126,7 @@ export default function ReportMaintenanceScreen() {
             className={`rounded-2xl border bg-white p-4 text-slate-900 ${
               descriptionError ? 'border-rose-300' : 'border-slate-200'
             }`}
-            style={{ minHeight: 120, fontSize: 15, lineHeight: 22 }}
+            style={styles.descriptionBox}
           />
           <View className="mt-1.5 flex-row items-center justify-between">
             <Text className="flex-1 text-xs text-rose-600">

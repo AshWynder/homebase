@@ -113,7 +113,7 @@ export default function CaretakerNoticesScreen() {
       <FlatList
         data={notices}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 20, paddingBottom: 100, gap: 12 }}
+        contentContainerClassName="p-5 pb-[100px] gap-3"
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

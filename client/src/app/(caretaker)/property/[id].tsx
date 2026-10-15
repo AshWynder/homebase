@@ -122,7 +122,7 @@ export default function CaretakerPropertyScreen() {
         <FlatList
           data={units}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 40 }}
+          contentContainerClassName="p-5 gap-3 pb-10"
           ListHeaderComponent={
             <View className="mb-4">
               <View className="rounded-2xl bg-teal-700 p-4">

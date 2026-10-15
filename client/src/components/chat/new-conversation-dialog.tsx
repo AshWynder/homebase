@@ -110,7 +110,7 @@ export function NewConversationDialog({
 
         <ScrollView
           className="max-h-[420px]"
-          contentContainerStyle={{ paddingBottom: 8 }}>
+          contentContainerClassName="pb-2">
           {target === 'group' ? (
             <GroupChoices
               onPick={(propertyId) => choose(() => startGroup.start(propertyId))}

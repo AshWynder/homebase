@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Check, Search, UserRound, X } from 'lucide-react-native';
 
 import { Icon } from '@/components/ui/icon';
@@ -15,6 +15,12 @@ import type { Tenancy, UserProfile } from '@/api/types';
 
 /** Clamped so the surrounding Dialog footer always stays reachable. */
 const MAX_LIST_HEIGHT = 200;
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so an inline literal re-dispatches from inside the render phase and hangs the app.
+const listClamp = StyleSheet.create({
+  maxHeight: { maxHeight: MAX_LIST_HEIGHT },
+});
 
 /**
  * The server caps nothing here, but the set of people an owner can currently
@@ -128,7 +134,7 @@ export function ConnectedTenantPicker({
       ) : null}
 
       {isLoading ? (
-        <View className="gap-2" style={{ maxHeight: MAX_LIST_HEIGHT }}>
+        <View className="gap-2" style={listClamp.maxHeight}>
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-14 w-full rounded-xl" />
           ))}
@@ -145,7 +151,7 @@ export function ConnectedTenantPicker({
         <FlatList
           data={visible}
           keyExtractor={(item) => item.profile.id}
-          style={{ maxHeight: MAX_LIST_HEIGHT }}
+          style={listClamp.maxHeight}
           keyboardShouldPersistTaps="handled"
           ItemSeparatorComponent={() => <View className="h-1.5" />}
           renderItem={({ item }) => {

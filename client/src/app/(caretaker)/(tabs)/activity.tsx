@@ -56,7 +56,7 @@ export default function CaretakerActivityScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 12 }}
+        contentContainerClassName="p-5 pb-10 gap-3"
         showsVerticalScrollIndicator={false}>
         <View className="mb-1">
           <Text className="text-xs font-bold uppercase tracking-wider text-slate-400">

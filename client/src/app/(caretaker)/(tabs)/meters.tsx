@@ -104,7 +104,7 @@ export default function CaretakerMetersScreen() {
         <FlatList
           data={grouped}
           keyExtractor={([key]) => key}
-          contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }}
+          contentContainerClassName="p-5 gap-4 pb-10"
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

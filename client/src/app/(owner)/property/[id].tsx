@@ -23,6 +23,10 @@ export default function PropertyUnitsScreen() {
   const propertyId = typeof id === 'string' ? id : id?.[0] ?? '';
   const insets = useSafeAreaInsets();
 
+  // Memoized: NativeWind's native interop identity-checks `style` on every
+  // render, so an inline literal re-dispatches from inside the render phase.
+  const fabInsetStyle = useMemo(() => ({ marginBottom: insets.bottom }), [insets.bottom]);
+
   const [createUnitOpen, setCreateUnitOpen] = useState(false);
   const { visible, message, type, showToast, hideToast } = useToast();
 
@@ -121,7 +125,7 @@ export default function PropertyUnitsScreen() {
         <FlatList
           data={units}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 20, gap: 12 }}
+          contentContainerClassName="p-5 gap-3"
           ListHeaderComponent={
             <View className="mb-4">
               <View className="rounded-2xl bg-teal-700 p-4">
@@ -243,7 +247,7 @@ export default function PropertyUnitsScreen() {
         onPress={() => setCreateUnitOpen(true)}
         disabled={isLoading}
         className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-teal-700 active:bg-teal-800"
-        style={{ marginBottom: insets.bottom }}>
+        style={fabInsetStyle}>
         <Icon as={Plus} size={24} className="text-white" />
       </Pressable>
 

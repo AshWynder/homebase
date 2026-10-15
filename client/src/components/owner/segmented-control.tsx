@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { InteractionManager, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,25 @@ export function SegmentedControl<T extends string>({
   options,
   className,
 }: SegmentedControlProps<T>) {
+  const pendingChange = useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(
+    null,
+  );
+
+  useEffect(() => {
+    return () => {
+      pendingChange.current?.cancel();
+    };
+  }, []);
+
+  const scheduleChange = (nextValue: T) => {
+    if (nextValue === value) return;
+    pendingChange.current?.cancel();
+    pendingChange.current = InteractionManager.runAfterInteractions(() => {
+      onChange(nextValue);
+      pendingChange.current = null;
+    });
+  };
+
   return (
     <View
       accessibilityRole="tablist"
@@ -36,14 +56,12 @@ export function SegmentedControl<T extends string>({
         return (
           <Pressable
             key={option.value}
-            onPress={() => onChange(option.value)}
+            onPress={() => scheduleChange(option.value)}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
             accessibilityLabel={option.label}
-            className={cn(
-              'flex-1 items-center justify-center rounded-xl py-2',
-              isActive && 'bg-white shadow-sm',
-            )}>
+            className="flex-1 items-center justify-center rounded-xl py-2"
+            style={isActive ? styles.activeSegment : undefined}>
             <Text
               className={cn(
                 'text-xs font-bold',
@@ -57,3 +75,11 @@ export function SegmentedControl<T extends string>({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  activeSegment: {
+    backgroundColor: '#FFFFFF',
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+});

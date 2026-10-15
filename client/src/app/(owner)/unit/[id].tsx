@@ -226,7 +226,7 @@ export default function UnitDetailScreen() {
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}
+          contentContainerClassName="p-4 pb-10 gap-4"
           showsVerticalScrollIndicator={false}>
           {/* Unit Information Card */}
           <View className="gap-4 rounded-2xl border border-slate-200 bg-white p-4">

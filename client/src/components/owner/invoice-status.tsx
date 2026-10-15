@@ -36,7 +36,7 @@ export function InvoiceStatusPills() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 12, gap: 8 }}>
+        contentContainerClassName="px-5 py-3 gap-2">
         {INVOICE_STATUS_FILTERS.map((status) => {
           const isActive = statusFilter === status;
           return (

@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  StyleSheet,
   View,
 } from 'react-native';
 import { Search, User, X } from 'lucide-react-native';
@@ -28,6 +29,12 @@ import type { UserProfile } from '@/api/types';
  * unassigned tenants exist.
  */
 const MAX_LIST_HEIGHT = 200;
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so an inline literal re-dispatches from inside the render phase and hangs the app.
+const listClamp = StyleSheet.create({
+  maxHeight: { maxHeight: MAX_LIST_HEIGHT },
+});
 
 interface TenantPickerProps {
   /** The chosen profile, or null. Carries the object, not just the id, so the
@@ -137,7 +144,7 @@ export function TenantPicker({
           ) : null}
         </View>
 
-        <View style={{ maxHeight: MAX_LIST_HEIGHT }} className="mt-2">
+        <View style={listClamp.maxHeight} className="mt-2">
           {usersQuery.isError ? (
             <PickerMessage
               title="Could not load tenants"
@@ -158,7 +165,7 @@ export function TenantPicker({
               // prop the sign-in screen and maintenance form already use.
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="on-drag"
-              contentContainerStyle={profiles.length ? { gap: 8 } : undefined}
+              contentContainerClassName={profiles.length ? 'gap-2' : undefined}
               ListEmptyComponent={
                 <PickerMessage
                   title={query ? 'No tenant matches your search' : 'No unassigned tenants'}

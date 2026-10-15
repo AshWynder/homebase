@@ -24,7 +24,7 @@ export default function CaretakerAccountScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 20, paddingBottom: 60, gap: 18 }}
+        contentContainerClassName="p-5 pb-[60px] gap-[18px]"
         showsVerticalScrollIndicator={false}>
         {/* Profile Card Header */}
         <View className="items-center bg-white rounded-2xl border border-slate-200 p-4">

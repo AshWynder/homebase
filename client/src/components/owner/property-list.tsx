@@ -162,7 +162,7 @@ export function PropertyList() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 20, gap: 12 }}
+          contentContainerClassName="p-5 gap-3"
           ListHeaderComponent={
             isFiltered ? null : (
               <View className="mb-4">

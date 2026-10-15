@@ -38,7 +38,7 @@ export default function MaintenanceDetailScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerClassName="pb-10"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -108,7 +108,7 @@ export default function MaintenanceDetailScreen() {
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ gap: 10 }}>
+                  contentContainerClassName="gap-2.5">
                   {ticket.photoUrls.map((url) => (
                     <Image
                       key={url}

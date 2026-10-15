@@ -9,7 +9,7 @@ import { Text } from '@/components/ui/text';
 import { usePayments } from '@/hooks/queries/use-payments';
 import { formatDateTime, formatKes, formatMonthYear } from '@/lib/format';
 import { useStore } from '@/stores/use-store';
-import { CreditCard, DollarSign } from 'lucide-react-native';
+import { Banknote, CreditCard, DollarSign, Landmark, Smartphone } from 'lucide-react-native';
 import type { PaymentMethod, PaymentStatus } from '@/api/types';
 
 const STATUS_STYLES: Record<PaymentStatus, { bg: string; text: string; label: string }> = {
@@ -18,16 +18,22 @@ const STATUS_STYLES: Record<PaymentStatus, { bg: string; text: string; label: st
   PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'PENDING' },
 };
 
-const METHOD_ICONS = {
+const METHOD_ICONS: Record<PaymentMethod, typeof DollarSign> = {
   MPESA_STK: DollarSign,
   MPESA_C2B: DollarSign,
   CARD: CreditCard,
-} as const;
+  CASH: Banknote,
+  BANK: Landmark,
+  MPESA: Smartphone,
+};
 
 const METHOD_LABELS: Record<PaymentMethod, string> = {
   MPESA_STK: 'M-Pesa',
   MPESA_C2B: 'M-Pesa',
   CARD: 'Card',
+  CASH: 'Cash',
+  BANK: 'Bank transfer',
+  MPESA: 'M-Pesa',
 };
 
 /** Payments segment of the Money tab. */
@@ -64,7 +70,7 @@ export function PaymentList() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 20, gap: 12 }}
+          contentContainerClassName="p-5 gap-3"
           ListEmptyComponent={
             <ListMessage
               title={isFiltered ? 'No payments found' : 'No payments'}

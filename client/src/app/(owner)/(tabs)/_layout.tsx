@@ -13,6 +13,9 @@ export default function OwnerTabsLayout() {
         tabBarStyle: {
           borderTopColor: '#E2E8F0',
           backgroundColor: '#FFFFFF',
+          position: 'relative',
+          zIndex: 20,
+          elevation: 20,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}>

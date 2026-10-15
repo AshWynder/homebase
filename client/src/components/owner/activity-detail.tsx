@@ -28,7 +28,7 @@ export function ActivityDetail({ kind, id, title }: ActivityDetailProps) {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerClassName="grow"
         showsVerticalScrollIndicator={false}>
         <View className="border-b border-slate-200 bg-white px-5 py-4">
           <Text className="text-lg font-bold text-slate-900">{title}</Text>

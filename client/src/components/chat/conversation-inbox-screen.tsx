@@ -125,7 +125,7 @@ export function ConversationInboxScreen({
           onRefresh={() => runRefresh([refetch()], setRefreshing)}
           /* Lifts the last row clear of the FAB, which floats over the bottom of
              the list — otherwise the newest thread sits under it. */
-          contentContainerStyle={{ paddingBottom: 96 }}
+          contentContainerClassName="pb-24"
         />
       )}
 

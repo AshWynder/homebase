@@ -1,16 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Calendar, Home, Receipt } from 'lucide-react-native';
+import { ArrowLeft, Banknote, Calendar, Home, Receipt } from 'lucide-react-native';
 
 import { ListMessage } from '@/components/owner/list-state';
+import { RecordManualPaymentDialog } from '@/components/owner/record-manual-payment-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { Toast } from '@/components/ui/toast';
 import { useInvoice } from '@/hooks/queries/use-invoices';
-import { formatDate, formatDateLong, formatKes, formatPeriod, tenantName } from '@/lib/format';
-import type { Invoice, InvoiceStatus } from '@/api/types';
+import { useToast } from '@/hooks/use-toast';
+import { formatDateLong, formatKes, formatPeriod, tenantName } from '@/lib/format';
+import type { InvoiceStatus } from '@/api/types';
 
 const STATUS_STYLES: Record<InvoiceStatus, { bg: string; text: string; label: string }> = {
   UNPAID: { bg: 'bg-red-100', text: 'text-red-700', label: 'UNPAID' },
@@ -51,10 +55,15 @@ export default function InvoiceDetailScreen() {
   const loading = invoiceQuery.isLoading;
   const error = invoiceQuery.isError;
 
+  const [recordOpen, setRecordOpen] = useState(false);
+  const { visible, message, type, showToast, hideToast } = useToast();
+
   const lineItems = invoice?.lineItems ?? [];
+  const canRecordPayment = !!invoice && invoice.status !== 'PAID' && Number(invoice.balanceDue) > 0;
 
   return (
     <SafeAreaView className="flex-1 bg-slate-100" edges={['top', 'bottom']}>
+      <Toast visible={visible} message={message} type={type} onDismiss={hideToast} />
       <View className="flex-row items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
         <Pressable
           onPress={() => router.back()}
@@ -84,7 +93,7 @@ export default function InvoiceDetailScreen() {
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}
+          contentContainerClassName="p-4 pb-10 gap-4"
           showsVerticalScrollIndicator={false}>
           {/* General Information Card */}
           <View className="gap-4 rounded-2xl border border-slate-200 bg-white p-4">
@@ -184,8 +193,35 @@ export default function InvoiceDetailScreen() {
               </View>
             </View>
           </View>
+
+          {/* Backup settlement: record a cash/bank/M-Pesa payment an owner
+              received outside the provider flow. */}
+          {canRecordPayment ? (
+            <View className="gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+              <View className="flex-row items-center gap-2">
+                <Icon as={Banknote} size={18} className="text-teal-700" />
+                <Text className="text-base font-bold text-slate-900">
+                  Record a payment
+                </Text>
+              </View>
+              <Text className="text-sm text-slate-500">
+                Received cash or a direct transfer? Mark this invoice fully or
+                partially paid to update its balance due.
+              </Text>
+              <Button onPress={() => setRecordOpen(true)}>
+                <Text>Record Payment</Text>
+              </Button>
+            </View>
+          ) : null}
         </ScrollView>
       )}
+
+      <RecordManualPaymentDialog
+        invoice={invoice ?? null}
+        open={recordOpen}
+        onOpenChange={setRecordOpen}
+        onToast={showToast}
+      />
     </SafeAreaView>
   );
 }

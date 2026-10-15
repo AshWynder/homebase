@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { CalendarClock, FileMinus, MessageSquareText } from 'lucide-react-native';
 
 import type { Tenancy } from '@/api/types';
@@ -35,6 +35,12 @@ const REASONS = [
   'Maintenance concerns',
   'Personal reasons',
 ] as const;
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so an inline literal re-dispatches from inside the render phase and hangs the app.
+const styles = StyleSheet.create({
+  multilineTopAlign: { textAlignVertical: 'top' },
+});
 
 interface TerminateTenancyDialogProps {
   open: boolean;
@@ -118,7 +124,7 @@ export function TerminateTenancyDialog({
 
         <ScrollView
           className="max-h-[520px]"
-          contentContainerStyle={{ gap: 14, paddingVertical: 4 }}
+          contentContainerClassName="gap-3.5 py-1"
           showsVerticalScrollIndicator={false}>
           <View className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
             <View className="flex-row items-center gap-2">
@@ -216,7 +222,7 @@ export function TerminateTenancyDialog({
                     onChangeText={field.onChange}
                     placeholder="Share anything helpful: inspection timing, handover plans, or concerns."
                     className="min-h-24 rounded-xl bg-slate-50 p-3 pr-10 text-sm"
-                    style={{ textAlignVertical: 'top' }}
+                    style={styles.multilineTopAlign}
                   />
                   <View className="absolute right-3 top-3">
                     <Icon as={MessageSquareText} size={16} className="text-slate-400" />

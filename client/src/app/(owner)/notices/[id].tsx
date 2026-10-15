@@ -63,7 +63,7 @@ export default function NoticeDetailScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerClassName="pb-10"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

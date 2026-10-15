@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -49,6 +50,12 @@ const REASONS = [
   'Financial / budget reasons',
   'Other personal reasons',
 ];
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so an inline literal re-dispatches from inside the render phase and hangs the app.
+const styles = StyleSheet.create({
+  multilineTopAlign: { textAlignVertical: 'top' },
+});
 
 export default function TerminateTenancyScreen() {
   const profile = useStore((s) => s.profile);
@@ -207,7 +214,7 @@ export default function TerminateTenancyScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 20, paddingBottom: 50, gap: 18 }}
+        contentContainerClassName="p-5 pb-[50px] gap-[18px]"
         showsVerticalScrollIndicator={false}>
         {/* Current Tenancy Summary Card */}
         <Card className="rounded-2xl border-slate-200 bg-white">
@@ -316,7 +323,7 @@ export default function TerminateTenancyScreen() {
                 value={notes}
                 onChangeText={setNotes}
                 className="min-h-[80px] rounded-xl bg-slate-50 p-3 text-sm"
-                style={{ textAlignVertical: 'top' }}
+                style={styles.multilineTopAlign}
               />
             </View>
           </CardContent>

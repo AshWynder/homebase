@@ -6,6 +6,7 @@ import type {
     InvoiceStatus,
     InvoiceSummary,
     Paginated,
+    RecordManualPaymentInput,
 } from './types';
 
 export interface QueryInvoicesInput {
@@ -38,4 +39,6 @@ export const invoicesApi = {
     refresh: (id: string) => unwrap<Invoice>(api.post(`/invoices/${id}/refresh`)),
     update: (id: string, input: { dueDate?: string }) =>
         unwrap<Invoice>(api.patch(`/invoices/${id}`, input)),
+    recordManualPayment: (id: string, input: RecordManualPaymentInput) =>
+        unwrap<Invoice>(api.post(`/invoices/${id}/manual-payment`, input)),
 };

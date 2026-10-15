@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, RefreshControl } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -88,6 +88,22 @@ const TONE_TEXT: Record<ActivityTone, string> = {
   warning: 'text-amber-600',
   muted: 'text-slate-600',
 };
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so an inline literal re-dispatches from inside the render phase and hangs the app.
+const styles = StyleSheet.create({
+  balanceCard: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 6 },
+  balanceCardGradient: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    padding: 24,
+    shadowColor: '#0F766E',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+});
 
 export default function TenantHomeScreen() {
   const user = useStore((s) => s.user);
@@ -291,7 +307,7 @@ export default function TenantHomeScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerClassName="pb-10"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -369,21 +385,12 @@ export default function TenantHomeScreen() {
         </View>
 
         {/* Minimal Balance Due Card */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 6 }}>
+        <View style={styles.balanceCard}>
           <LinearGradient
             colors={['#0E7490', '#0F766E', '#115E59']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={{
-              borderRadius: 24,
-              overflow: 'hidden',
-              padding: 24,
-              shadowColor: '#0F766E',
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.15,
-              shadowRadius: 16,
-              elevation: 4,
-            }}>
+            style={styles.balanceCardGradient}>
             {/* Header / Subtitle */}
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">

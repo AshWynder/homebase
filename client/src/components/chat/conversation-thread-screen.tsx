@@ -47,6 +47,16 @@ const TYPING_REFRESH_MS = 3_000;
  */
 const TYPING_EXPIRY_MS = 4_000;
 
+// Hoisted, not built inline: NativeWind's native interop identity-checks the
+// content container style on every render, so an inline literal never compares
+// equal and re-dispatches from inside the render phase, hanging the app.
+const THREAD_CONTENT_FLOWING = { paddingBottom: 10 };
+const THREAD_CONTENT_EMPTY = {
+  flexGrow: 1,
+  justifyContent: 'center',
+  paddingBottom: 10,
+};
+
 /**
  * One conversation: history, live delivery, and the composer.
  *
@@ -406,9 +416,7 @@ export function ConversationThreadScreen() {
           // empty, so a short history still rests against the composer — puts the
           // hint mid-message-area.
           contentContainerStyle:
-            messages.length > 0
-              ? { paddingBottom: 10 }
-              : { flexGrow: 1, justifyContent: 'center', paddingBottom: 10 },
+            messages.length > 0 ? THREAD_CONTENT_FLOWING : THREAD_CONTENT_EMPTY,
         }}
         renderBubble={(props) => {
           // In an inverted list `previousMessage` is the older neighbour, so

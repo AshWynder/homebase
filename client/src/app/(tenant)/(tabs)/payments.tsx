@@ -9,29 +9,41 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import {
-  Download,
   ArrowRight,
   CheckCircle2,
   Smartphone,
   MoreVertical,
   FileText,
   Clock,
+  XCircle,
 } from 'lucide-react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { TenantOutstandingCard } from '@/components/tenant/outstanding-balance-card';
+import { Badge } from '@/components/ui/badge';
+import { SegmentedControl, type SegmentedOption } from '@/components/owner/segmented-control';
+import { STATUS_STYLES } from '@/components/owner/invoice-status';
 import { useStore } from '@/stores/use-store';
 import { useTenancies } from '@/hooks/queries/use-tenancies';
 import { useInvoices } from '@/hooks/queries/use-invoices';
 import { usePayments } from '@/hooks/queries/use-payments';
-import { formatDateLong, formatKes, shortId } from '@/lib/format';
+import { formatDate, formatDateLong, formatKes, formatMonthYear, shortId } from '@/lib/format';
 import { runRefresh } from '@/lib/refresh';
+import type { PaymentStatus } from '@/api/types';
 
 type BillingFilter = 'all' | 'unpaid' | 'paid';
 
+const PAYMENT_STATUS_STYLES: Record<
+  PaymentStatus,
+  { bg: string; text: string; label: string }
+> = {
+  SUCCESS: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'SUCCESS' },
+  PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'PENDING' },
+  FAILED: { bg: 'bg-red-100', text: 'text-red-700', label: 'FAILED' },
+};
+
 export default function TenantPaymentsScreen() {
   const profile = useStore((s) => s.profile);
-  const user = useStore((s) => s.user);
 
   // Active tenancy
   const tenancyQuery = useTenancies({
@@ -45,11 +57,17 @@ export default function TenantPaymentsScreen() {
   const invoicesQuery = useInvoices(
     activeTenancy ? { tenancyId: activeTenancy.id, limit: 50 } : { limit: 1 },
   );
-  const invoices = invoicesQuery.data?.items ?? [];
+  const invoices = useMemo(
+    () => invoicesQuery.data?.items ?? [],
+    [invoicesQuery.data?.items],
+  );
 
   // Payments for tenancy
   const paymentsQuery = usePayments({ limit: 50 });
-  const payments = paymentsQuery.data?.items ?? [];
+  const payments = useMemo(
+    () => paymentsQuery.data?.items ?? [],
+    [paymentsQuery.data?.items],
+  );
 
   const [activeTab, setActiveTab] = useState<BillingFilter>('all');
   const [refreshing, setRefreshing] = useState(false);
@@ -65,19 +83,6 @@ export default function TenantPaymentsScreen() {
     );
   };
 
-  // Outstanding invoice
-  const outstandingInvoice = useMemo(() => {
-    return (
-      invoices.find(
-        (inv) =>
-          (inv.status === 'UNPAID' ||
-            inv.status === 'PARTIALLY_PAID' ||
-            inv.status === 'OVERDUE') &&
-          Number(inv.balanceDue) > 0,
-      ) ?? null
-    );
-  }, [invoices]);
-
   const totalOutstanding = useMemo(() => {
     return invoices
       .filter((inv) => inv.status !== 'PAID')
@@ -91,6 +96,47 @@ export default function TenantPaymentsScreen() {
   const paidCount = useMemo(
     () => invoices.filter((i) => i.status === 'PAID').length,
     [invoices],
+  );
+  const billingFilters = useMemo<SegmentedOption<BillingFilter>[]>(
+    () => [
+      { value: 'all', label: `All (${invoices.length})` },
+      { value: 'unpaid', label: `Unpaid (${unpaidCount})` },
+      { value: 'paid', label: `Paid (${paidCount})` },
+    ],
+    [invoices.length, unpaidCount, paidCount],
+  );
+
+  // Invoices that still carry a balance — what a single prompt can settle.
+  const openInvoices = useMemo(
+    () =>
+      invoices
+        .filter((inv) => inv.status !== 'PAID' && Number(inv.balanceDue) > 0)
+        .sort(
+          (a, b) =>
+            new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+        ),
+    [invoices],
+  );
+  const totalDue = useMemo(
+    () =>
+      openInvoices.reduce((sum, inv) => sum + Number(inv.balanceDue), 0),
+    [openInvoices],
+  );
+
+  const visibleInvoices = useMemo(() => {
+    if (activeTab === 'unpaid') return openInvoices;
+    if (activeTab === 'paid')
+      return invoices.filter((inv) => inv.status === 'PAID');
+    return invoices;
+  }, [activeTab, openInvoices, invoices]);
+
+  // The "paid" tab is *settled*: only successful payments belong there.
+  const visiblePayments = useMemo(
+    () =>
+      activeTab === 'paid'
+        ? payments.filter((payment) => payment.status === 'SUCCESS')
+        : payments,
+    [activeTab, payments],
   );
 
   // Masked phone identifier for M-Pesa
@@ -111,7 +157,7 @@ export default function TenantPaymentsScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerClassName="pb-[100px]"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -140,14 +186,14 @@ export default function TenantPaymentsScreen() {
 
         {/* Outstanding Balance / Invoice Card */}
         <TenantOutstandingCard
-          invoice={outstandingInvoice}
-          tenancy={activeTenancy}
-          totalBalance={totalOutstanding}
-          onPay={() => {
-            if (outstandingInvoice) {
-              router.push(`/(tenant)/pay/${outstandingInvoice.id}`);
+          invoices={openInvoices}
+          totalBalance={totalDue}
+          onPayTotal={() => {
+            if (openInvoices.length > 0) {
+              router.push(`/(tenant)/pay/${openInvoices[0].id}?bulk=1`);
             }
           }}
+          onPayInvoice={(inv) => router.push(`/(tenant)/pay/${inv.id}`)}
         />
 
         {/* Billing Stream Section */}
@@ -157,163 +203,15 @@ export default function TenantPaymentsScreen() {
           </Text>
 
           {/* Filter Pills */}
-          <View className="flex-row items-center rounded-2xl bg-slate-200/70 p-1 mb-5">
-            <TouchableOpacity
-              activeOpacity={0.8}
-              className={`flex-1 rounded-xl py-2 items-center ${
-                activeTab === 'all' ? 'bg-white shadow-sm' : ''
-              }`}
-              onPress={() => setActiveTab('all')}>
-              <Text
-                className={`text-xs font-bold ${
-                  activeTab === 'all' ? 'text-teal-900' : 'text-slate-700'
-                }`}>
-                All ({invoices.length})
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              className={`flex-1 rounded-xl py-2 items-center ${
-                activeTab === 'unpaid' ? 'bg-white shadow-sm' : ''
-              }`}
-              onPress={() => setActiveTab('unpaid')}>
-              <Text
-                className={`text-xs font-bold ${
-                  activeTab === 'unpaid' ? 'text-teal-900' : 'text-slate-700'
-                }`}>
-                Unpaid ({unpaidCount})
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              className={`flex-1 rounded-xl py-2 items-center ${
-                activeTab === 'paid' ? 'bg-white shadow-sm' : ''
-              }`}
-              onPress={() => setActiveTab('paid')}>
-              <Text
-                className={`text-xs font-bold ${
-                  activeTab === 'paid' ? 'text-teal-900' : 'text-slate-700'
-                }`}>
-                Paid ({paidCount})
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Pending Settlement Card (shown in 'all' or 'unpaid' tabs when pending invoice exists) */}
-          {(activeTab === 'all' || activeTab === 'unpaid') && outstandingInvoice && (
-            <View className="mb-6">
-              <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-[11px] font-bold tracking-wider uppercase text-slate-700">
-                  PENDING SETTLEMENT
-                </Text>
-                <Text className="text-xs font-bold text-rose-600">
-                  ⚠️ Action Required
-                </Text>
-              </View>
-
-              <View className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
-                <View className="flex-row items-center justify-between mb-3">
-                  <View className="flex-row items-center gap-3">
-                    <View className="h-10 w-10 items-center justify-center rounded-xl bg-cyan-50 border border-cyan-100">
-                      <Icon as={FileText} size={20} className="text-cyan-600" />
-                    </View>
-                    <View>
-                      <Text className="text-base font-bold text-slate-900">
-                        {shortId(outstandingInvoice.id)}
-                      </Text>
-                      <Text className="text-xs text-slate-600">
-                        {new Date(
-                          outstandingInvoice.periodStart,
-                        ).toLocaleDateString('en-US', {
-                          month: 'long',
-                          year: 'numeric',
-                        })}{' '}
-                        Resident Statement
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="rounded-full bg-slate-100 px-2.5 py-1">
-                    <Text className="text-[11px] font-bold text-slate-700">
-                      ● Pending
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Itemized surcharges preview */}
-                <View className="rounded-xl bg-slate-50 p-3 mb-4">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <Text className="text-[11px] font-bold text-slate-700">
-                      Itemized Surcharges:
-                    </Text>
-                    <Text className="text-[11px] font-bold text-teal-700">
-                      {outstandingInvoice.lineItems?.length || 1} Elements
-                    </Text>
-                  </View>
-
-                  <View className="flex-row flex-wrap gap-2">
-                    <View className="rounded-lg bg-white px-2.5 py-1 border border-slate-200">
-                      <Text className="text-[11px] text-slate-700">
-                        Base Rent:{' '}
-                        <Text className="font-bold text-slate-900">
-                          {formatKes(outstandingInvoice.amount)}
-                        </Text>
-                      </Text>
-                    </View>
-                    {outstandingInvoice.lineItems
-                      ?.filter((i) => i.type !== 'RENT')
-                      .map((item) => (
-                        <View
-                          key={item.id}
-                          className="rounded-lg bg-white px-2.5 py-1 border border-slate-200">
-                          <Text className="text-[11px] text-slate-700">
-                            {item.description.split(' ')[0]}:{' '}
-                            <Text className="font-bold text-slate-900">
-                              {formatKes(item.amount)}
-                            </Text>
-                          </Text>
-                        </View>
-                      ))}
-                  </View>
-                </View>
-
-                <View className="flex-row items-center justify-between pt-2 border-t border-slate-100">
-                  <View>
-                    <Text className="text-xs text-slate-600 font-medium">
-                      Amount Payable
-                    </Text>
-                    <Text className="text-lg font-extrabold text-slate-900">
-                      {formatKes(outstandingInvoice.balanceDue)}
-                    </Text>
-                  </View>
-
-                  <View className="flex-row items-center gap-2">
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      className="h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
-                      <Icon as={Download} size={18} className="text-slate-700" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      activeOpacity={0.85}
-                      className="flex-row items-center gap-1.5 rounded-xl bg-teal-800 px-4 py-2.5 shadow-sm"
-                      onPress={() =>
-                        router.push(`/(tenant)/pay/${outstandingInvoice.id}`)
-                      }>
-                      <Text className="text-xs font-bold text-white">
-                        Pay Now
-                      </Text>
-                      <Icon as={ArrowRight} size={14} className="text-white" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </View>
-          )}
+          <SegmentedControl
+            value={activeTab}
+            onChange={setActiveTab}
+            options={billingFilters}
+            className="mb-5"
+          />
 
           {/* Empty state when filtering unpaid invoices and there are none */}
-          {activeTab === 'unpaid' && !outstandingInvoice && (
+          {activeTab === 'unpaid' && openInvoices.length === 0 && (
             <View className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 items-center justify-center mb-6">
               <View className="h-12 w-12 items-center justify-center rounded-full bg-emerald-50 mb-2.5">
                 <Icon as={CheckCircle2} size={24} className="text-emerald-600" />
@@ -327,6 +225,72 @@ export default function TenantPaymentsScreen() {
             </View>
           )}
 
+          {/* Invoice list, each with its status badge (individual Pay Now for open ones) */}
+          <View className="mb-6">
+            <Text className="text-[11px] font-bold tracking-wider uppercase text-slate-700 mb-2">
+              INVOICES
+            </Text>
+            <View className="gap-3">
+              {visibleInvoices.length > 0 ? (
+                visibleInvoices.map((inv) => {
+                  const style = STATUS_STYLES[inv.status];
+                  const isOpen =
+                    inv.status !== 'PAID' && Number(inv.balanceDue) > 0;
+                  return (
+                    <View
+                      key={inv.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
+                      <View className="flex-row items-center justify-between mb-2">
+                        <Text className="text-base font-bold text-slate-900">
+                          {formatMonthYear(inv.periodStart)}
+                        </Text>
+                        <Badge variant="secondary" className={style.bg}>
+                          <Text
+                            className={`text-[11px] font-semibold ${style.text}`}>
+                            {style.label}
+                          </Text>
+                        </Badge>
+                      </View>
+                      <View className="flex-row items-center justify-between">
+                        <View>
+                          <Text className="text-xs text-slate-600">
+                            {isOpen ? 'Amount payable' : 'Settled amount'}
+                          </Text>
+                          <Text className="text-base font-extrabold text-slate-900">
+                            {formatKes(isOpen ? inv.balanceDue : inv.amount)}
+                          </Text>
+                        </View>
+                        {isOpen ? (
+                          <TouchableOpacity
+                            activeOpacity={0.85}
+                            className="flex-row items-center gap-1.5 rounded-xl bg-teal-800 px-4 py-2.5 shadow-sm"
+                            onPress={() => router.push(`/(tenant)/pay/${inv.id}`)}>
+                            <Text className="text-xs font-bold text-white">
+                              Pay Now
+                            </Text>
+                            <Icon as={ArrowRight} size={14} className="text-white" />
+                          </TouchableOpacity>
+                        ) : (
+                          <Text className="text-xs text-slate-400">
+                            Due {formatDate(inv.dueDate)}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })
+              ) : (
+                <View className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 items-center justify-center">
+                  <Text className="text-sm font-bold text-slate-800 text-center">
+                    {activeTab === 'paid'
+                      ? 'No paid invoices yet'
+                      : 'No invoices to show'}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+
           {/* Payment History List (shown in 'all' or 'paid' tabs) */}
           {(activeTab === 'all' || activeTab === 'paid') && (
             <View>
@@ -335,85 +299,115 @@ export default function TenantPaymentsScreen() {
               </Text>
 
               <View className="gap-3">
-                {payments.length > 0 ? (
-                  payments.map((payment) => (
-                    <View
-                      key={payment.id}
-                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
-                      <View className="flex-row items-center justify-between mb-3">
-                        <View className="flex-row items-center gap-3">
-                          <View className="h-10 w-10 items-center justify-center rounded-xl bg-teal-50 border border-teal-100">
-                            <Icon
-                              as={CheckCircle2}
-                              size={20}
-                              className="text-teal-700"
-                            />
+                {visiblePayments.length > 0 ? (
+                  visiblePayments.map((payment) => {
+                    const pStyle = PAYMENT_STATUS_STYLES[payment.status];
+                    const methodLabel =
+                      payment.method === 'MPESA_STK'
+                        ? 'M-Pesa STK'
+                        : payment.method === 'MPESA_C2B'
+                          ? 'M-Pesa PayBill'
+                          : 'Card';
+                    return (
+                      <View
+                        key={payment.id}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
+                        <View className="flex-row items-center justify-between mb-3">
+                          <View className="flex-row items-center gap-3">
+                            {payment.status === 'SUCCESS' ? (
+                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-teal-50 border border-teal-100">
+                                <Icon
+                                  as={CheckCircle2}
+                                  size={20}
+                                  className="text-teal-700"
+                                />
+                              </View>
+                            ) : payment.status === 'PENDING' ? (
+                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-amber-100">
+                                <Icon
+                                  as={Clock}
+                                  size={20}
+                                  className="text-amber-600"
+                                />
+                              </View>
+                            ) : (
+                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-rose-50 border border-rose-100">
+                                <Icon
+                                  as={XCircle}
+                                  size={20}
+                                  className="text-rose-600"
+                                />
+                              </View>
+                            )}
+                            <View>
+                              <Text className="text-base font-bold text-slate-900">
+                                {formatDateLong(
+                                  payment.paidAt ?? payment.createdAt,
+                                )}{' '}
+                                Rent
+                              </Text>
+                              <Text className="text-xs text-slate-600">
+                                {methodLabel} •{' '}
+                                {formatDateLong(
+                                  payment.paidAt ?? payment.createdAt,
+                                )}
+                              </Text>
+                            </View>
                           </View>
+                          <Badge variant="secondary" className={pStyle.bg}>
+                            <Text
+                              className={`text-[11px] font-semibold ${pStyle.text}`}>
+                              {pStyle.label}
+                            </Text>
+                          </Badge>
+                        </View>
+
+                        <View className="flex-row items-center justify-between pt-2 border-t border-slate-100">
                           <View>
-                            <Text className="text-base font-bold text-slate-900">
-                              {formatDateLong(
-                                payment.paidAt ?? payment.createdAt,
-                              )}{' '}
-                              Rent
-                            </Text>
-                            <Text className="text-xs text-slate-600">
-                              Paid{' '}
-                              {formatDateLong(
-                                payment.paidAt ?? payment.createdAt,
-                              )}{' '}
-                              •{' '}
-                              {payment.method === 'MPESA_STK'
-                                ? 'M-Pesa STK'
-                                : payment.method === 'MPESA_C2B'
-                                ? 'M-Pesa PayBill'
-                                : 'Card'}
+                            {payment.status === 'SUCCESS' ? (
+                              <Text className="text-[11px] font-medium text-slate-600">
+                                Receipt #{' '}
+                                {payment.mpesaReceiptNumber ??
+                                  shortId(payment.transactionRef)}
+                              </Text>
+                            ) : null}
+                            <Text className="text-base font-extrabold text-slate-900">
+                              {formatKes(payment.amount)}
                             </Text>
                           </View>
-                        </View>
-                        <View className="rounded-full bg-emerald-50 px-2.5 py-1 border border-emerald-100">
-                          <Text className="text-[11px] font-bold text-emerald-700">
-                            Paid
-                          </Text>
+
+                          {payment.status === 'SUCCESS' ? (
+                            <TouchableOpacity
+                              activeOpacity={0.7}
+                              className="flex-row items-center gap-1 rounded-xl bg-slate-100 px-3 py-2">
+                              <Icon
+                                as={FileText}
+                                size={14}
+                                className="text-slate-700"
+                              />
+                              <Text className="text-xs font-semibold text-slate-700">
+                                Download Receipt
+                              </Text>
+                            </TouchableOpacity>
+                          ) : null}
                         </View>
                       </View>
-
-                      <View className="flex-row items-center justify-between pt-2 border-t border-slate-100">
-                        <View>
-                          <Text className="text-[11px] font-medium text-slate-600">
-                            Receipt #
-                            {payment.mpesaReceiptNumber ??
-                              shortId(payment.transactionRef)}
-                          </Text>
-                          <Text className="text-base font-extrabold text-slate-900">
-                            {formatKes(payment.amount)}
-                          </Text>
-                        </View>
-
-                        <TouchableOpacity
-                          activeOpacity={0.7}
-                          className="flex-row items-center gap-1 rounded-xl bg-slate-100 px-3 py-2">
-                          <Icon
-                            as={FileText}
-                            size={14}
-                            className="text-slate-700"
-                          />
-                          <Text className="text-xs font-semibold text-slate-700">
-                            Download Receipt
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  ))
+                    );
+                  })
                 ) : (
                   <View className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 items-center justify-center">
                     <View className="h-12 w-12 items-center justify-center rounded-full bg-slate-100 mb-2.5">
                       <Icon as={Clock} size={22} className="text-slate-500" />
                     </View>
                     <Text className="text-sm font-bold text-slate-800 text-center">
-                      No payment history
+                      {activeTab === 'paid'
+                        ? 'No settled payments yet'
+                        : 'No payment history'}
                     </Text>
                     <Text className="text-xs text-slate-600 text-center mt-1">
-                      Settled payments will appear here.
+                      {activeTab === 'paid'
+                        ? 'Successful payments will appear here.'
+                        : 'Settled payments will appear here.'}
                     </Text>
                   </View>
                 )}

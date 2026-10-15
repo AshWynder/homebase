@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { View } from 'react-native';
+import type { DimensionValue } from 'react-native';
 import { Building2, CheckCheck, Globe2, User } from 'lucide-react-native';
 
 import { Icon } from '@/components/ui/icon';
@@ -101,6 +103,22 @@ export function ReadProgress({
   readCount: number;
   recipientCount: number;
 }) {
+  // Declared above the early return below, which the rules-of-hooks lint
+  // requires. Percentages are cheaper than branching the component in two.
+  const percent =
+    recipientCount === 0
+      ? 0
+      : Math.round(Math.min(readCount / recipientCount, 1) * 100);
+
+  // Memoized: NativeWind's native interop identity-checks `style` on every
+  // render, so an inline literal never compares equal to the previously
+  // captured one and re-dispatches from inside the render phase — which hangs
+  // the app on any state change.
+  const barWidthStyle = useMemo(
+    () => ({ width: `${percent}%` as DimensionValue }),
+    [percent],
+  );
+
   if (recipientCount === 0) {
     return (
       <Text className="text-[11px] font-medium text-slate-400">
@@ -109,9 +127,7 @@ export function ReadProgress({
     );
   }
 
-  const ratio = Math.min(readCount / recipientCount, 1);
   const allRead = readCount === recipientCount;
-  const percent = Math.round(ratio * 100);
 
   return (
     <View className="gap-1.5">
@@ -139,7 +155,7 @@ export function ReadProgress({
       <View className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
         <View
           className={cn('h-full rounded-full', allRead ? 'bg-emerald-500' : 'bg-teal-600')}
-          style={{ width: `${percent}%` }}
+          style={barWidthStyle}
         />
       </View>
     </View>

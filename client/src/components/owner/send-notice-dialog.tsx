@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -79,6 +79,12 @@ const AUDIENCE_OPTIONS: readonly {
  * user. Targets are cleared when the audience changes rather than hidden, so a
  * stale property or tenant can never ride along in the payload.
  */
+const styles = StyleSheet.create({
+  // Hoisted: NativeWind's native interop identity-checks `style` on every render,
+  // so an inline literal re-dispatches from inside the render phase and hangs the app.
+  messageBox: { minHeight: 140, fontSize: 15, lineHeight: 22 },
+});
+
 export function SendNoticeDialog({
   open,
   onOpenChange,
@@ -351,7 +357,7 @@ export function SendNoticeDialog({
                       'rounded-2xl border-2 bg-white p-4 text-slate-900',
                       errors.message ? 'border-rose-300' : 'border-primary',
                     )}
-                    style={{ minHeight: 140, fontSize: 15, lineHeight: 22 }}
+                    style={styles.messageBox}
                   />
                 )}
               />

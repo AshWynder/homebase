@@ -73,6 +73,9 @@ const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   MPESA_STK: 'M-Pesa STK Push',
   MPESA_C2B: 'M-Pesa C2B',
   CARD: 'Card Payment',
+  CASH: 'Cash',
+  BANK: 'Bank Transfer',
+  MPESA: 'M-Pesa',
 };
 
 const PAYMENT_STATUS: Record<
@@ -189,7 +192,7 @@ export default function TenancyDetailScreen() {
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}
+          contentContainerClassName="p-4 pb-10 gap-4"
           showsVerticalScrollIndicator={false}>
           {/* Profile summary */}
           <View className="gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-black/5">
@@ -255,7 +258,7 @@ export default function TenancyDetailScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8 }}>
+            contentContainerClassName="gap-2">
             {TABS.map((item) => {
               const active = tab === item.key;
               return (

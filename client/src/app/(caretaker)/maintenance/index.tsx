@@ -80,7 +80,7 @@ export default function CaretakerMaintenanceScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerClassName="pb-10"
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
