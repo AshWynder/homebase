@@ -5,7 +5,7 @@ import { TenancyList } from '@/components/owner/tenancy-list';
 
 export default function OwnerTenanciesScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader title="Move-Out & Leases" showBack />
       <TenancyList
         isActive={false}

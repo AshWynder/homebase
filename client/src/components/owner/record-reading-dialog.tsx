@@ -135,7 +135,7 @@ export function RecordReadingDialog({
               )}
             />
             {errors.currentReading && (
-              <Text className="text-xs text-red-600">
+              <Text className="text-xs text-destructive">
                 {errors.currentReading.message}
               </Text>
             )}
@@ -154,18 +154,18 @@ export function RecordReadingDialog({
               )}
             />
             {errors.readingDate && (
-              <Text className="text-xs text-red-600">
+              <Text className="text-xs text-destructive">
                 {errors.readingDate.message}
               </Text>
             )}
           </View>
 
           {preview && (
-            <View className="gap-1 rounded-lg bg-slate-50 p-3">
-              <Text className="text-xs text-slate-500">
+            <View className="gap-1 rounded-lg bg-muted p-3">
+              <Text className="text-xs text-muted-foreground">
                 Estimated charge for this invoice
               </Text>
-              <Text className="text-sm font-semibold text-slate-900">
+              <Text className="text-sm font-semibold text-foreground">
                 {preview.units} unit{preview.units === 1 ? '' : 's'} ×{' '}
                 {formatKes(meter?.pricePerUnit)} = {formatKes(preview.cost)}
               </Text>

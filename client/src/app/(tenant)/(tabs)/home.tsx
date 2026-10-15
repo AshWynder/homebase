@@ -57,36 +57,36 @@ const ACTIVITY_VISUALS: Record<
 > = {
   payment: {
     icon: CreditCard,
-    tile: 'bg-emerald-50 border-emerald-100',
-    iconColor: 'text-emerald-600',
+    tile: 'bg-success/10 border-success/20',
+    iconColor: 'text-success',
   },
   invoice: {
     icon: FileText,
-    tile: 'bg-indigo-50 border-indigo-100',
-    iconColor: 'text-indigo-600',
+    tile: 'bg-info/10 border-info/20',
+    iconColor: 'text-info',
   },
   maintenance: {
     icon: Wrench,
-    tile: 'bg-amber-50 border-amber-100',
-    iconColor: 'text-amber-600',
+    tile: 'bg-warning/10 border-warning/20',
+    iconColor: 'text-warning',
   },
   notice: {
     icon: Megaphone,
-    tile: 'bg-teal-50 border-teal-100',
-    iconColor: 'text-teal-600',
+    tile: 'bg-primary/10 border-primary/20',
+    iconColor: 'text-primary',
   },
   tenancy: {
     icon: FileMinus,
-    tile: 'bg-rose-50 border-rose-100',
-    iconColor: 'text-rose-600',
+    tile: 'bg-destructive/10 border-destructive/20',
+    iconColor: 'text-destructive',
   },
 };
 
 const TONE_TEXT: Record<ActivityTone, string> = {
-  positive: 'text-emerald-600',
-  danger: 'text-rose-600',
-  warning: 'text-amber-600',
-  muted: 'text-slate-600',
+  positive: 'text-success',
+  danger: 'text-destructive',
+  warning: 'text-warning',
+  muted: 'text-muted-foreground',
 };
 
 // Hoisted: NativeWind's native interop identity-checks `style` on every render,
@@ -304,7 +304,7 @@ export default function TenantHomeScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="pb-10"
@@ -320,20 +320,20 @@ export default function TenantHomeScreen() {
         <View className="flex-row items-center justify-between px-6 pt-4 pb-4">
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => router.push('/(tenant)/account')}
+            onPress={() => router.push('/(tenant)/settings')}
             className="flex-row items-center gap-3">
-            <Avatar size="md" className="border-2 border-teal-100 shadow-sm">
+            <Avatar size="md" className="border-2 border-primary/20 shadow-sm">
               {user?.image ? (
                 <AvatarImage source={{ uri: user.image }} />
               ) : (
-                <AvatarFallback className="bg-teal-700">
-                  <Text className="text-sm font-bold text-white">{initials}</Text>
+                <AvatarFallback className="bg-primary">
+                  <Text className="text-sm font-bold text-primary-foreground">{initials}</Text>
                 </AvatarFallback>
               )}
             </Avatar>
             <View>
-              <Text className="text-xs font-medium text-slate-500">Good day,</Text>
-              <Text className="text-xl font-bold tracking-tight text-slate-900">
+              <Text className="text-xs font-medium text-muted-foreground">Good day,</Text>
+              <Text className="text-xl font-bold tracking-tight text-foreground">
                 {displayName}
               </Text>
             </View>
@@ -351,7 +351,7 @@ export default function TenantHomeScreen() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              className="relative h-10 w-10 items-center justify-center rounded-full bg-slate-100"
+              className="relative h-10 w-10 items-center justify-center rounded-full bg-muted"
               accessibilityRole="button"
               accessibilityLabel={
                 unread > 0
@@ -359,24 +359,24 @@ export default function TenantHomeScreen() {
                   : 'Notices'
               }
               onPress={() => router.push('/(tenant)/(tabs)/notices')}>
-              <Icon as={Bell} size={20} className="text-slate-700" />
+              <Icon as={Bell} size={20} className="text-foreground" />
               {unread > 0 ? (
-                <View className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-teal-500" />
+                <View className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-primary" />
               ) : null}
             </TouchableOpacity>
 
             <TouchableOpacity
               activeOpacity={0.7}
-              className="h-10 w-10 items-center justify-center rounded-full bg-slate-100"
+              className="h-10 w-10 items-center justify-center rounded-full bg-muted"
               accessibilityRole="button"
               accessibilityLabel="Account settings"
-              onPress={() => router.push('/(tenant)/account')}>
+              onPress={() => router.push('/(tenant)/settings')}>
               <Avatar size="sm">
                 {user?.image ? (
                   <AvatarImage source={{ uri: user.image }} />
                 ) : (
-                  <AvatarFallback className="bg-slate-200">
-                    <Text className="text-xs font-bold text-slate-700">{initials}</Text>
+                  <AvatarFallback className="bg-muted">
+                    <Text className="text-xs font-bold text-foreground">{initials}</Text>
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -423,11 +423,11 @@ export default function TenantHomeScreen() {
               <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={handlePayPress}
-                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-white py-3.5 shadow-sm">
-                <Text className="text-sm font-bold text-teal-900">
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-card py-3.5 shadow-sm">
+                <Text className="text-sm font-bold text-primary">
                   {dueInvoice ? 'Pay Current Rent' : 'View Invoices'}
                 </Text>
-                <Icon as={ArrowUpRight} size={16} className="text-teal-900" />
+                <Icon as={ArrowUpRight} size={16} className="text-primary" />
               </TouchableOpacity>
             </View>
           </LinearGradient>
@@ -435,52 +435,52 @@ export default function TenantHomeScreen() {
 
         {/* Quick Actions Grid */}
         <View className="px-6 pt-4 pb-2">
-          <Text className="text-xs font-bold tracking-wider text-slate-400 uppercase mb-3">
+          <Text className="text-xs font-bold tracking-wider text-muted-foreground uppercase mb-3">
             Quick Actions
           </Text>
           <View className="flex-row gap-3">
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => router.push('/(tenant)/(tabs)/payments')}
-              className="flex-1 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 items-start">
-              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
-                <Icon as={CreditCard} size={18} className="text-emerald-700" />
+              className="flex-1 rounded-2xl border border-border bg-muted p-3.5 items-start">
+              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-success/10">
+                <Icon as={CreditCard} size={18} className="text-success" />
               </View>
-              <Text className="text-xs font-bold text-slate-800">Pay Rent</Text>
-              <Text className="text-[10px] text-slate-500">M-Pesa / Card</Text>
+              <Text className="text-xs font-bold text-foreground">Pay Rent</Text>
+              <Text className="text-[10px] text-muted-foreground">M-Pesa / Card</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => router.push('/(tenant)/maintenance/new')}
-              className="flex-1 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 items-start">
-              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
-                <Icon as={Wrench} size={18} className="text-amber-700" />
+              className="flex-1 rounded-2xl border border-border bg-muted p-3.5 items-start">
+              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-warning/10">
+                <Icon as={Wrench} size={18} className="text-warning" />
               </View>
-              <Text className="text-xs font-bold text-slate-800">Fix Issue</Text>
-              <Text className="text-[10px] text-slate-500">Report repair</Text>
+              <Text className="text-xs font-bold text-foreground">Fix Issue</Text>
+              <Text className="text-[10px] text-muted-foreground">Report repair</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => router.push('/(tenant)/(tabs)/notices')}
-              className="flex-1 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 items-start">
-              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-teal-100">
-                <Icon as={Megaphone} size={18} className="text-teal-700" />
+              className="flex-1 rounded-2xl border border-border bg-muted p-3.5 items-start">
+              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                <Icon as={Megaphone} size={18} className="text-primary" />
               </View>
-              <Text className="text-xs font-bold text-slate-800">Notices</Text>
-              <Text className="text-[10px] text-slate-500">Updates</Text>
+              <Text className="text-xs font-bold text-foreground">Notices</Text>
+              <Text className="text-[10px] text-muted-foreground">Updates</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => router.push('/(tenant)/account')}
-              className="flex-1 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 items-start">
-              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-indigo-100">
-                <Icon as={ShieldCheck} size={18} className="text-indigo-700" />
+              onPress={() => router.push('/(tenant)/settings')}
+              className="flex-1 rounded-2xl border border-border bg-muted p-3.5 items-start">
+              <View className="mb-2 h-9 w-9 items-center justify-center rounded-xl bg-info/10">
+                <Icon as={ShieldCheck} size={18} className="text-info" />
               </View>
-              <Text className="text-xs font-bold text-slate-800">Account</Text>
-              <Text className="text-[10px] text-slate-500">Profile</Text>
+              <Text className="text-xs font-bold text-foreground">Settings</Text>
+              <Text className="text-[10px] text-muted-foreground">Profile</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -488,12 +488,12 @@ export default function TenantHomeScreen() {
         {/* Categorized Recent Activity Feed */}
         <View className="px-6 pt-4">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+            <Text className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Recent Activity
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/(tenant)/(tabs)/payments')}>
-              <Text className="text-xs font-semibold text-teal-700">View all</Text>
+              <Text className="text-xs font-semibold text-primary">View all</Text>
             </TouchableOpacity>
           </View>
 
@@ -503,8 +503,8 @@ export default function TenantHomeScreen() {
               <Skeleton className="h-16 w-full rounded-2xl" />
             </View>
           ) : recentActivity.length === 0 ? (
-            <View className="rounded-2xl border border-dashed border-slate-200 p-6 items-center justify-center">
-              <Text className="text-xs text-slate-400">No recent transactions or activities.</Text>
+            <View className="rounded-2xl border border-dashed border-border p-6 items-center justify-center">
+              <Text className="text-xs text-muted-foreground">No recent transactions or activities.</Text>
             </View>
           ) : (
             <View className="gap-2.5">
@@ -515,7 +515,7 @@ export default function TenantHomeScreen() {
                     key={item.id}
                     activeOpacity={0.7}
                     onPress={item.onPress}
-                    className="flex-row items-center justify-between rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm shadow-slate-100">
+                    className="flex-row items-center justify-between rounded-2xl border border-border bg-card p-3.5 shadow-sm shadow-black/5">
                     <View className="flex-row items-center gap-3 flex-1 pr-2">
                       <View
                         className={`h-10 w-10 items-center justify-center rounded-xl border ${visual.tile}`}>
@@ -525,16 +525,16 @@ export default function TenantHomeScreen() {
                         <View className="flex-row items-center gap-1.5">
                           <Text
                             numberOfLines={1}
-                            className="text-xs font-bold text-slate-900 flex-1">
+                            className="text-xs font-bold text-foreground flex-1">
                             {item.title}
                           </Text>
-                          <View className="rounded-md bg-slate-100 px-1.5 py-0.5">
-                            <Text className="text-[9px] font-semibold text-slate-600">
+                          <View className="rounded-md bg-muted px-1.5 py-0.5">
+                            <Text className="text-[9px] font-semibold text-muted-foreground">
                               {item.category}
                             </Text>
                           </View>
                         </View>
-                        <Text numberOfLines={1} className="text-[11px] text-slate-500 mt-0.5">
+                        <Text numberOfLines={1} className="text-[11px] text-muted-foreground mt-0.5">
                           {item.subtitle}
                         </Text>
                       </View>

@@ -31,14 +31,14 @@ export default function PortfolioScreen() {
   const title = firstName ? `Hello ${firstName} 👋` : 'Portfolio';
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader
         title={title}
         onAdd={segment === 'units' ? () => setPropertyOpen(true) : () => setTenancyOpen(true)}
         addLabel={segment === 'units' ? 'Add property' : 'Add tenancy'}
       />
 
-      <View className="border-b border-slate-200 bg-white px-5 pb-3">
+      <View className="border-b border-border bg-background px-5 pb-3">
         <SegmentedControl value={segment} onChange={setSegment} options={SEGMENTS} />
       </View>
 

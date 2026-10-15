@@ -211,17 +211,17 @@ export function SendNoticeDialog({
                     accessibilityState={{ checked: active }}
                     className={cn(
                       'flex-row items-center gap-3 rounded-xl border-2 p-3',
-                      active ? 'border-teal-600 bg-teal-50' : 'border-slate-200 bg-white',
+                      active ? 'border-primary bg-primary/10' : 'border-border bg-card',
                     )}>
                     <View
                       className={cn(
                         'h-9 w-9 items-center justify-center rounded-lg',
-                        active ? 'bg-teal-100' : 'bg-slate-100',
+                        active ? 'bg-primary/10' : 'bg-muted',
                       )}>
                       <Icon
                         as={option.icon}
                         size={16}
-                        className={active ? 'text-teal-700' : 'text-slate-500'}
+                        className={active ? 'text-primary' : 'text-muted-foreground'}
                       />
                     </View>
 
@@ -229,14 +229,14 @@ export function SendNoticeDialog({
                       <Text
                         className={cn(
                           'text-sm font-bold',
-                          active ? 'text-teal-900' : 'text-slate-900',
+                          active ? 'text-primary' : 'text-foreground',
                         )}>
                         {option.label}
                       </Text>
                       <Text
                         className={cn(
                           'text-[11px]',
-                          active ? 'text-teal-700' : 'text-slate-500',
+                          active ? 'text-primary' : 'text-muted-foreground',
                         )}>
                         {option.hint}
                       </Text>
@@ -246,10 +246,10 @@ export function SendNoticeDialog({
                     <View
                       className={cn(
                         'h-5 w-5 items-center justify-center rounded-full border-2',
-                        active ? 'border-teal-600' : 'border-slate-300',
+                        active ? 'border-primary' : 'border-border',
                       )}>
                       {active ? (
-                        <View className="h-2.5 w-2.5 rounded-full bg-teal-600" />
+                        <View className="h-2.5 w-2.5 rounded-full bg-primary" />
                       ) : null}
                     </View>
                   </Pressable>
@@ -289,7 +289,7 @@ export function SendNoticeDialog({
                   )}
                 />
                 {errors.propertyId ? (
-                  <Text className="text-xs text-red-600">{errors.propertyId.message}</Text>
+                  <Text className="text-xs text-destructive">{errors.propertyId.message}</Text>
                 ) : null}
               </View>
             ) : null}
@@ -329,8 +329,8 @@ export function SendNoticeDialog({
                 )}
               />
               <View className="flex-row items-center justify-between">
-                <Text className="flex-1 text-xs text-red-600">{errors.title?.message ?? ' '}</Text>
-                <Text className="text-[11px] font-semibold text-slate-400">
+                <Text className="flex-1 text-xs text-destructive">{errors.title?.message ?? ' '}</Text>
+                <Text className="text-[11px] font-semibold text-muted-foreground">
                   {title.length}/{NOTICE_LIMITS.maxTitleLength}
                 </Text>
               </View>
@@ -354,23 +354,23 @@ export function SendNoticeDialog({
                     // impossible to send rather than merely flagged.
                     maxLength={NOTICE_LIMITS.maxMessageLength}
                     className={cn(
-                      'rounded-2xl border-2 bg-white p-4 text-slate-900',
-                      errors.message ? 'border-rose-300' : 'border-primary',
+                      'rounded-2xl border-2 bg-card p-4 text-foreground',
+                      errors.message ? 'border-destructive' : 'border-primary',
                     )}
                     style={styles.messageBox}
                   />
                 )}
               />
               <View className="flex-row items-center justify-between">
-                <Text className="flex-1 text-xs text-red-600">
+                <Text className="flex-1 text-xs text-destructive">
                   {errors.message?.message ?? ' '}
                 </Text>
                 <Text
                   className={cn(
                     'text-[11px] font-semibold',
                     message.length > NOTICE_LIMITS.maxMessageLength * 0.9
-                      ? 'text-amber-600'
-                      : 'text-slate-400',
+                      ? 'text-warning'
+                      : 'text-muted-foreground',
                   )}>
                   {message.length}/{NOTICE_LIMITS.maxMessageLength}
                 </Text>
@@ -378,9 +378,9 @@ export function SendNoticeDialog({
             </View>
 
             {/* Recipient summary, so "send" never happens to an imagined audience */}
-            <View className="flex-row items-start gap-2.5 rounded-xl bg-slate-50 p-3">
-              <Icon as={AUDIENCE_OPTIONS[0].icon} size={14} className="mt-0.5 text-slate-400" />
-              <Text className="flex-1 text-[11px] leading-4 text-slate-600">
+            <View className="flex-row items-start gap-2.5 rounded-xl bg-muted p-3">
+              <Icon as={AUDIENCE_OPTIONS[0].icon} size={14} className="mt-0.5 text-muted-foreground" />
+              <Text className="flex-1 text-[11px] leading-4 text-muted-foreground">
                 {describeReach(audience, selectedProperty?.name, selectedTenant)}
               </Text>
             </View>

@@ -67,13 +67,13 @@ export function InvoiceList() {
             return (
               <Pressable
                 onPress={() => router.push(`/invoice/${item.id}`)}
-                className="gap-3 rounded-2xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+                className="gap-3 rounded-2xl border border-border bg-card p-4 active:bg-muted">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 gap-1">
-                    <Text className="text-base font-bold text-slate-900">
+                    <Text className="text-base font-bold text-foreground">
                       {tenantName(item.tenancy)}
                     </Text>
-                    <Text className="text-sm text-slate-500">{formatPeriod(item.periodStart)}</Text>
+                    <Text className="text-sm text-muted-foreground">{formatPeriod(item.periodStart)}</Text>
                   </View>
                   <Badge variant="secondary" className={style.bg}>
                     <Text className={`text-[11px] font-semibold ${style.text}`}>{style.label}</Text>
@@ -81,15 +81,15 @@ export function InvoiceList() {
                 </View>
 
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-sm text-slate-500">Amount Due</Text>
-                  <Text className="text-base font-bold text-slate-900">
+                  <Text className="text-sm text-muted-foreground">Amount Due</Text>
+                  <Text className="text-base font-bold text-foreground">
                     {formatKes(item.balanceDue)}
                   </Text>
                 </View>
 
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-xs text-slate-500">Due: {formatDate(item.dueDate)}</Text>
-                  <Icon as={ChevronRight} size={16} className="text-slate-400" />
+                  <Text className="text-xs text-muted-foreground">Due: {formatDate(item.dueDate)}</Text>
+                  <Icon as={ChevronRight} size={16} className="text-muted-foreground" />
                 </View>
               </Pressable>
             );

@@ -4,6 +4,8 @@ export default function OwnerLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="settings/profile" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="settings/display" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen
         name="tenancy/index"
         options={{

@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Pressable,
   ScrollView,
+  StyleSheet,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,6 +31,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Toast } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
+import { useDeferredChange } from '@/hooks/use-deferred-change';
 import { useInvoices } from '@/hooks/queries/use-invoices';
 import { useTenancy } from '@/hooks/queries/use-tenancies';
 import {
@@ -63,10 +65,10 @@ const INVOICE_STATUS: Record<
   InvoiceStatus,
   { bg: string; text: string; label: string }
 > = {
-  UNPAID: { bg: 'bg-amber-100', text: 'text-amber-800', label: 'PENDING' },
-  PARTIALLY_PAID: { bg: 'bg-amber-100', text: 'text-amber-800', label: 'PARTIAL' },
-  PAID: { bg: 'bg-emerald-100', text: 'text-emerald-800', label: 'PAID' },
-  OVERDUE: { bg: 'bg-red-100', text: 'text-red-800', label: 'OVERDUE' },
+  UNPAID: { bg: 'bg-warning/10', text: 'text-warning', label: 'PENDING' },
+  PARTIALLY_PAID: { bg: 'bg-warning/10', text: 'text-warning', label: 'PARTIAL' },
+  PAID: { bg: 'bg-success/10', text: 'text-success', label: 'PAID' },
+  OVERDUE: { bg: 'bg-destructive/10', text: 'text-destructive', label: 'OVERDUE' },
 };
 
 const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
@@ -82,10 +84,18 @@ const PAYMENT_STATUS: Record<
   PaymentStatus,
   { label: string; text: string }
 > = {
-  SUCCESS: { label: 'Completed', text: 'text-emerald-700' },
-  PENDING: { label: 'Pending', text: 'text-amber-700' },
-  FAILED: { label: 'Failed', text: 'text-red-700' },
+  SUCCESS: { label: 'Completed', text: 'text-success' },
+  PENDING: { label: 'Pending', text: 'text-warning' },
+  FAILED: { label: 'Failed', text: 'text-destructive' },
 };
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so a conditional className re-dispatches from inside the render phase and
+// hangs the app on any state change.
+const styles = StyleSheet.create({
+  tabActive: { backgroundColor: '#0F172A' },
+  tabInactive: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0' },
+});
 
 function initials(name: string): string {
   return name
@@ -115,6 +125,7 @@ export default function TenancyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const tenancyId = typeof id === 'string' ? id : id?.[0] ?? '';
   const [tab, setTab] = useState<DetailTab>('all');
+  const onTabChange = useDeferredChange(tab, setTab);
   const [generateOpen, setGenerateOpen] = useState(false);
 
   const { visible, message, type, showToast, hideToast } = useToast();
@@ -162,16 +173,16 @@ export default function TenancyDetailScreen() {
   const error = tenancyQuery.isError;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-100" edges={['top', 'bottom']}>
-      <View className="flex-row items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <View className="flex-row items-center gap-3 border-b border-border bg-background px-4 py-3">
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
           accessibilityLabel="Go back"
-          className="h-9 w-9 items-center justify-center rounded-full bg-slate-100 active:bg-slate-200">
-          <Icon as={ArrowLeft} size={18} className="text-slate-800" />
+          className="h-9 w-9 items-center justify-center rounded-full bg-muted active:bg-border">
+          <Icon as={ArrowLeft} size={18} className="text-foreground" />
         </Pressable>
-        <Text className="flex-1 text-base font-bold text-slate-900">
+        <Text className="flex-1 text-base font-bold text-foreground">
           Tenancy Details
         </Text>
       </View>
@@ -195,37 +206,37 @@ export default function TenancyDetailScreen() {
           contentContainerClassName="p-4 pb-10 gap-4"
           showsVerticalScrollIndicator={false}>
           {/* Profile summary */}
-          <View className="gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-black/5">
+          <View className="gap-4 rounded-3xl border border-border bg-card p-5 shadow-sm shadow-black/5">
             <View className="flex-row items-start gap-3">
-              <View className="h-14 w-14 items-center justify-center rounded-full bg-teal-100">
-                <Text className="text-lg font-bold text-teal-800">
+              <View className="h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <Text className="text-lg font-bold text-primary">
                   {initials(name)}
                 </Text>
               </View>
               <View className="flex-1 gap-1">
                 <View className="flex-row flex-wrap items-center gap-2">
-                  <Text className="text-lg font-bold text-slate-900">{name}</Text>
+                  <Text className="text-lg font-bold text-foreground">{name}</Text>
                   <Badge
                     variant="secondary"
                     className={
-                      tenancy.isActive ? 'bg-emerald-100' : 'bg-slate-100'
+                      tenancy.isActive ? 'bg-success/10' : 'bg-muted'
                     }>
                     <Text
                       className={cn(
                         'text-[10px] font-semibold',
                         tenancy.isActive
-                          ? 'text-emerald-800'
-                          : 'text-slate-600',
+                          ? 'text-success'
+                          : 'text-muted-foreground',
                       )}>
                       {tenancy.isActive ? 'ACTIVE' : 'ENDED'}
                     </Text>
                   </Badge>
                 </View>
-                <Text className="text-sm text-slate-500">
+                <Text className="text-sm text-muted-foreground">
                   {propertyName} • Unit {unitNumber}
                 </Text>
                 {address ? (
-                  <Text className="text-xs text-slate-400">{address}</Text>
+                  <Text className="text-xs text-muted-foreground">{address}</Text>
                 ) : null}
               </View>
             </View>
@@ -237,17 +248,17 @@ export default function TenancyDetailScreen() {
               profileId={tenancy.tenant?.id}
             />
 
-            <View className="gap-1 rounded-2xl bg-teal-50 p-4">
-              <Text className="text-[11px] font-medium uppercase tracking-wide text-teal-700">
+            <View className="gap-1 rounded-2xl bg-primary/10 p-4">
+              <Text className="text-[11px] font-medium uppercase tracking-wide text-primary">
                 Monthly Rent
               </Text>
-              <Text className="text-xl font-bold text-slate-900">
+              <Text className="text-xl font-bold text-foreground">
                 {formatKes(tenancy.rentAmount)}
-                <Text className="text-xs font-medium text-slate-500">/mo</Text>
+                <Text className="text-xs font-medium text-muted-foreground">/mo</Text>
               </Text>
               <View className="mt-1 flex-row items-center gap-1">
-                <Icon as={Calendar} size={12} className="text-teal-600" />
-                <Text className="text-[11px] text-teal-700">
+                <Icon as={Calendar} size={12} className="text-primary" />
+                <Text className="text-[11px] text-primary">
                   Started {formatDateLong(tenancy.startDate)}
                 </Text>
               </View>
@@ -264,15 +275,13 @@ export default function TenancyDetailScreen() {
               return (
                 <Pressable
                   key={item.key}
-                  onPress={() => setTab(item.key)}
-                  className={cn(
-                    'rounded-full px-4 py-2',
-                    active ? 'bg-slate-900' : 'bg-white border border-slate-200',
-                  )}>
+                  onPress={() => onTabChange(item.key)}
+                  className="rounded-full px-4 py-2"
+                  style={active ? styles.tabActive : styles.tabInactive}>
                   <Text
                     className={cn(
                       'text-xs font-semibold',
-                      active ? 'text-white' : 'text-slate-600',
+                      active ? 'text-white' : 'text-muted-foreground',
                     )}>
                     {item.label}
                   </Text>
@@ -343,8 +352,8 @@ function SectionHeader({
   return (
     <View className="mb-3 flex-row items-center justify-between">
       <View className="flex-row items-center gap-2">
-        <View className="h-2 w-2 rounded-full bg-teal-600" />
-        <Text className="text-base font-bold text-slate-900">{title}</Text>
+        <View className="h-2 w-2 rounded-full bg-primary" />
+        <Text className="text-base font-bold text-foreground">{title}</Text>
       </View>
       {trailing}
     </View>
@@ -363,17 +372,17 @@ function InfoRow({
   hint?: string;
 }) {
   return (
-    <View className="flex-row items-start gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3.5">
-      <View className="mt-0.5 h-9 w-9 items-center justify-center rounded-xl bg-slate-50">
-        <Icon as={icon} size={16} className="text-slate-600" />
+    <View className="flex-row items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+      <View className="mt-0.5 h-9 w-9 items-center justify-center rounded-xl bg-muted">
+        <Icon as={icon} size={16} className="text-muted-foreground" />
       </View>
       <View className="flex-1 gap-0.5">
-        <Text className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+        <Text className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </Text>
-        <Text className="text-sm font-semibold text-slate-900">{value}</Text>
+        <Text className="text-sm font-semibold text-foreground">{value}</Text>
         {hint ? (
-          <Text className="text-xs text-slate-500">{hint}</Text>
+          <Text className="text-xs text-muted-foreground">{hint}</Text>
         ) : null}
       </View>
     </View>
@@ -458,18 +467,18 @@ function InvoicesSection({
         trailing={
           <View className="flex-row items-center gap-2">
             {pendingCount > 0 ? (
-              <Badge variant="secondary" className="bg-red-100">
-                <Text className="text-[10px] font-semibold text-red-700">
+              <Badge variant="secondary" className="bg-destructive/10">
+                <Text className="text-[10px] font-semibold text-destructive">
                   {pendingCount} Pending
                 </Text>
               </Badge>
             ) : null}
             <Pressable
               onPress={onGenerate}
-              className="flex-row items-center gap-1 rounded-full bg-teal-700 px-3 py-1.5 active:bg-teal-800"
+              className="flex-row items-center gap-1 rounded-full bg-primary px-3 py-1.5 active:bg-primary/90"
               accessibilityLabel="Generate invoice for this tenant">
-              <Icon as={Plus} size={12} className="text-white" />
-              <Text className="text-[10px] font-semibold text-white">
+              <Icon as={Plus} size={12} className="text-primary-foreground" />
+              <Text className="text-[10px] font-semibold text-primary-foreground">
                 Generate
               </Text>
             </Pressable>
@@ -482,16 +491,16 @@ function InvoicesSection({
       ) : error ? (
         <ListMessage title="Couldn't load invoices" subtitle={errorMessage} />
       ) : invoices.length === 0 ? (
-        <View className="items-center rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8">
-          <Text className="text-center text-sm text-slate-500">
+        <View className="items-center rounded-2xl border border-dashed border-border bg-card px-4 py-8">
+          <Text className="text-center text-sm text-muted-foreground">
             No invoices for this tenancy yet.
           </Text>
           {onGenerate ? (
             <Pressable
               onPress={onGenerate}
-              className="mt-4 flex-row items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2.5 active:bg-teal-800">
-              <Icon as={Plus} size={14} className="text-white" />
-              <Text className="text-xs font-semibold text-white">
+              className="mt-4 flex-row items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 active:bg-primary/90">
+              <Icon as={Plus} size={14} className="text-primary-foreground" />
+              <Text className="text-xs font-semibold text-primary-foreground">
                 Create first invoice
               </Text>
             </Pressable>
@@ -517,25 +526,25 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
 
   if (!isOpen) {
     return (
-      <View className="flex-row items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-        <View className="h-9 w-9 items-center justify-center rounded-full bg-emerald-50">
-          <Icon as={CheckCircle2} size={18} className="text-emerald-600" />
+      <View className="flex-row items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+        <View className="h-9 w-9 items-center justify-center rounded-full bg-success/10">
+          <Icon as={CheckCircle2} size={18} className="text-success" />
         </View>
         <View className="flex-1 gap-0.5">
           <View className="flex-row flex-wrap items-center gap-2">
-            <Text className="text-sm font-semibold text-slate-900">
+            <Text className="text-sm font-semibold text-foreground">
               {shortId(invoice.id, '#INV-')}
             </Text>
             <Badge variant="secondary" className={style.bg}>
               <Text className={cn('text-[10px] font-semibold', style.text)}>{style.label}</Text>
             </Badge>
           </View>
-          <Text className="text-xs text-slate-500">
+          <Text className="text-xs text-muted-foreground">
             {formatPeriod(invoice.periodStart)} • Due{' '}
             {formatDateLong(invoice.dueDate)}
           </Text>
         </View>
-        <Text className="text-sm font-bold text-slate-900">
+        <Text className="text-sm font-bold text-foreground">
           {formatKes(invoice.amount)}
         </Text>
       </View>
@@ -543,22 +552,22 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
   }
 
   return (
-    <View className="gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+    <View className="gap-3 rounded-2xl border border-border bg-card p-4">
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1 gap-1">
           <View className="flex-row flex-wrap items-center gap-2">
-            <Text className="text-sm font-semibold text-slate-900">
+            <Text className="text-sm font-semibold text-foreground">
               {shortId(invoice.id, '#INV-')}
             </Text>
             <Badge variant="secondary" className={style.bg}>
               <Text className={cn('text-[10px] font-semibold', style.text)}>{style.label}</Text>
             </Badge>
           </View>
-          <Text className="text-xs text-slate-500">
+          <Text className="text-xs text-muted-foreground">
             {formatPeriod(invoice.periodStart)} rent & utilities
           </Text>
         </View>
-        <Text className="text-base font-bold text-slate-900">
+        <Text className="text-base font-bold text-foreground">
           {formatKes(invoice.amount)}
         </Text>
       </View>
@@ -566,25 +575,25 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
       <View
         className={cn(
           'flex-row items-start gap-2 rounded-xl px-3 py-2.5',
-          invoice.status === 'OVERDUE' ? 'bg-red-50' : 'bg-amber-50',
+          invoice.status === 'OVERDUE' ? 'bg-destructive/10' : 'bg-warning/10',
         )}>
         <Icon
           as={Clock}
           size={14}
           className={
-            invoice.status === 'OVERDUE' ? 'text-red-600' : 'text-amber-700'
+            invoice.status === 'OVERDUE' ? 'text-destructive' : 'text-warning'
           }
         />
         <View className="flex-1">
           <Text
             className={cn(
               'text-xs font-medium',
-              invoice.status === 'OVERDUE' ? 'text-red-700' : 'text-amber-800',
+              invoice.status === 'OVERDUE' ? 'text-destructive' : 'text-warning',
             )}>
             {dueLabel(invoice.dueDate, invoice.status)}
           </Text>
           {Number(invoice.balanceDue) > 0 ? (
-            <Text className="mt-0.5 text-[11px] text-slate-500">
+            <Text className="mt-0.5 text-[11px] text-muted-foreground">
               Balance due {formatKes(invoice.balanceDue)}
             </Text>
           ) : null}
@@ -592,15 +601,15 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
       </View>
 
       {(invoice.lineItems?.length ?? 0) > 0 ? (
-        <View className="gap-2 border-t border-slate-100 pt-3">
+        <View className="gap-2 border-t border-border pt-3">
           {invoice.lineItems!.map((item) => (
             <View
               key={item.id}
               className="flex-row items-start justify-between gap-3">
-              <Text className="flex-1 text-xs text-slate-600">
+              <Text className="flex-1 text-xs text-muted-foreground">
                 {item.description}
               </Text>
-              <Text className="text-xs font-semibold text-slate-800">
+              <Text className="text-xs font-semibold text-foreground">
                 {formatKes(item.amount)}
               </Text>
             </View>
@@ -625,8 +634,8 @@ function PaymentsSection({
       {loading ? (
         <ActivityIndicator color="#0F766E" className="py-8" />
       ) : payments.length === 0 ? (
-        <View className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8">
-          <Text className="text-center text-sm text-slate-500">
+        <View className="rounded-2xl border border-dashed border-border bg-card px-4 py-8">
+          <Text className="text-center text-sm text-muted-foreground">
             No successful payments recorded yet.
           </Text>
         </View>
@@ -639,17 +648,17 @@ function PaymentsSection({
             return (
               <View
                 key={payment.id}
-                className="flex-row items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-                <View className="h-10 w-10 items-center justify-center rounded-xl bg-teal-50">
-                  <Icon as={MethodIcon} size={18} className="text-teal-700" />
+                className="flex-row items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Icon as={MethodIcon} size={18} className="text-primary" />
                 </View>
                 <View className="flex-1 gap-0.5">
                   <View className="flex-row flex-wrap items-center gap-2">
-                    <Text className="text-sm font-semibold text-slate-900">
+                    <Text className="text-sm font-semibold text-foreground">
                       {PAYMENT_METHOD_LABEL[payment.method]}
                     </Text>
-                    <View className="rounded-md bg-slate-100 px-1.5 py-0.5">
-                      <Text className="text-[10px] font-medium text-slate-500">
+                    <View className="rounded-md bg-muted px-1.5 py-0.5">
+                      <Text className="text-[10px] font-medium text-muted-foreground">
                         {shortId(
                           payment.mpesaReceiptNumber ?? payment.transactionRef,
                           '#',
@@ -657,7 +666,7 @@ function PaymentsSection({
                       </Text>
                     </View>
                   </View>
-                  <Text className="text-xs text-slate-500">
+                  <Text className="text-xs text-muted-foreground">
                     {formatDateTime(payment.paidAt ?? payment.createdAt)}
                     {payment.invoicePeriod
                       ? ` • ${payment.invoicePeriod}`
@@ -665,7 +674,7 @@ function PaymentsSection({
                   </Text>
                 </View>
                 <View className="items-end gap-0.5">
-                  <Text className="text-sm font-bold text-emerald-700">
+                  <Text className="text-sm font-bold text-success">
                     +{formatKes(payment.amount)}
                   </Text>
                   <View className="flex-row items-center gap-1">
@@ -673,7 +682,7 @@ function PaymentsSection({
                       <Icon
                         as={CheckCircle2}
                         size={12}
-                        className="text-emerald-600"
+                        className="text-success"
                       />
                     ) : null}
                     <Text className={cn('text-[11px] font-medium', status.text)}>

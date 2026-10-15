@@ -88,56 +88,56 @@ export function TenancyList({
               <Pressable
                 onPress={href ? () => router.push(href) : undefined}
                 accessibilityRole={href ? 'button' : undefined}
-                className="gap-3 rounded-2xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+                className="gap-3 rounded-2xl border border-border bg-card p-4 active:bg-muted">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 gap-1">
-                    <Text className="text-base font-bold text-slate-900">{tenantName(item)}</Text>
-                    <Text className="text-sm text-slate-500">
+                    <Text className="text-base font-bold text-foreground">{tenantName(item)}</Text>
+                    <Text className="text-sm text-muted-foreground">
                       {showPropertyName
                         ? `${item.unit?.property?.name ?? 'Property'} • Unit ${item.unit?.unitNumber ?? '—'}`
                         : `Unit ${item.unit?.unitNumber ?? '—'}`}
                     </Text>
                     <View className="mt-1 flex-row items-center gap-1">
-                      <Icon as={Clock} size={13} className="text-slate-400" />
-                      <Text className="text-xs text-slate-500">Ends: {formatDate(item.endDate)}</Text>
+                      <Icon as={Clock} size={13} className="text-muted-foreground" />
+                      <Text className="text-xs text-muted-foreground">Ends: {formatDate(item.endDate)}</Text>
                     </View>
                   </View>
                   <View className="items-end gap-2">
                     <Badge
                       variant="secondary"
-                      className={item.isActive ? 'bg-emerald-100' : 'bg-slate-100'}>
+                      className={item.isActive ? 'bg-success/10' : 'bg-muted'}>
                       <Text
                         className={
                           item.isActive
-                            ? 'text-[11px] font-semibold text-emerald-800'
-                            : 'text-[11px] font-semibold text-slate-600'
+                            ? 'text-[11px] font-semibold text-success'
+                            : 'text-[11px] font-semibold text-muted-foreground'
                         }>
                         {item.isActive ? 'ACTIVE' : 'ENDED'}
                       </Text>
                     </Badge>
-                    {href ? <Icon as={ChevronRight} size={18} className="text-slate-400" /> : null}
+                    {href ? <Icon as={ChevronRight} size={18} className="text-muted-foreground" /> : null}
                   </View>
                 </View>
 
-                <View className="gap-2 border-t border-slate-100 pt-3">
-                  <Text className="text-lg font-bold text-slate-900">
+                <View className="gap-2 border-t border-border pt-3">
+                  <Text className="text-lg font-bold text-foreground">
                     {formatKes(item.rentAmount)}
                   </Text>
                   {showTerminationDetails && !item.isActive ? (
-                    <View className="gap-1 rounded-xl bg-rose-50 p-3">
-                      <Text className="text-[11px] font-bold uppercase tracking-wider text-rose-700">
+                    <View className="gap-1 rounded-xl bg-destructive/10 p-3">
+                      <Text className="text-[11px] font-bold uppercase tracking-wider text-destructive">
                         Move-out notice
                       </Text>
-                      <Text className="text-xs font-semibold text-slate-800">
+                      <Text className="text-xs font-semibold text-foreground">
                         {item.terminationReason ?? 'No reason provided'}
                       </Text>
                       {item.terminationNotes ? (
-                        <Text className="text-xs leading-5 text-slate-600" numberOfLines={3}>
+                        <Text className="text-xs leading-5 text-muted-foreground" numberOfLines={3}>
                           {item.terminationNotes}
                         </Text>
                       ) : null}
                       {item.terminationRequestedAt ? (
-                        <Text className="text-[11px] text-slate-500">
+                        <Text className="text-[11px] text-muted-foreground">
                           Submitted {formatDate(item.terminationRequestedAt)}
                         </Text>
                       ) : null}

@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -89,7 +89,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
   );
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-background">
       <StatusBar style="light" />
 
       {/* The gradient runs full-bleed to the top edge so the status bar sits on
@@ -144,7 +144,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
       {/* Sheet overlaps the gradient by -mt-8, so the rounded top corners read
           as a fold rather than a hard seam. */}
-      <View className="-mt-8 flex-1 rounded-t-[32px] bg-white px-5 pt-6">
+      <View className="-mt-8 flex-1 rounded-t-[32px] bg-card px-5 pt-6">
         <ScrollView
           contentContainerClassName="grow pb-8"
           keyboardShouldPersistTaps="handled"
@@ -155,7 +155,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
           {/* mt-auto pins the footer to the bottom of a short form; pb keeps it
               clear of the home indicator. */}
           <View className="mt-auto items-center pt-10" style={footerBottomStyle}>
-            <Text className="text-xs text-slate-400">
+            <Text className="text-xs text-muted-foreground">
               Managed by Homebase • v1.0.0
             </Text>
           </View>
@@ -170,28 +170,23 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 function SegmentedToggle({ mode }: { mode: Mode }) {
   const isSignUp = mode === 'sign-up';
 
-  const tab = (active: boolean) =>
-    cn(
-      'flex-1 flex-row items-center justify-center gap-2 rounded-xl py-2.5',
-      active ? 'bg-white shadow-sm' : 'bg-transparent',
-    );
-
   return (
-    <View className="flex-row rounded-2xl bg-slate-100 p-1">
+    <View className="flex-row rounded-2xl bg-muted p-1">
       <Pressable
         accessibilityRole="tab"
         accessibilityState={{ selected: !isSignUp }}
         onPress={() => !isSignUp || router.replace('/(auth)/sign-in')}
-        className={tab(!isSignUp)}>
+        className="flex-1 flex-row items-center justify-center gap-2 rounded-xl py-2.5"
+        style={!isSignUp ? styles.activeSegment : undefined}>
         <Icon
           as={LogIn}
           size={15}
-          className={isSignUp ? 'text-slate-400' : 'text-teal-700'}
+          className={isSignUp ? 'text-muted-foreground' : 'text-primary'}
         />
         <Text
           className={cn(
             'text-sm font-semibold',
-            isSignUp ? 'text-slate-400' : 'text-slate-900',
+            isSignUp ? 'text-muted-foreground' : 'text-foreground',
           )}>
           Log In
         </Text>
@@ -201,16 +196,17 @@ function SegmentedToggle({ mode }: { mode: Mode }) {
         accessibilityRole="tab"
         accessibilityState={{ selected: isSignUp }}
         onPress={() => isSignUp || router.replace('/(auth)/sign-up')}
-        className={tab(isSignUp)}>
+        className="flex-1 flex-row items-center justify-center gap-2 rounded-xl py-2.5"
+        style={isSignUp ? styles.activeSegment : undefined}>
         <Icon
           as={UserPlus}
           size={15}
-          className={isSignUp ? 'text-teal-700' : 'text-slate-400'}
+          className={isSignUp ? 'text-primary' : 'text-muted-foreground'}
         />
         <Text
           className={cn(
             'text-sm font-semibold',
-            isSignUp ? 'text-slate-900' : 'text-slate-400',
+            isSignUp ? 'text-foreground' : 'text-muted-foreground',
           )}>
           Sign Up
         </Text>
@@ -218,6 +214,20 @@ function SegmentedToggle({ mode }: { mode: Mode }) {
     </View>
   );
 }
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so a conditional className re-dispatches from inside the render phase and
+// hangs the app on any state change.
+const styles = StyleSheet.create({
+  activeSegment: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+});
 
 /* ── Field primitives ─────────────────────────────────────── */
 
@@ -233,20 +243,20 @@ function Field({ label, icon, error, children }: FieldProps) {
     <View>
       {/* mb-1.5 rather than gap-1.5 so the label keeps its rhythm even when an
           error message appears and shifts the row below it. */}
-      <Text className="mb-1.5 text-sm font-bold text-slate-800">{label}</Text>
+      <Text className="mb-1.5 text-sm font-bold text-foreground">{label}</Text>
       <View
         className={cn(
-          'flex-row items-center gap-2.5 rounded-xl border bg-slate-50 px-3.5',
+          'flex-row items-center gap-2.5 rounded-xl border bg-muted px-3.5',
           // min-h-12 (vs the input's own h-11) centres the leading and trailing
           // icons on the taller row the padding produces.
           'min-h-12',
-          error ? 'border-red-400' : 'border-slate-200/80',
+          error ? 'border-destructive' : 'border-border',
         )}>
-        <Icon as={icon} size={18} className="text-slate-400" />
+        <Icon as={icon} size={18} className="text-muted-foreground" />
         {children}
       </View>
       {error ? (
-        <Text className="mt-1 text-xs text-red-500">{error}</Text>
+        <Text className="mt-1 text-xs text-destructive">{error}</Text>
       ) : null}
     </View>
   );
@@ -282,7 +292,7 @@ function SecureInput({ value, onChangeText, onBlur, placeholder }: SecureInputPr
         <Icon
           as={secure ? Eye : EyeOff}
           size={18}
-          className="text-slate-400"
+          className="text-muted-foreground"
         />
       </Pressable>
     </>

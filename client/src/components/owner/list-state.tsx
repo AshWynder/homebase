@@ -18,9 +18,9 @@ export function ListSkeleton({ count = 3 }: { count?: number }) {
 export function ListMessage({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <View className="items-center justify-center gap-1 px-8 py-16">
-      <Text className="text-center text-base font-semibold text-slate-700">{title}</Text>
+      <Text className="text-center text-base font-semibold text-foreground">{title}</Text>
       {subtitle ? (
-        <Text className="text-center text-sm text-slate-500">{subtitle}</Text>
+        <Text className="text-center text-sm text-muted-foreground">{subtitle}</Text>
       ) : null}
     </View>
   );

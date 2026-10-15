@@ -7,6 +7,8 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+import type { FontSize, ThemeMode } from '@/stores/slices/preferences-slice';
+
 export const Colors = {
   light: {
     text: '#000000',
@@ -25,6 +27,33 @@ export const Colors = {
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+
+/**
+ * NativeWind's rem baseline, which is what the `default` font size maps to.
+ * React Native's `<Text>` renders at 14; the browser's root font size is 16.
+ */
+export const BaseRem = Platform.select({ web: 16, default: 14 }) ?? 14;
+
+/** Multipliers applied to {@link BaseRem} for each Display text-size preset. */
+export const FontSizeScale: Record<FontSize, number> = {
+  small: 0.875,
+  default: 1,
+  large: 1.125,
+  largest: 1.25,
+};
+
+export const FontSizeLabels: Record<FontSize, string> = {
+  small: 'Small',
+  default: 'Default',
+  large: 'Large',
+  largest: 'Largest',
+};
+
+export const ThemeModeLabels: Record<ThemeMode, string> = {
+  system: 'System',
+  light: 'Light',
+  dark: 'Dark',
+};
 
 export const Fonts = Platform.select({
   ios: {

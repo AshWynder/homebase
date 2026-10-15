@@ -24,20 +24,20 @@ export default function MoneyScreen() {
   const { showToast } = useToast();
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader
         title="Money"
         addLabel="Generate invoices"
         onAdd={segment === 'invoices' ? () => setGenerateOpen(true) : undefined}
       />
 
-      <View className="border-b border-slate-200 bg-white px-5 pb-3">
+      <View className="border-b border-border bg-background px-5 pb-3">
         <SegmentedControl value={segment} onChange={setSegment} options={SEGMENTS} />
       </View>
 
       {segment === 'invoices' ? (
         <>
-          <View className="border-b border-slate-200 bg-white px-5 pb-4">
+          <View className="border-b border-border bg-background px-5 pb-4">
             <InvoiceSummaryTiles />
           </View>
           <InvoiceList />

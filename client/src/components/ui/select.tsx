@@ -80,6 +80,17 @@ function SelectContent({
   }) {
   const { triggerPosition } = SelectPrimitive.useRootContext();
 
+  // Memoized: NativeWind's native interop identity-checks `style` every render,
+  // so an inline literal re-dispatches from inside the render phase and hangs
+  // the app on any state change.
+  const contentStyle = React.useMemo(
+    () =>
+      Platform.OS === 'web'
+        ? style
+        : StyleSheet.flatten([{ width: triggerPosition?.width }, style]),
+    [style, triggerPosition?.width],
+  );
+
   return (
     <SelectPrimitive.Portal hostName={portalHost}>
       <FullWindowOverlay>
@@ -112,11 +123,7 @@ function SelectContent({
                   }),
                   className
                 )}
-                style={
-                  Platform.OS === 'web'
-                    ? style
-                    : StyleSheet.flatten([{ width: triggerPosition?.width }, style])
-                }
+                style={contentStyle}
                 position={position}
                 {...props}>
                 <SelectScrollUpButton />

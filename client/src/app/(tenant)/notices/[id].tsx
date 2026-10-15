@@ -46,7 +46,7 @@ export default function TenantNoticeDetailScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <DetailHeader title="Notice" subtitle={notice ? shortId(notice.id) : undefined} />
 
       <ScrollView
@@ -70,35 +70,35 @@ export default function TenantNoticeDetailScreen() {
           // The server reports a notice that is not the caller's as 404, so this
           // covers a deleted notice and a stale link with one honest message.
           <View className="items-center px-8 py-20">
-            <View className="mb-4 h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100">
-              <Icon as={Megaphone} size={28} className="text-slate-400" />
+            <View className="mb-4 h-16 w-16 items-center justify-center rounded-2xl border border-border bg-muted">
+              <Icon as={Megaphone} size={28} className="text-muted-foreground" />
             </View>
-            <Text className="text-center text-base font-bold text-slate-800">
+            <Text className="text-center text-base font-bold text-foreground">
               Notice not found
             </Text>
-            <Text className="mt-1 text-center text-sm leading-5 text-slate-500">
+            <Text className="mt-1 text-center text-sm leading-5 text-muted-foreground">
               It may have been withdrawn, or the link may be out of date.
             </Text>
             <Pressable
               onPress={() => router.back()}
               accessibilityRole="button"
-              className="mt-5 rounded-xl bg-teal-800 px-5 py-2.5 active:bg-teal-900">
-              <Text className="text-xs font-bold text-white">Go back</Text>
+              className="mt-5 rounded-xl bg-primary px-5 py-2.5 active:bg-primary/90">
+              <Text className="text-xs font-bold text-primary-foreground">Go back</Text>
             </Pressable>
           </View>
         ) : (
           <View className="gap-4 p-5">
-            <View className="gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-100">
+            <View className="gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm shadow-black/5">
               <AudienceBadge audience={notice.audience} />
 
-              <Text className="text-xl font-extrabold leading-7 tracking-tight text-slate-900">
+              <Text className="text-xl font-extrabold leading-7 tracking-tight text-foreground">
                 {notice.title}
               </Text>
 
-              <Text className="text-[15px] leading-6 text-slate-700">{notice.message}</Text>
+              <Text className="text-[15px] leading-6 text-foreground">{notice.message}</Text>
             </View>
 
-            <View className="gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
+            <View className="gap-3.5 rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5">
               <MetaRow
                 icon={UserRound}
                 label="From"
@@ -126,8 +126,8 @@ export default function TenantNoticeDetailScreen() {
                 screen never claims to be doing something it isn't. */}
             {markRead.isPending ? (
               <View className="flex-row items-center justify-center gap-2 py-1">
-                <Icon as={BellRing} size={13} className="text-teal-600" />
-                <Text className="text-[11px] font-semibold text-teal-700">
+                <Icon as={BellRing} size={13} className="text-primary" />
+                <Text className="text-[11px] font-semibold text-primary">
                   Marking as read…
                 </Text>
               </View>
@@ -150,12 +150,12 @@ function MetaRow({
 }) {
   return (
     <View className="flex-row items-start gap-3">
-      <View className="h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
-        <Icon as={icon} size={15} className="text-slate-600" />
+      <View className="h-8 w-8 items-center justify-center rounded-lg bg-muted">
+        <Icon as={icon} size={15} className="text-muted-foreground" />
       </View>
       <View className="flex-1">
-        <Text className="text-[11px] font-medium text-slate-500">{label}</Text>
-        <Text className="mt-0.5 text-sm font-semibold text-slate-900">{value}</Text>
+        <Text className="text-[11px] font-medium text-muted-foreground">{label}</Text>
+        <Text className="mt-0.5 text-sm font-semibold text-foreground">{value}</Text>
       </View>
     </View>
   );

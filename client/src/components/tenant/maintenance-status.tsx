@@ -19,23 +19,23 @@ interface StatusStyle {
 export const MAINTENANCE_STATUS_STYLES: Record<MaintenanceStatus, StatusStyle> = {
   OPEN: {
     label: 'Open',
-    chip: 'bg-amber-50 border-amber-200',
-    text: 'text-amber-700',
-    dot: 'bg-amber-500',
+    chip: 'bg-warning/10 border-warning/20',
+    text: 'text-warning',
+    dot: 'bg-warning',
     icon: CircleDashed,
   },
   IN_PROGRESS: {
     label: 'In progress',
-    chip: 'bg-sky-50 border-sky-200',
-    text: 'text-sky-700',
-    dot: 'bg-sky-500',
+    chip: 'bg-info/10 border-info/20',
+    text: 'text-info',
+    dot: 'bg-info',
     icon: Clock,
   },
   RESOLVED: {
     label: 'Resolved',
-    chip: 'bg-emerald-50 border-emerald-200',
-    text: 'text-emerald-700',
-    dot: 'bg-emerald-500',
+    chip: 'bg-success/10 border-success/20',
+    text: 'text-success',
+    dot: 'bg-success',
     icon: CheckCircle2,
   },
 };
@@ -93,34 +93,34 @@ export function MaintenanceStatusTracker({
               <View className="flex-row w-full items-center">
                 {/* Connector to the left, omitted on the first step. */}
                 <View
-                  className={`h-0.5 flex-1 ${index === 0 ? 'opacity-0' : reached ? 'bg-teal-500' : 'bg-slate-200'}`}
+                  className={`h-0.5 flex-1 ${index === 0 ? 'opacity-0' : reached ? 'bg-primary' : 'bg-border'}`}
                 />
                 <View
                   className={`h-8 w-8 items-center justify-center rounded-full border-2 ${
                     reached
-                      ? 'border-teal-600 bg-teal-600'
-                      : 'border-slate-200 bg-white'
+                      ? 'border-primary bg-primary'
+                      : 'border-border bg-card'
                   }`}>
                   {reached ? (
                     <Icon
                       as={isCurrent ? style.icon : CheckCircle2}
                       size={15}
-                      className="text-white"
+                      className="text-primary-foreground"
                     />
                   ) : (
-                    <Text className="text-xs font-bold text-slate-400">{index + 1}</Text>
+                    <Text className="text-xs font-bold text-muted-foreground">{index + 1}</Text>
                   )}
                 </View>
                 <View
-                  className={`h-0.5 flex-1 ${index === STAGES.length - 1 ? 'opacity-0' : index < currentIndex ? 'bg-teal-500' : 'bg-slate-200'}`}
+                  className={`h-0.5 flex-1 ${index === STAGES.length - 1 ? 'opacity-0' : index < currentIndex ? 'bg-primary' : 'bg-border'}`}
                 />
               </View>
 
               <Text
-                className={`mt-2 text-center text-[11px] font-bold ${reached ? 'text-teal-800' : 'text-slate-400'}`}>
+                className={`mt-2 text-center text-[11px] font-bold ${reached ? 'text-primary' : 'text-muted-foreground'}`}>
                 {stage.caption}
               </Text>
-              <Text className="mt-0.5 text-center text-[10px] font-medium text-slate-500">
+              <Text className="mt-0.5 text-center text-[10px] font-medium text-muted-foreground">
                 {isCurrent && stage.status === 'OPEN' && createdAt
                   ? new Date(createdAt).toLocaleDateString('en', {
                       month: 'short',
@@ -149,9 +149,9 @@ export function TicketPlaceholderTile({ size = 56 }: { size?: number }) {
 
   return (
     <View
-      className="items-center justify-center rounded-xl bg-teal-50 border border-teal-100"
+      className="items-center justify-center rounded-xl bg-primary/10 border border-primary/20"
       style={boxStyle}>
-      <Icon as={Wrench} size={size * 0.38} className="text-teal-600" />
+      <Icon as={Wrench} size={size * 0.38} className="text-primary" />
     </View>
   );
 }

@@ -4,6 +4,7 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,6 +28,7 @@ import {
 import { formatDateLong, shortId } from '@/lib/format';
 import type { MaintenanceStatus, MaintenanceTicket } from '@/api/types';
 import { runRefresh } from '@/lib/refresh';
+import { useDeferredChange } from '@/hooks/use-deferred-change';
 
 type Filter = 'all' | MaintenanceStatus;
 
@@ -36,6 +38,21 @@ const FILTERS: readonly { key: Filter; label: string }[] = [
   { key: 'IN_PROGRESS', label: 'In progress' },
   { key: 'RESOLVED', label: 'Resolved' },
 ];
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so an inline literal (or a conditional className) re-dispatches from inside
+// the render phase and hangs the app on any state change.
+const styles = StyleSheet.create({
+  activeChip: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  thumbnail: { width: 72, height: 72 },
+});
 
 /**
  * Maintenance queue across the caretaker's properties.
@@ -47,6 +64,7 @@ const FILTERS: readonly { key: Filter; label: string }[] = [
  */
 export default function CaretakerMaintenanceScreen() {
   const [filter, setFilter] = useState<Filter>('all');
+  const onFilterChange = useDeferredChange(filter, setFilter);
 
   const ticketsQuery = useMaintenanceTickets(filter === 'all' ? undefined : filter);
   const counts = useMaintenanceStatusCounts();
@@ -72,7 +90,7 @@ export default function CaretakerMaintenanceScreen() {
   const isFilteredEmpty = !isFirstLoad && tickets.length === 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <DetailHeader
         title="Maintenance"
         subtitle={openCount > 0 ? `${openCount} needing attention` : 'All clear'}
@@ -92,7 +110,7 @@ export default function CaretakerMaintenanceScreen() {
         }>
         {/* Filters */}
         <View className="px-6 pt-4">
-          <View className="flex-row items-center rounded-2xl bg-slate-200/70 p-1">
+          <View className="flex-row items-center rounded-2xl bg-muted p-1">
             {FILTERS.map((entry) => {
               const active = filter === entry.key;
               const count = countFor(entry.key);
@@ -100,16 +118,15 @@ export default function CaretakerMaintenanceScreen() {
               return (
                 <Pressable
                   key={entry.key}
-                  onPress={() => setFilter(entry.key)}
+                  onPress={() => onFilterChange(entry.key)}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: active }}
-                  className={`flex-1 items-center rounded-xl py-2 ${
-                    active ? 'bg-white shadow-sm' : ''
-                  }`}>
+                  className="flex-1 items-center rounded-xl py-2"
+                  style={active ? styles.activeChip : undefined}>
                   <Text
                     numberOfLines={1}
                     className={`text-[11px] font-bold ${
-                      active ? 'text-teal-900' : 'text-slate-600'
+                      active ? 'text-primary' : 'text-muted-foreground'
                     }`}>
                     {entry.label}
                     {counts.isLoading ? '' : ` (${count})`}
@@ -129,11 +146,11 @@ export default function CaretakerMaintenanceScreen() {
               ))}
             </View>
           ) : ticketsQuery.isError ? (
-            <View className="items-center rounded-2xl border border-dashed border-rose-200 bg-white p-6">
-              <Text className="text-sm font-bold text-slate-800">
+            <View className="items-center rounded-2xl border border-dashed border-destructive/20 bg-card p-6">
+              <Text className="text-sm font-bold text-foreground">
                 Could not load tickets
               </Text>
-              <Text className="mt-1 text-center text-xs text-slate-600">
+              <Text className="mt-1 text-center text-xs text-muted-foreground">
                 {ticketsQuery.error instanceof Error
                   ? ticketsQuery.error.message
                   : 'Check your connection and try again.'}
@@ -141,19 +158,19 @@ export default function CaretakerMaintenanceScreen() {
               <Pressable
                 onPress={() => ticketsQuery.refetch()}
                 accessibilityRole="button"
-                className="mt-4 rounded-xl bg-slate-100 px-4 py-2">
-                <Text className="text-xs font-bold text-slate-700">Try again</Text>
+                className="mt-4 rounded-xl bg-muted px-4 py-2">
+                <Text className="text-xs font-bold text-foreground">Try again</Text>
               </Pressable>
             </View>
           ) : isFilteredEmpty ? (
-            <View className="items-center rounded-2xl border border-dashed border-slate-200 bg-white p-8">
-              <View className="mb-3 h-14 w-14 items-center justify-center rounded-2xl border border-teal-100 bg-teal-50">
-                <Icon as={Wrench} size={26} className="text-teal-600" />
+            <View className="items-center rounded-2xl border border-dashed border-border bg-card p-8">
+              <View className="mb-3 h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10">
+                <Icon as={Wrench} size={26} className="text-primary" />
               </View>
-              <Text className="text-base font-bold text-slate-900">
+              <Text className="text-base font-bold text-foreground">
                 {filter === 'all' ? 'No tickets yet' : 'Nothing here'}
               </Text>
-              <Text className="mt-1 max-w-[260px] text-center text-xs leading-5 text-slate-600">
+              <Text className="mt-1 max-w-[260px] text-center text-xs leading-5 text-muted-foreground">
                 {filter === 'all'
                   ? 'Repairs your tenants report will appear here.'
                   : `You have no ${FILTERS.find((f) => f.key === filter)?.label.toLowerCase()} tickets.`}
@@ -161,7 +178,7 @@ export default function CaretakerMaintenanceScreen() {
             </View>
           ) : (
             <>
-              <Text className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-700">
+              <Text className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-foreground">
                 {filter === 'all'
                   ? 'All tickets'
                   : FILTERS.find((f) => f.key === filter)?.label}
@@ -178,20 +195,20 @@ export default function CaretakerMaintenanceScreen() {
                   onPress={() => ticketsQuery.fetchNextPage()}
                   disabled={ticketsQuery.isFetchingNextPage}
                   accessibilityRole="button"
-                  className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 active:bg-slate-50">
+                  className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 active:bg-accent">
                   {ticketsQuery.isFetchingNextPage ? (
                     <ActivityIndicator size="small" color="#0F766E" />
                   ) : (
                     <>
-                      <Text className="text-xs font-bold text-teal-800">Load more</Text>
-                      <Text className="text-[11px] font-medium text-slate-400">
+                      <Text className="text-xs font-bold text-primary">Load more</Text>
+                      <Text className="text-[11px] font-medium text-muted-foreground">
                         ({tickets.length} of {ticketsQuery.data?.pages[0]?.total ?? '—'})
                       </Text>
                     </>
                   )}
                 </Pressable>
               ) : tickets.length > 6 ? (
-                <Text className="mt-4 text-center text-[11px] font-medium text-slate-400">
+                <Text className="mt-4 text-center text-[11px] font-medium text-muted-foreground">
                   That&apos;s everything.
                 </Text>
               ) : null}
@@ -211,11 +228,11 @@ function TicketCard({ ticket }: { ticket: MaintenanceTicket }) {
       onPress={() => router.push(`/(caretaker)/maintenance/${ticket.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`Maintenance ticket, ${ticket.status.replace('_', ' ').toLowerCase()}`}
-      className="flex-row gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm shadow-slate-100 active:bg-slate-50">
+      className="flex-row gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm shadow-black/5 active:bg-accent">
       {thumbnail ? (
         <Image
           source={{ uri: thumbnail }}
-          style={{ width: 72, height: 72 }}
+          style={styles.thumbnail}
           contentFit="cover"
           transition={200}
           className="rounded-xl"
@@ -227,14 +244,14 @@ function TicketCard({ ticket }: { ticket: MaintenanceTicket }) {
       <View className="flex-1 justify-between py-0.5">
         <View>
           <View className="flex-row items-start justify-between gap-2">
-            <Text className="flex-1 text-[13px] leading-5 text-slate-800" numberOfLines={2}>
+            <Text className="flex-1 text-[13px] leading-5 text-foreground" numberOfLines={2}>
               {ticket.description}
             </Text>
             <Icon as={ChevronRight} size={16} className="mt-0.5 text-slate-300" />
           </View>
 
           {ticket.remarks ? (
-            <Text className="mt-1 text-[11px] italic leading-4 text-slate-500" numberOfLines={1}>
+            <Text className="mt-1 text-[11px] italic leading-4 text-muted-foreground" numberOfLines={1}>
               {ticket.remarks}
             </Text>
           ) : null}
@@ -242,11 +259,11 @@ function TicketCard({ ticket }: { ticket: MaintenanceTicket }) {
 
         <View className="mt-2 flex-row items-center justify-between gap-2">
           <View className="flex-1">
-            <Text className="text-[11px] font-medium text-slate-500">
+            <Text className="text-[11px] font-medium text-muted-foreground">
               {formatDateLong(ticket.createdAt)}
               {ticket.unit?.unitNumber ? ` • Unit ${ticket.unit.unitNumber}` : ''}
             </Text>
-            <Text className="text-[10px] font-medium text-slate-400">
+            <Text className="text-[10px] font-medium text-muted-foreground">
               {shortId(ticket.id)}
               {ticket.unit?.property?.name ? ` • ${ticket.unit.property.name}` : ''}
             </Text>

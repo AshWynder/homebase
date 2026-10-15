@@ -11,13 +11,13 @@ import { cn } from '@/lib/utils';
  * about what counts as stale.
  */
 const RECENCY_TONES = [
-  { maxDays: 1, chip: 'bg-emerald-50', text: 'text-emerald-700' },
-  { maxDays: 6, chip: 'bg-slate-100', text: 'text-slate-600' },
-  { maxDays: 29, chip: 'bg-amber-50', text: 'text-amber-700' },
-  { maxDays: Infinity, chip: 'bg-rose-50', text: 'text-rose-700' },
+  { maxDays: 1, chip: 'bg-success/10', text: 'text-success' },
+  { maxDays: 6, chip: 'bg-muted', text: 'text-muted-foreground' },
+  { maxDays: 29, chip: 'bg-warning/10', text: 'text-warning' },
+  { maxDays: Infinity, chip: 'bg-destructive/10', text: 'text-destructive' },
 ];
 
-const NO_READINGS_TONE = { chip: 'bg-slate-100', text: 'text-slate-500' };
+const NO_READINGS_TONE = { chip: 'bg-muted', text: 'text-muted-foreground' };
 
 export const METER_TYPE_LABELS: Record<MeterType, string> = {
   WATER: 'Water',

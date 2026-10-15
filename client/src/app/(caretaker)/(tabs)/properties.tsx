@@ -75,7 +75,7 @@ export default function CaretakerPropertiesScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader title="Properties" />
 
       <PropertyFilterBar />
@@ -128,13 +128,13 @@ function PropertyCard({ property, stats }: { property: Property; stats: Property
       onPress={() => router.push(`/(caretaker)/property/${property.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`Property ${property.name}`}
-      className="gap-4 rounded-2xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+      className="gap-4 rounded-2xl border border-border bg-card p-4 active:bg-accent">
       <View className="gap-1">
-        <Text className="text-base font-bold text-slate-900">{property.name}</Text>
+        <Text className="text-base font-bold text-foreground">{property.name}</Text>
         {property.address ? (
           <View className="flex-row items-center gap-1">
-            <Icon as={MapPin} size={13} className="text-slate-400" />
-            <Text className="text-sm text-slate-500">{property.address}</Text>
+            <Icon as={MapPin} size={13} className="text-muted-foreground" />
+            <Text className="text-sm text-muted-foreground">{property.address}</Text>
           </View>
         ) : null}
       </View>

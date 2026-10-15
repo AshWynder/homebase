@@ -21,22 +21,22 @@ const TONES: Record<
   { bg: string; value: string; iconBg: string; icon: string }
 > = {
   teal: {
-    bg: 'bg-teal-50',
-    value: 'text-teal-950',
-    iconBg: 'bg-teal-700',
-    icon: 'text-white',
+    bg: 'bg-primary/10',
+    value: 'text-foreground',
+    iconBg: 'bg-primary',
+    icon: 'text-primary-foreground',
   },
   blue: {
-    bg: 'bg-sky-50',
-    value: 'text-sky-950',
-    iconBg: 'bg-sky-700',
-    icon: 'text-white',
+    bg: 'bg-info/10',
+    value: 'text-foreground',
+    iconBg: 'bg-info',
+    icon: 'text-info-foreground',
   },
   amber: {
-    bg: 'bg-amber-50',
-    value: 'text-amber-950',
-    iconBg: 'bg-amber-700',
-    icon: 'text-white',
+    bg: 'bg-warning/10',
+    value: 'text-foreground',
+    iconBg: 'bg-warning',
+    icon: 'text-warning-foreground',
   },
 };
 
@@ -44,10 +44,10 @@ const BADGE_TONES: Record<
   NonNullable<StatPillProps['badgeTone']>,
   string
 > = {
-  neutral: 'bg-white text-slate-600',
-  success: 'text-emerald-700',
-  info: 'text-sky-800',
-  warning: 'bg-white text-amber-800',
+  neutral: 'bg-muted text-muted-foreground',
+  success: 'text-success',
+  info: 'text-info',
+  warning: 'bg-muted text-warning',
 };
 
 /** A compact colored stat tile used inside property cards. */
@@ -64,7 +64,7 @@ export function StatPill({
     <View className={cn('flex-row items-center gap-3 rounded-xl px-3 py-3', t.bg)}>
       <View className="min-w-0 flex-1 gap-1">
         <View className="flex-row items-center justify-between gap-2">
-          <Text className="text-[11px] font-medium text-slate-600">{label}</Text>
+          <Text className="text-[11px] font-medium text-muted-foreground">{label}</Text>
           {badge && !icon ? (
             <Text className={cn('text-[11px] font-semibold', BADGE_TONES[badgeTone])}>
               {badge}

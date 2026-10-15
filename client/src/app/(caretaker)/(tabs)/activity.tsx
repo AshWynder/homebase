@@ -13,28 +13,28 @@ import { activityDestinations } from '@/lib/activity';
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; iconBg: string; iconColor: string }> = {
   maintenance: {
-    bg: 'bg-amber-50',
-    text: 'text-amber-800',
-    iconBg: 'bg-amber-100',
-    iconColor: 'text-amber-700',
+    bg: 'bg-warning/10',
+    text: 'text-warning',
+    iconBg: 'bg-warning/10',
+    iconColor: 'text-warning',
   },
   tenancy_notices: {
-    bg: 'bg-rose-50',
-    text: 'text-rose-800',
-    iconBg: 'bg-rose-100',
-    iconColor: 'text-rose-700',
+    bg: 'bg-destructive/10',
+    text: 'text-destructive',
+    iconBg: 'bg-destructive/10',
+    iconColor: 'text-destructive',
   },
   notices: {
-    bg: 'bg-teal-50',
-    text: 'text-teal-800',
-    iconBg: 'bg-teal-100',
-    iconColor: 'text-teal-700',
+    bg: 'bg-primary/10',
+    text: 'text-primary',
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
   },
   chats: {
-    bg: 'bg-indigo-50',
-    text: 'text-indigo-800',
-    iconBg: 'bg-indigo-100',
-    iconColor: 'text-indigo-700',
+    bg: 'bg-info/10',
+    text: 'text-info',
+    iconBg: 'bg-info/10',
+    iconColor: 'text-info',
   },
 };
 
@@ -51,7 +51,7 @@ export default function CaretakerActivityScreen() {
   const destinations = activityDestinations('/(caretaker)/');
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader title="Activity Hub" />
 
       <ScrollView
@@ -59,7 +59,7 @@ export default function CaretakerActivityScreen() {
         contentContainerClassName="p-5 pb-10 gap-3"
         showsVerticalScrollIndicator={false}>
         <View className="mb-1">
-          <Text className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <Text className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Action Centers & Inbox
           </Text>
         </View>
@@ -75,14 +75,14 @@ export default function CaretakerActivityScreen() {
               onPress={() => router.push(destination.href)}
               accessibilityRole="button"
               accessibilityLabel={`${destination.title}. ${destination.description}`}
-              className="flex-row items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 active:bg-slate-50 shadow-sm shadow-slate-100">
+              className="flex-row items-center gap-3.5 rounded-2xl border border-border bg-card p-4 active:bg-accent shadow-sm shadow-black/5">
               <View className={`h-11 w-11 items-center justify-center rounded-xl ${visual.iconBg}`}>
                 <Icon as={destination.icon} size={20} className={visual.iconColor} />
               </View>
 
               <View className="flex-1 gap-1">
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-sm font-bold text-slate-900">
+                  <Text className="text-sm font-bold text-foreground">
                     {destination.title}
                   </Text>
                   <View className={`rounded-md px-1.5 py-0.5 ${visual.bg}`}>
@@ -91,16 +91,16 @@ export default function CaretakerActivityScreen() {
                     </Text>
                   </View>
                 </View>
-                <Text className="text-xs text-slate-500">{destination.description}</Text>
+                <Text className="text-xs text-muted-foreground">{destination.description}</Text>
               </View>
 
               {count > 0 ? (
-                <View className="min-w-6 items-center justify-center rounded-full bg-teal-700 px-2 py-0.5">
-                  <Text className="text-xs font-bold text-white">{count}</Text>
+                <View className="min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5">
+                  <Text className="text-xs font-bold text-primary-foreground">{count}</Text>
                 </View>
               ) : null}
 
-              <Icon as={ChevronRight} size={18} className="text-slate-400" />
+              <Icon as={ChevronRight} size={18} className="text-muted-foreground" />
             </Pressable>
           );
         })}

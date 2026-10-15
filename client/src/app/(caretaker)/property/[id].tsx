@@ -87,16 +87,16 @@ export default function CaretakerPropertyScreen() {
     allMetersQuery.isLoading;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
-      <View className="flex-row items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-row items-center gap-3 border-b border-border bg-background px-4 py-3">
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
           accessibilityLabel="Go back"
-          className="h-9 w-9 items-center justify-center rounded-full bg-slate-100 active:bg-slate-200">
-          <Icon as={ArrowLeft} size={18} className="text-slate-800" />
+          className="h-9 w-9 items-center justify-center rounded-full bg-muted active:bg-accent">
+          <Icon as={ArrowLeft} size={18} className="text-foreground" />
         </Pressable>
-        <Text className="flex-1 text-base font-bold text-slate-900">
+        <Text className="flex-1 text-base font-bold text-foreground">
           {property?.name || 'Property Units'}
         </Text>
 
@@ -125,20 +125,20 @@ export default function CaretakerPropertyScreen() {
           contentContainerClassName="p-5 gap-3 pb-10"
           ListHeaderComponent={
             <View className="mb-4">
-              <View className="rounded-2xl bg-teal-700 p-4">
+              <View className="rounded-2xl bg-primary p-4">
                 <View className="mb-3">
-                  <Text className="text-sm font-semibold text-teal-100">
+                  <Text className="text-sm font-semibold text-primary-foreground">
                     {property?.address || 'Property Address'}
                   </Text>
                 </View>
                 <View className="flex-row flex-wrap gap-3">
-                  <View className="min-w-[45%] flex-1 gap-1 rounded-xl bg-teal-600/50 p-3">
-                    <Text className="text-xs text-teal-100">Total Units</Text>
-                    <Text className="text-2xl font-bold text-white">{units.length}</Text>
+                  <View className="min-w-[45%] flex-1 gap-1 rounded-xl bg-primary/50 p-3">
+                    <Text className="text-xs text-primary-foreground">Total Units</Text>
+                    <Text className="text-2xl font-bold text-primary-foreground">{units.length}</Text>
                   </View>
-                  <View className="min-w-[45%] flex-1 gap-1 rounded-xl bg-teal-600/50 p-3">
-                    <Text className="text-xs text-teal-100">Occupied</Text>
-                    <Text className="text-2xl font-bold text-white">
+                  <View className="min-w-[45%] flex-1 gap-1 rounded-xl bg-primary/50 p-3">
+                    <Text className="text-xs text-primary-foreground">Occupied</Text>
+                    <Text className="text-2xl font-bold text-primary-foreground">
                       {
                         Array.from(statsByUnit.values()).filter((s) => s.hasActiveTenancy)
                           .length
@@ -166,31 +166,31 @@ export default function CaretakerPropertyScreen() {
             return (
               <Pressable
                 onPress={() => router.push(`/(caretaker)/unit/${item.id}`)}
-                className="gap-4 rounded-2xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+                className="gap-4 rounded-2xl border border-border bg-card p-4 active:bg-accent">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 gap-1">
                     <View className="flex-row items-center gap-2">
-                      <Text className="text-base font-bold text-slate-900">
+                      <Text className="text-base font-bold text-foreground">
                         Unit {item.unitNumber}
                       </Text>
                       {item.blockName ? (
-                        <Badge variant="secondary" className="bg-slate-100">
-                          <Text className="text-[10px] font-semibold text-slate-600">
+                        <Badge variant="secondary" className="bg-muted">
+                          <Text className="text-[10px] font-semibold text-muted-foreground">
                             {item.blockName}
                           </Text>
                         </Badge>
                       ) : null}
                     </View>
                     <View className="flex-row items-center gap-1">
-                      <Icon as={Home} size={13} className="text-slate-400" />
-                      <Text className="text-sm text-slate-500">
+                      <Icon as={Home} size={13} className="text-muted-foreground" />
+                      <Text className="text-sm text-muted-foreground">
                         {item.property?.name ?? 'Property'}
                       </Text>
                     </View>
                   </View>
                   {stats.hasActiveTenancy ? (
-                    <Badge className="bg-emerald-100">
-                      <Text className="text-[10px] font-semibold text-emerald-800">
+                    <Badge className="bg-success/10">
+                      <Text className="text-[10px] font-semibold text-success">
                         OCCUPIED
                       </Text>
                     </Badge>
@@ -200,24 +200,24 @@ export default function CaretakerPropertyScreen() {
                 <View className="flex-col gap-2">
                   {stats.hasActiveTenancy ? (
                     <View className="flex-row items-center gap-2">
-                      <Icon as={Users} size={14} className="text-sky-700" />
-                      <Text className="text-sm text-slate-600">
+                      <Icon as={Users} size={14} className="text-info" />
+                      <Text className="text-sm text-muted-foreground">
                         {stats.tenantName || 'Tenant'}
                       </Text>
                     </View>
                   ) : null}
                   {stats.rentAmount > 0 ? (
                     <View className="flex-row items-center gap-2">
-                      <Icon as={DollarSign} size={14} className="text-amber-700" />
-                      <Text className="text-sm text-slate-600">
+                      <Icon as={DollarSign} size={14} className="text-warning" />
+                      <Text className="text-sm text-muted-foreground">
                         {formatKes(stats.rentAmount)}/month
                       </Text>
                     </View>
                   ) : null}
                   {stats.meterCount > 0 ? (
                     <View className="flex-row items-center gap-2">
-                      <Icon as={Zap} size={14} className="text-yellow-500" />
-                      <Text className="text-sm text-slate-600">
+                      <Icon as={Zap} size={14} className="text-warning" />
+                      <Text className="text-sm text-muted-foreground">
                         {stats.meterCount} utility meter
                         {stats.meterCount !== 1 ? 's' : ''}
                       </Text>
@@ -225,8 +225,8 @@ export default function CaretakerPropertyScreen() {
                   ) : null}
                   {stats.meterCount === 0 && !stats.hasActiveTenancy ? (
                     <View className="flex-row items-center gap-2">
-                      <Icon as={Building2} size={14} className="text-slate-400" />
-                      <Text className="text-sm text-slate-400">Vacant • No meters</Text>
+                      <Icon as={Building2} size={14} className="text-muted-foreground" />
+                      <Text className="text-sm text-muted-foreground">Vacant • No meters</Text>
                     </View>
                   ) : null}
                 </View>

@@ -5,22 +5,24 @@ import { Home, Wallet, Megaphone, MessageSquare, Wrench } from 'lucide-react-nat
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { useUnreadTotal } from '@/hooks/queries/use-chat';
+import { useTabBarColors } from '@/hooks/use-tab-bar-colors';
 
 export default function TenantTabsLayout() {
   // Read here rather than in `chats.tsx` so the badge survives the tab being
   // unmounted: an unread message still has to show on a tab that is not the
   // current screen, and a badge owned by an unmounted screen is always zero.
   const unread = useUnreadTotal();
+  const tabColors = useTabBarColors();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0F766E',
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarActiveTintColor: tabColors.active,
+        tabBarInactiveTintColor: tabColors.inactive,
         tabBarStyle: {
-          borderTopColor: '#E2E8F0',
-          backgroundColor: '#FFFFFF',
+          borderTopColor: tabColors.border,
+          backgroundColor: tabColors.background,
           position: 'relative',
           zIndex: 20,
           elevation: 20,

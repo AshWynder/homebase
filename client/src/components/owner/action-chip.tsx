@@ -27,11 +27,11 @@ export function ActionChip({ icon, label, onPress, disabled, accessibilityLabel 
       // shorter than that, so the height is padded out rather than restyled.
       hitSlop={8}
       className={cn(
-        'min-h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-2xl bg-teal-50 px-2 py-2.5',
+        'min-h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-2xl bg-primary/10 px-2 py-2.5',
         disabled && 'opacity-40',
       )}>
-      <Icon as={icon} size={15} className="text-teal-800" />
-      <Text className="text-xs font-semibold text-teal-900" numberOfLines={1}>
+      <Icon as={icon} size={15} className="text-primary" />
+      <Text className="text-xs font-semibold text-primary" numberOfLines={1}>
         {label}
       </Text>
     </Pressable>

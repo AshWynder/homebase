@@ -22,10 +22,10 @@ export function ActivityListScreen({ kind }: ActivityListScreenProps) {
   const destination = activityByKind(kind);
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <DetailHeader title={destination.title} />
 
-      <View className="bg-white px-5 pb-3">
+      <View className="bg-background px-5 pb-3">
         <PropertyFilterBar />
       </View>
 

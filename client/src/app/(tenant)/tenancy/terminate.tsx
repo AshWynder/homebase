@@ -118,7 +118,7 @@ export default function TerminateTenancyScreen() {
 
   if (tenanciesQuery.isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-50 items-center justify-center">
+      <SafeAreaView className="flex-1 bg-background items-center justify-center">
         <ActivityIndicator size="large" color="#0F766E" />
       </SafeAreaView>
     );
@@ -126,22 +126,22 @@ export default function TerminateTenancyScreen() {
 
   if (!activeTenancy && !submitted) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
-        <View className="flex-row items-center gap-3 px-5 py-4 border-b border-slate-200 bg-white">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        <View className="flex-row items-center gap-3 px-5 py-4 border-b border-border bg-background">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="h-10 w-10 items-center justify-center rounded-full bg-slate-100">
-            <Icon as={ArrowLeft} size={20} className="text-slate-700" />
+            className="h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <Icon as={ArrowLeft} size={20} className="text-foreground" />
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-slate-900">Notice to Vacate</Text>
+          <Text className="text-lg font-bold text-foreground">Notice to Vacate</Text>
         </View>
 
         <View className="flex-1 items-center justify-center p-6 gap-3">
-          <View className="h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-            <Icon as={Home} size={28} className="text-slate-400" />
+          <View className="h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <Icon as={Home} size={28} className="text-muted-foreground" />
           </View>
-          <Text className="text-base font-bold text-slate-800">No Active Lease Found</Text>
-          <Text className="text-center text-xs text-slate-500 max-w-xs">
+          <Text className="text-base font-bold text-foreground">No Active Lease Found</Text>
+          <Text className="text-center text-xs text-muted-foreground max-w-xs">
             You do not currently have an active tenancy contract to terminate.
           </Text>
           <Button
@@ -157,37 +157,37 @@ export default function TerminateTenancyScreen() {
 
   if (submitted) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center p-6" edges={['top']}>
+      <SafeAreaView className="flex-1 bg-background items-center justify-center p-6" edges={['top']}>
         <View className="items-center max-w-sm gap-4 text-center">
-          <View className="h-20 w-20 items-center justify-center rounded-full bg-emerald-50 border border-emerald-100">
-            <Icon as={CheckCircle2} size={40} className="text-emerald-600" />
+          <View className="h-20 w-20 items-center justify-center rounded-full bg-success/10 border border-success/20">
+            <Icon as={CheckCircle2} size={40} className="text-success" />
           </View>
 
-          <Text className="text-2xl font-bold text-slate-900 text-center">
+          <Text className="text-2xl font-bold text-foreground text-center">
             Notice Submitted
           </Text>
 
-          <Text className="text-sm text-slate-600 text-center leading-relaxed">
+          <Text className="text-sm text-muted-foreground text-center leading-relaxed">
             Your move-out notice for <Text className="font-semibold">{activeTenancy?.unit?.property?.name ?? 'your home'}</Text>, Unit <Text className="font-semibold">{activeTenancy?.unit?.unitNumber}</Text> has been submitted. The property owner and caretaker have been notified.
           </Text>
 
-          <View className="w-full rounded-2xl bg-slate-50 border border-slate-100 p-4 gap-2 mt-2">
+          <View className="w-full rounded-2xl bg-muted border border-border p-4 gap-2 mt-2">
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-slate-500">Effective Move-Out Date</Text>
-              <Text className="text-xs font-bold text-slate-800">
+              <Text className="text-xs text-muted-foreground">Effective Move-Out Date</Text>
+              <Text className="text-xs font-bold text-foreground">
                 {moveOutDate ? formatDateLong(moveOutDate) : '—'}
               </Text>
             </View>
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-slate-500">Reason</Text>
-              <Text className="text-xs font-semibold text-slate-800">{selectedReason}</Text>
+              <Text className="text-xs text-muted-foreground">Reason</Text>
+              <Text className="text-xs font-semibold text-foreground">{selectedReason}</Text>
             </View>
           </View>
 
           <Button
-            className="w-full h-12 rounded-xl bg-teal-700 mt-4"
+            className="w-full h-12 rounded-xl bg-primary mt-4"
             onPress={() => router.replace('/(tenant)/(tabs)/home')}>
-            <Text className="font-semibold text-white">Return to Home</Text>
+            <Text className="font-semibold text-primary-foreground">Return to Home</Text>
           </Button>
         </View>
       </SafeAreaView>
@@ -197,18 +197,18 @@ export default function TerminateTenancyScreen() {
   const property = activeTenancy?.unit?.property;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center gap-3 px-5 py-3.5 border-b border-slate-200 bg-white">
+      <View className="flex-row items-center gap-3 px-5 py-3.5 border-b border-border bg-background">
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full bg-slate-100">
-          <Icon as={ArrowLeft} size={20} className="text-slate-700" />
+          className="h-10 w-10 items-center justify-center rounded-full bg-muted">
+          <Icon as={ArrowLeft} size={20} className="text-foreground" />
         </TouchableOpacity>
         <View>
-          <Text className="text-lg font-bold text-slate-900">Notice to Vacate</Text>
-          <Text className="text-xs text-slate-500">Terminate tenancy & schedule handover</Text>
+          <Text className="text-lg font-bold text-foreground">Notice to Vacate</Text>
+          <Text className="text-xs text-muted-foreground">Terminate tenancy & schedule handover</Text>
         </View>
       </View>
 
@@ -217,36 +217,36 @@ export default function TerminateTenancyScreen() {
         contentContainerClassName="p-5 pb-[50px] gap-[18px]"
         showsVerticalScrollIndicator={false}>
         {/* Current Tenancy Summary Card */}
-        <Card className="rounded-2xl border-slate-200 bg-white">
+        <Card className="rounded-2xl border-border bg-card">
           <CardHeader className="pb-3 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2.5">
-              <View className="h-9 w-9 items-center justify-center rounded-xl bg-teal-50">
-                <Icon as={Building2} size={18} className="text-teal-700" />
+              <View className="h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                <Icon as={Building2} size={18} className="text-primary" />
               </View>
               <View>
-                <CardTitle className="text-base font-bold text-slate-900">
+                <CardTitle className="text-base font-bold text-foreground">
                   {property?.name ?? 'Property'}
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
+                <CardDescription className="text-xs text-muted-foreground">
                   Unit {activeTenancy?.unit?.unitNumber}
                 </CardDescription>
               </View>
             </View>
-            <Badge variant="secondary" className="bg-teal-50 border-teal-200">
-              <Text className="text-[11px] font-bold text-teal-700">Active Lease</Text>
+            <Badge variant="secondary" className="bg-primary/10 border-primary/20">
+              <Text className="text-[11px] font-bold text-primary">Active Lease</Text>
             </Badge>
           </CardHeader>
 
-          <CardContent className="gap-2 pt-1 border-t border-slate-100">
+          <CardContent className="gap-2 pt-1 border-t border-border">
             <View className="flex-row items-center justify-between py-1">
-              <Text className="text-xs text-slate-500">Rent Amount</Text>
-              <Text className="text-xs font-semibold text-slate-800">
+              <Text className="text-xs text-muted-foreground">Rent Amount</Text>
+              <Text className="text-xs font-semibold text-foreground">
                 {formatKes(Number(activeTenancy?.rentAmount || 0))} / mo
               </Text>
             </View>
             <View className="flex-row items-center justify-between py-1">
-              <Text className="text-xs text-slate-500">Lease Started</Text>
-              <Text className="text-xs font-semibold text-slate-800">
+              <Text className="text-xs text-muted-foreground">Lease Started</Text>
+              <Text className="text-xs font-semibold text-foreground">
                 {activeTenancy?.startDate ? formatDateLong(activeTenancy.startDate) : '—'}
               </Text>
             </View>
@@ -254,12 +254,12 @@ export default function TerminateTenancyScreen() {
         </Card>
 
         {/* Notice Details Form */}
-        <Card className="rounded-2xl border-slate-200 bg-white">
+        <Card className="rounded-2xl border-border bg-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-bold text-slate-900">
+            <CardTitle className="text-base font-bold text-foreground">
               Notice Details
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
+            <CardDescription className="text-xs text-muted-foreground">
               Specify your intended move-out date and handover preferences.
             </CardDescription>
           </CardHeader>
@@ -267,23 +267,23 @@ export default function TerminateTenancyScreen() {
           <CardContent className="gap-4">
             {/* Move-out Date */}
             <View className="gap-1.5">
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label className="text-xs font-semibold text-foreground">
                 Intended Move-Out Date
               </Label>
               <DatePicker
                 value={moveOutDate}
                 onChange={setMoveOutDate}
                 minimumDate={new Date()}
-                className="h-11 rounded-xl bg-slate-50"
+                className="h-11 rounded-xl bg-muted"
               />
-              <Text className="text-[11px] text-slate-500">
+              <Text className="text-[11px] text-muted-foreground">
                 Standard notice periods are typically 30 days prior to end of month.
               </Text>
             </View>
 
             {/* Reason */}
             <View className="gap-2">
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label className="text-xs font-semibold text-foreground">
                 Primary Reason for Leaving
               </Label>
               <View className="flex-row flex-wrap gap-2">
@@ -296,12 +296,12 @@ export default function TerminateTenancyScreen() {
                       onPress={() => setSelectedReason(reason)}
                       className={`rounded-xl px-3 py-2 border ${
                         isSelected
-                          ? 'border-teal-600 bg-teal-50'
-                          : 'border-slate-200 bg-slate-50'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border bg-muted'
                       }`}>
                       <Text
                         className={`text-xs ${
-                          isSelected ? 'font-bold text-teal-800' : 'font-medium text-slate-700'
+                          isSelected ? 'font-bold text-primary' : 'font-medium text-foreground'
                         }`}>
                         {reason}
                       </Text>
@@ -313,7 +313,7 @@ export default function TerminateTenancyScreen() {
 
             {/* Handover & Forwarding Notes */}
             <View className="gap-1.5">
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label className="text-xs font-semibold text-foreground">
                 Forwarding & Handover Notes (Optional)
               </Label>
               <Input
@@ -322,7 +322,7 @@ export default function TerminateTenancyScreen() {
                 placeholder="e.g. Preferred key handover time, forwarding address, deposit refund M-Pesa number"
                 value={notes}
                 onChangeText={setNotes}
-                className="min-h-[80px] rounded-xl bg-slate-50 p-3 text-sm"
+                className="min-h-[80px] rounded-xl bg-muted p-3 text-sm"
                 style={styles.multilineTopAlign}
               />
             </View>
@@ -335,22 +335,22 @@ export default function TerminateTenancyScreen() {
           onPress={() => setAgreed(!agreed)}
           className={`flex-row items-start gap-3 rounded-2xl border p-4 ${
             agreed
-              ? 'border-teal-200 bg-teal-50/60'
-              : 'border-slate-200 bg-white'
+              ? 'border-primary/20 bg-primary/10'
+              : 'border-border bg-card'
           }`}>
           <View
             className={`mt-0.5 h-5 w-5 items-center justify-center rounded-md border ${
               agreed
-                ? 'border-teal-700 bg-teal-700'
-                : 'border-slate-300 bg-white'
+                ? 'border-primary bg-primary'
+                : 'border-border bg-card'
             }`}>
-            {agreed && <Icon as={CheckCircle2} size={14} className="text-white" />}
+            {agreed && <Icon as={CheckCircle2} size={14} className="text-primary-foreground" />}
           </View>
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-slate-900 leading-tight">
+            <Text className="text-xs font-semibold text-foreground leading-tight">
               I confirm my intention to vacate the unit
             </Text>
-            <Text className="mt-1 text-[11px] text-slate-500 leading-relaxed">
+            <Text className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
               I agree to clear all outstanding utility balances, leave the premises in good condition, and schedule an exit inspection before departure.
             </Text>
           </View>
@@ -358,7 +358,7 @@ export default function TerminateTenancyScreen() {
 
         {/* Submit Button */}
         <Button
-          className="h-12 rounded-xl bg-rose-600 active:bg-rose-700"
+          className="h-12 rounded-xl bg-destructive active:bg-destructive/90"
           onPress={handleOpenConfirm}>
           <Text className="font-semibold text-white">Submit Notice to Vacate</Text>
         </Button>
@@ -368,19 +368,19 @@ export default function TerminateTenancyScreen() {
       <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <View className="mb-2 h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 border border-amber-100">
-              <Icon as={ShieldAlert} size={24} className="text-amber-600" />
+            <View className="mb-2 h-12 w-12 items-center justify-center rounded-2xl bg-warning/10 border border-warning/20">
+              <Icon as={ShieldAlert} size={24} className="text-warning" />
             </View>
-            <DialogTitle className="text-xl font-bold text-slate-900">
+            <DialogTitle className="text-xl font-bold text-foreground">
               Confirm Tenancy Termination
             </DialogTitle>
-            <DialogDescription className="text-sm text-slate-500">
+            <DialogDescription className="text-sm text-muted-foreground">
               Are you sure you want to terminate your contract for Unit{' '}
-              <Text className="font-semibold text-slate-800">
+              <Text className="font-semibold text-foreground">
                 {activeTenancy?.unit?.unitNumber}
               </Text>{' '}
               effective{' '}
-              <Text className="font-semibold text-slate-800">
+              <Text className="font-semibold text-foreground">
                 {moveOutDate ? formatDateLong(moveOutDate) : ''}
               </Text>
               ? This action will alert your landlord.
@@ -389,7 +389,7 @@ export default function TerminateTenancyScreen() {
 
           <DialogFooter className="mt-4 flex-col gap-2 sm:flex-col">
             <Button
-              className="w-full h-11 rounded-xl bg-rose-600 active:bg-rose-700"
+              className="w-full h-11 rounded-xl bg-destructive active:bg-destructive/90"
               disabled={terminateTenancy.isPending}
               onPress={handleConfirmSubmit}>
               {terminateTenancy.isPending ? (
@@ -403,10 +403,10 @@ export default function TerminateTenancyScreen() {
             </Button>
             <Button
               variant="outline"
-              className="w-full h-11 rounded-xl border-slate-200"
+              className="w-full h-11 rounded-xl border-border"
               disabled={terminateTenancy.isPending}
               onPress={() => setConfirmModalOpen(false)}>
-              <Text className="font-medium text-slate-700">Cancel</Text>
+              <Text className="font-medium text-foreground">Cancel</Text>
             </Button>
           </DialogFooter>
         </DialogContent>

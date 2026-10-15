@@ -145,7 +145,7 @@ export function AssignTenantModal({
                 )}
               />
               {errors.rentAmount && (
-                <Text className="text-xs text-red-600">{errors.rentAmount.message}</Text>
+                <Text className="text-xs text-destructive">{errors.rentAmount.message}</Text>
               )}
             </View>
 
@@ -171,7 +171,7 @@ export function AssignTenantModal({
                   )}
                 />
                 {errors.startDate && (
-                  <Text className="text-xs text-red-600">{errors.startDate.message}</Text>
+                  <Text className="text-xs text-destructive">{errors.startDate.message}</Text>
                 )}
               </View>
 
@@ -197,7 +197,7 @@ export function AssignTenantModal({
                   )}
                 />
                 {errors.endDate && (
-                  <Text className="text-xs text-red-600">{errors.endDate.message}</Text>
+                  <Text className="text-xs text-destructive">{errors.endDate.message}</Text>
                 )}
               </View>
             </View>

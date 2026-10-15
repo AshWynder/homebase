@@ -51,16 +51,16 @@ export function InvoiceSummaryTiles({ onSelect }: InvoiceSummaryTilesProps = {})
             accessibilityLabel={`${style.label}: ${
               isPending || !entry ? 'loading' : `${entry.count} invoices, ${entry.total} KES`
             }`}
-            className={`min-w-[46%] flex-1 gap-1 rounded-2xl border border-slate-200 p-3 active:bg-slate-50`}>
+            className={`min-w-[46%] flex-1 gap-1 rounded-2xl border border-border p-3 active:bg-muted`}>
             <Text className={`text-xs font-semibold ${style.text}`}>{style.label}</Text>
             {isPending || !entry ? (
-              <Text className="text-lg font-bold text-slate-300">—</Text>
+              <Text className="text-lg font-bold text-muted-foreground">—</Text>
             ) : (
               <>
-                <Text className="text-lg font-bold text-slate-900">
+                <Text className="text-lg font-bold text-foreground">
                   {formatCompactKes(entry.total)}
                 </Text>
-                <Text className="text-xs text-slate-500">
+                <Text className="text-xs text-muted-foreground">
                   {entry.count} {entry.count === 1 ? 'invoice' : 'invoices'}
                 </Text>
               </>

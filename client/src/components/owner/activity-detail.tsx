@@ -23,16 +23,16 @@ export function ActivityDetail({ kind, id, title }: ActivityDetailProps) {
   const destination = activityByKind(kind);
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <DetailHeader title={destination.title} subtitle={title} />
 
       <ScrollView
         className="flex-1"
         contentContainerClassName="grow"
         showsVerticalScrollIndicator={false}>
-        <View className="border-b border-slate-200 bg-white px-5 py-4">
-          <Text className="text-lg font-bold text-slate-900">{title}</Text>
-          <Text className="mt-1 text-xs text-slate-500">Reference {id.slice(0, 8)}</Text>
+        <View className="border-b border-border bg-background px-5 py-4">
+          <Text className="text-lg font-bold text-foreground">{title}</Text>
+          <Text className="mt-1 text-xs text-muted-foreground">Reference {id.slice(0, 8)}</Text>
         </View>
 
         <ListMessage

@@ -58,7 +58,7 @@ export function PropertyFilterBar({
   const showSearch = onSearchChange !== undefined;
 
   return (
-    <View className="gap-3 border-b border-slate-200 bg-white px-5 py-3">
+    <View className="gap-3 border-b border-border bg-background px-5 py-3">
       <Select
         value={selectedOption}
         onValueChange={(option) =>
@@ -83,7 +83,7 @@ export function PropertyFilterBar({
 
       {showSearch ? (
         <View>
-          <Icon as={Search} size={16} className="absolute left-3 top-3 text-slate-400" />
+          <Icon as={Search} size={16} className="absolute left-3 top-3 text-muted-foreground" />
           <Input
             value={search}
             onChangeText={onSearchChange}
@@ -104,7 +104,7 @@ export function PropertyFilterBar({
               accessibilityRole="button"
               accessibilityLabel="Clear search"
               className="absolute right-2 top-2 p-1">
-              <Icon as={X} size={16} className="text-slate-400" />
+              <Icon as={X} size={16} className="text-muted-foreground" />
             </Pressable>
           ) : null}
         </View>

@@ -79,39 +79,39 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <View className="mb-2 h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 border border-teal-100">
-            <Icon as={KeyRound} size={22} className="text-teal-700" />
+          <View className="mb-2 h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+            <Icon as={KeyRound} size={22} className="text-primary" />
           </View>
-          <DialogTitle className="text-xl font-bold text-slate-900">
+          <DialogTitle className="text-xl font-bold text-foreground">
             Change Password
           </DialogTitle>
-          <DialogDescription className="text-sm text-slate-500">
+          <DialogDescription className="text-sm text-muted-foreground">
             Enter your current password and choose a secure new one.
           </DialogDescription>
         </DialogHeader>
 
         {success ? (
           <View className="items-center justify-center py-6 gap-2">
-            <View className="h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-              <Icon as={Check} size={24} className="text-emerald-600" />
+            <View className="h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Icon as={Check} size={24} className="text-primary" />
             </View>
-            <Text className="text-base font-semibold text-slate-900">
+            <Text className="text-base font-semibold text-foreground">
               Password Changed!
             </Text>
-            <Text className="text-xs text-slate-500">
+            <Text className="text-xs text-muted-foreground">
               Your password has been successfully updated.
             </Text>
           </View>
         ) : (
           <View className="gap-3.5 py-2">
             {error ? (
-              <View className="rounded-xl bg-rose-50 border border-rose-100 p-3">
-                <Text className="text-xs font-medium text-rose-600">{error}</Text>
+              <View className="rounded-xl bg-destructive/10 border border-destructive/20 p-3">
+                <Text className="text-xs font-medium text-destructive">{error}</Text>
               </View>
             ) : null}
 
             <View className="gap-1.5">
-              <Label nativeID="curr-pass" className="text-xs font-semibold text-slate-700">
+              <Label nativeID="curr-pass" className="text-xs font-semibold text-foreground">
                 Current Password
               </Label>
               <Input
@@ -120,12 +120,12 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 placeholder="Enter current password"
                 value={currentPassword}
                 onChangeText={setCurrentPassword}
-                className="h-11 rounded-xl bg-slate-50"
+                className="h-11 rounded-xl bg-muted"
               />
             </View>
 
             <View className="gap-1.5">
-              <Label nativeID="new-pass" className="text-xs font-semibold text-slate-700">
+              <Label nativeID="new-pass" className="text-xs font-semibold text-foreground">
                 New Password
               </Label>
               <Input
@@ -134,12 +134,12 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 placeholder="At least 8 characters"
                 value={newPassword}
                 onChangeText={setNewPassword}
-                className="h-11 rounded-xl bg-slate-50"
+                className="h-11 rounded-xl bg-muted"
               />
             </View>
 
             <View className="gap-1.5">
-              <Label nativeID="confirm-pass" className="text-xs font-semibold text-slate-700">
+              <Label nativeID="confirm-pass" className="text-xs font-semibold text-foreground">
                 Confirm New Password
               </Label>
               <Input
@@ -148,7 +148,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 placeholder="Re-enter new password"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                className="h-11 rounded-xl bg-slate-50"
+                className="h-11 rounded-xl bg-muted"
               />
             </View>
           </View>
@@ -157,25 +157,25 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
         {!success && (
           <DialogFooter className="mt-2 flex-col gap-2 sm:flex-col">
             <Button
-              className="w-full h-11 rounded-xl bg-teal-700 active:bg-teal-800"
+              className="w-full h-11 rounded-xl"
               onPress={handleSubmit}
               disabled={changePassword.isPending}>
               {changePassword.isPending ? (
                 <View className="flex-row items-center gap-2">
                   <ActivityIndicator size="small" color="#ffffff" />
-                  <Text className="font-semibold text-white">Updating…</Text>
+                  <Text className="font-semibold text-primary-foreground">Updating…</Text>
                 </View>
               ) : (
-                <Text className="font-semibold text-white">Update Password</Text>
+                <Text className="font-semibold text-primary-foreground">Update Password</Text>
               )}
             </Button>
 
             <Button
               variant="outline"
-              className="w-full h-11 rounded-xl border-slate-200"
+              className="w-full h-11 rounded-xl"
               onPress={() => handleOpenChange(false)}
               disabled={changePassword.isPending}>
-              <Text className="font-medium text-slate-700">Cancel</Text>
+              <Text className="font-medium text-foreground">Cancel</Text>
             </Button>
           </DialogFooter>
         )}

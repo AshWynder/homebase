@@ -185,20 +185,20 @@ export function PropertyList() {
             return (
               <Pressable
                 onPress={() => router.push(`/property/${item.id}`)}
-                className="gap-4 rounded-2xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+                className="gap-4 rounded-2xl border border-border bg-card p-4 active:bg-muted">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 gap-1">
-                    <Text className="text-base font-bold text-slate-900">{item.name}</Text>
+                    <Text className="text-base font-bold text-foreground">{item.name}</Text>
                     {item.address ? (
                       <View className="flex-row items-center gap-1">
-                        <Icon as={MapPin} size={13} className="text-slate-400" />
-                        <Text className="text-sm text-slate-500">{item.address}</Text>
+                        <Icon as={MapPin} size={13} className="text-muted-foreground" />
+                        <Text className="text-sm text-muted-foreground">{item.address}</Text>
                       </View>
                     ) : null}
                     {item.caretaker ? (
                       <View className="flex-row items-center gap-1">
-                        <Icon as={UserCog} size={13} className="text-teal-600" />
-                        <Text className="text-sm text-slate-500">
+                        <Icon as={UserCog} size={13} className="text-primary" />
+                        <Text className="text-sm text-muted-foreground">
                           Caretaker · {item.caretaker.user?.name ?? 'Assigned'}
                         </Text>
                       </View>
@@ -212,7 +212,7 @@ export function PropertyList() {
                         accessibilityRole="button"
                         accessibilityLabel={`Actions for ${item.name}`}
                         onPress={(e) => e.stopPropagation()}>
-                        <Icon as={MoreVertical} size={18} className="text-slate-400" />
+                        <Icon as={MoreVertical} size={18} className="text-muted-foreground" />
                       </Pressable>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -221,7 +221,7 @@ export function PropertyList() {
                           setSelectedProperty(item);
                           setUpdateOpen(true);
                         }}>
-                        <Icon as={Pencil} size={16} className="text-slate-600" />
+                        <Icon as={Pencil} size={16} className="text-muted-foreground" />
                         <Text>Update</Text>
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -229,7 +229,7 @@ export function PropertyList() {
                           setSelectedProperty(item);
                           setAssignCaretakerOpen(true);
                         }}>
-                        <Icon as={UserPlus} size={16} className="text-slate-600" />
+                        <Icon as={UserPlus} size={16} className="text-muted-foreground" />
                         <Text>
                           {item.caretaker ? 'Change caretaker' : 'Assign caretaker'}
                         </Text>
@@ -238,14 +238,14 @@ export function PropertyList() {
                         <DropdownMenuItem
                           variant="destructive"
                           onPress={() => handleRemoveCaretaker(item)}>
-                          <Icon as={UserMinus} size={16} className="text-red-600" />
+                          <Icon as={UserMinus} size={16} className="text-destructive" />
                           <Text>Remove caretaker</Text>
                         </DropdownMenuItem>
                       ) : null}
                       <DropdownMenuItem
                         variant="destructive"
                         onPress={() => handleDelete(item)}>
-                        <Icon as={Trash2} size={16} className="text-red-600" />
+                        <Icon as={Trash2} size={16} className="text-destructive" />
                         <Text>Delete</Text>
                       </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -31,13 +31,13 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="items-center sm:items-center">
-          <View className="mb-2 h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 border border-rose-100">
-            <Icon as={LogOut} size={26} className="text-rose-600" />
+          <View className="mb-2 h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 border border-destructive/20">
+            <Icon as={LogOut} size={26} className="text-destructive" />
           </View>
-          <DialogTitle className="text-center text-xl font-bold text-slate-900">
+          <DialogTitle className="text-center text-xl font-bold text-foreground">
             Sign out of Homebase?
           </DialogTitle>
-          <DialogDescription className="text-center text-sm text-slate-500 mt-1">
+          <DialogDescription className="text-center text-sm text-muted-foreground mt-1">
             You will need to enter your email and password next time you sign in to access your properties, leases, and chats.
           </DialogDescription>
         </DialogHeader>
@@ -45,7 +45,7 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
         <DialogFooter className="mt-4 flex-col gap-2.5 sm:flex-col">
           <Button
             variant="destructive"
-            className="w-full h-12 rounded-xl bg-rose-600 active:bg-rose-700"
+            className="w-full h-12 rounded-xl"
             onPress={handleConfirm}
             disabled={signOut.isPending}>
             {signOut.isPending ? (
@@ -60,10 +60,10 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
 
           <Button
             variant="outline"
-            className="w-full h-12 rounded-xl border-slate-200"
+            className="w-full h-12 rounded-xl"
             onPress={() => onOpenChange(false)}
             disabled={signOut.isPending}>
-            <Text className="font-medium text-slate-700">Cancel</Text>
+            <Text className="font-medium text-foreground">Cancel</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

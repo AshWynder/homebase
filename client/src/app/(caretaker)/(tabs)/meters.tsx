@@ -27,8 +27,8 @@ const METER_TYPE_CONFIG: Record<
   MeterType,
   { icon: typeof Droplets; label: string; chip: string }
 > = {
-  WATER: { icon: Droplets, label: 'Water', chip: 'bg-blue-50 text-blue-700' },
-  ELECTRICITY: { icon: Zap, label: 'Electricity', chip: 'bg-amber-50 text-amber-700' },
+  WATER: { icon: Droplets, label: 'Water', chip: 'bg-info/10 text-info' },
+  ELECTRICITY: { icon: Zap, label: 'Electricity', chip: 'bg-warning/10 text-warning' },
 };
 
 /**
@@ -81,7 +81,7 @@ export default function CaretakerMetersScreen() {
   const isFirstLoad = metersQuery.isPending && !metersQuery.data;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader title="Meter readings" />
 
       {isFirstLoad ? (
@@ -114,14 +114,14 @@ export default function CaretakerMetersScreen() {
             />
           }
           ListHeaderComponent={
-            <Text className="text-xs leading-5 text-slate-500">
+            <Text className="text-xs leading-5 text-muted-foreground">
               Tap a meter to log its current reading. The reading is billed onto
               the invoice covering the reading date.
             </Text>
           }
           renderItem={({ item: [propertyId, group] }) => (
             <View key={propertyId} className="gap-3">
-              <Text className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <Text className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 {group.name}
               </Text>
               {group.meters.map((meter) => (
@@ -156,15 +156,15 @@ function MeterRow({ meter, onPress }: { meter: UtilityMeter; onPress: () => void
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${config.label} meter, ${unitLabel}. ${recencyLabel} Record a reading.`}
-      className="flex-row items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100 active:bg-slate-50">
-      <View className="h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-        <Icon as={config.icon} size={20} className="text-slate-600" />
+      className="flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5 active:bg-accent">
+      <View className="h-11 w-11 items-center justify-center rounded-xl bg-muted">
+        <Icon as={config.icon} size={20} className="text-muted-foreground" />
       </View>
 
       <View className="flex-1 gap-1">
         <View className="flex-row items-center justify-between gap-2">
           <View className="flex-row flex-shrink items-center gap-2">
-            <Text className="text-sm font-bold text-slate-900">{unitLabel}</Text>
+            <Text className="text-sm font-bold text-foreground">{unitLabel}</Text>
             <Badge variant="secondary" className={config.chip}>
               <Text className={`text-[10px] font-semibold ${config.chip.split(' ')[1]}`}>
                 {config.label}
@@ -173,15 +173,15 @@ function MeterRow({ meter, onPress }: { meter: UtilityMeter; onPress: () => void
           </View>
           <MeterRecencyBadge date={meter.lastReadingAt} />
         </View>
-        <Text className="text-xs text-slate-500">
+        <Text className="text-xs text-muted-foreground">
           Last reading {meter.lastReading}
           {meter.meterNumber ? ` • ${meter.meterNumber}` : ''}
         </Text>
       </View>
 
-      <View className="items-center gap-1 rounded-xl bg-teal-50 px-3 py-2">
-        <Icon as={Gauge} size={16} className="text-teal-700" />
-        <Text className="text-[10px] font-bold text-teal-800">Log</Text>
+      <View className="items-center gap-1 rounded-xl bg-primary/10 px-3 py-2">
+        <Icon as={Gauge} size={16} className="text-primary" />
+        <Text className="text-[10px] font-bold text-primary">Log</Text>
       </View>
     </Pressable>
   );

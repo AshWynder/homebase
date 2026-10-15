@@ -50,7 +50,7 @@ export function SegmentedControl<T extends string>({
   return (
     <View
       accessibilityRole="tablist"
-      className={cn('flex-row items-center rounded-2xl bg-slate-200/70 p-1', className)}>
+      className={cn('flex-row items-center rounded-2xl bg-muted p-1', className)}>
       {options.map((option) => {
         const isActive = option.value === value;
         return (
@@ -65,7 +65,7 @@ export function SegmentedControl<T extends string>({
             <Text
               className={cn(
                 'text-xs font-bold',
-                isActive ? 'text-teal-900' : 'text-slate-700',
+                isActive ? 'text-primary' : 'text-foreground',
               )}>
               {option.label}
             </Text>

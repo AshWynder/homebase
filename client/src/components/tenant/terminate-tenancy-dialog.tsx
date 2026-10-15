@@ -110,13 +110,13 @@ export function TerminateTenancyDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[92%] sm:max-w-lg">
         <DialogHeader>
-          <View className="mb-1 h-12 w-12 items-center justify-center rounded-2xl border border-rose-100 bg-rose-50">
-            <Icon as={FileMinus} size={22} className="text-rose-700" />
+          <View className="mb-1 h-12 w-12 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10">
+            <Icon as={FileMinus} size={22} className="text-destructive" />
           </View>
-          <DialogTitle className="text-xl font-bold text-slate-900">
+          <DialogTitle className="text-xl font-bold text-foreground">
             Terminate tenancy
           </DialogTitle>
-          <DialogDescription className="text-sm leading-5 text-slate-500">
+          <DialogDescription className="text-sm leading-5 text-muted-foreground">
             Send your move-out date and reason to the property team for Unit {unitNumber} at{' '}
             {propertyName}.
           </DialogDescription>
@@ -126,20 +126,20 @@ export function TerminateTenancyDialog({
           className="max-h-[520px]"
           contentContainerClassName="gap-3.5 py-1"
           showsVerticalScrollIndicator={false}>
-          <View className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+          <View className="rounded-2xl border border-border bg-muted p-3">
             <View className="flex-row items-center gap-2">
-              <Icon as={CalendarClock} size={16} className="text-slate-500" />
-              <Text className="text-xs font-bold text-slate-800">
+              <Icon as={CalendarClock} size={16} className="text-muted-foreground" />
+              <Text className="text-xs font-bold text-foreground">
                 Current move-out date
               </Text>
             </View>
-            <Text className="mt-1 text-xs text-slate-500">
+            <Text className="mt-1 text-xs text-muted-foreground">
               {moveOutDate ? formatDateLong(moveOutDate) : 'Choose a date'}
             </Text>
           </View>
 
           <View className="gap-1.5">
-            <Label nativeID="move-out-date" className="text-xs font-semibold text-slate-700">
+            <Label nativeID="move-out-date" className="text-xs font-semibold text-foreground">
               Move-out date
             </Label>
             <Controller
@@ -151,19 +151,19 @@ export function TerminateTenancyDialog({
                   onChange={field.onChange}
                   minimumDate={new Date()}
                   placeholder="Choose move-out date"
-                  className="h-11 rounded-xl bg-slate-50"
+                  className="h-11 rounded-xl bg-muted"
                 />
               )}
             />
             {form.formState.errors.moveOutDate ? (
-              <Text className="text-[11px] font-medium text-rose-600">
+              <Text className="text-[11px] font-medium text-destructive">
                 {form.formState.errors.moveOutDate.message}
               </Text>
             ) : null}
           </View>
 
           <View className="gap-2">
-            <Label className="text-xs font-semibold text-slate-700">
+            <Label className="text-xs font-semibold text-foreground">
               Reason for moving out
             </Label>
             <Controller
@@ -182,13 +182,13 @@ export function TerminateTenancyDialog({
                         className={cn(
                           'rounded-xl border px-3 py-2',
                           active
-                            ? 'border-teal-600 bg-teal-50'
-                            : 'border-slate-200 bg-white active:bg-slate-50',
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border bg-card active:bg-accent',
                         )}>
                         <Text
                           className={cn(
                             'text-xs',
-                            active ? 'font-bold text-teal-800' : 'font-medium text-slate-700',
+                            active ? 'font-bold text-primary' : 'font-medium text-foreground',
                           )}>
                           {reason}
                         </Text>
@@ -199,14 +199,14 @@ export function TerminateTenancyDialog({
               )}
             />
             {form.formState.errors.reason ? (
-              <Text className="text-[11px] font-medium text-rose-600">
+              <Text className="text-[11px] font-medium text-destructive">
                 {form.formState.errors.reason.message}
               </Text>
             ) : null}
           </View>
 
           <View className="gap-1.5">
-            <Label nativeID="move-out-notes" className="text-xs font-semibold text-slate-700">
+            <Label nativeID="move-out-notes" className="text-xs font-semibold text-foreground">
               Remarks
             </Label>
             <Controller
@@ -221,21 +221,21 @@ export function TerminateTenancyDialog({
                     value={field.value ?? ''}
                     onChangeText={field.onChange}
                     placeholder="Share anything helpful: inspection timing, handover plans, or concerns."
-                    className="min-h-24 rounded-xl bg-slate-50 p-3 pr-10 text-sm"
+                    className="min-h-24 rounded-xl bg-muted p-3 pr-10 text-sm"
                     style={styles.multilineTopAlign}
                   />
                   <View className="absolute right-3 top-3">
-                    <Icon as={MessageSquareText} size={16} className="text-slate-400" />
+                    <Icon as={MessageSquareText} size={16} className="text-muted-foreground" />
                   </View>
                 </View>
               )}
             />
             {form.formState.errors.notes ? (
-              <Text className="text-[11px] font-medium text-rose-600">
+              <Text className="text-[11px] font-medium text-destructive">
                 {form.formState.errors.notes.message}
               </Text>
             ) : (
-              <Text className="text-[11px] text-slate-500">
+              <Text className="text-[11px] text-muted-foreground">
                 This will be visible to the owner and caretaker in Activity Hub.
               </Text>
             )}
@@ -244,7 +244,8 @@ export function TerminateTenancyDialog({
 
         <DialogFooter className="mt-1 flex-col gap-2 sm:flex-col">
           <Button
-            className="h-12 w-full rounded-xl bg-rose-600 active:bg-rose-700"
+            variant="destructive"
+            className="h-12 w-full rounded-xl"
             disabled={terminateTenancy.isPending}
             onPress={form.handleSubmit(onSubmit)}>
             {terminateTenancy.isPending ? (
@@ -258,10 +259,10 @@ export function TerminateTenancyDialog({
           </Button>
           <Button
             variant="outline"
-            className="h-12 w-full rounded-xl border-slate-200"
+            className="h-12 w-full rounded-xl"
             disabled={terminateTenancy.isPending}
             onPress={() => handleOpenChange(false)}>
-            <Text className="font-medium text-slate-700">Cancel</Text>
+            <Text className="font-medium text-foreground">Cancel</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

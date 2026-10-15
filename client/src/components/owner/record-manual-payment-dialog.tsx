@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
 import { useRecordManualPayment } from '@/hooks/queries/use-invoices';
+import { useDeferredChange } from '@/hooks/use-deferred-change';
 import type { ToastFunction } from '@/hooks/use-toast';
 import { formatKes, tenantName } from '@/lib/format';
 import type { Invoice, ManualPaymentMethod } from '@/api/types';
@@ -23,6 +24,14 @@ const METHODS: { value: ManualPaymentMethod; label: string }[] = [
   { value: 'BANK', label: 'Bank' },
   { value: 'MPESA', label: 'M-Pesa' },
 ];
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so a conditional className re-dispatches from inside the render phase and
+// hangs the app on any state change.
+const styles = StyleSheet.create({
+  methodActive: { borderColor: '#0F766E', backgroundColor: '#F0FDFA' },
+  methodInactive: { borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' },
+});
 
 interface RecordManualPaymentDialogProps {
   invoice: Invoice | null;
@@ -74,6 +83,7 @@ function RecordManualPaymentForm({
   const balanceDue = Number(invoice.balanceDue);
   const [amount, setAmount] = useState(() => balanceDue.toFixed(2));
   const [method, setMethod] = useState<ManualPaymentMethod>('CASH');
+  const onMethodChange = useDeferredChange(method, setMethod);
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const record = useRecordManualPayment();
@@ -138,7 +148,7 @@ function RecordManualPaymentForm({
             placeholder="0.00"
           />
           <View className="flex-row items-center justify-between">
-            <Text className="text-xs text-slate-500">
+            <Text className="text-xs text-muted-foreground">
               {isPartial
                 ? `Leaves ${formatKes(Math.max(balanceDue - parsed, 0))} outstanding`
                 : `Paying the full balance of ${formatKes(balanceDue)}`}
@@ -146,7 +156,7 @@ function RecordManualPaymentForm({
             <Pressable
               hitSlop={8}
               onPress={() => setAmount(balanceDue.toFixed(2))}>
-              <Text className="text-xs font-semibold text-teal-700">Pay full balance</Text>
+              <Text className="text-xs font-semibold text-primary">Pay full balance</Text>
             </Pressable>
           </View>
         </View>
@@ -159,13 +169,12 @@ function RecordManualPaymentForm({
               return (
                 <Pressable
                   key={option.value}
-                  onPress={() => setMethod(option.value)}
-                  className={`flex-1 items-center rounded-xl border px-3 py-2.5 ${
-                    active ? 'border-teal-700 bg-teal-50' : 'border-slate-200 bg-white'
-                  }`}>
+                  onPress={() => onMethodChange(option.value)}
+                  className="flex-1 items-center rounded-xl border px-3 py-2.5"
+                  style={active ? styles.methodActive : styles.methodInactive}>
                   <Text
                     className={`text-sm font-semibold ${
-                      active ? 'text-teal-800' : 'text-slate-600'
+                      active ? 'text-primary' : 'text-muted-foreground'
                     }`}>
                     {option.label}
                   </Text>
@@ -185,7 +194,7 @@ function RecordManualPaymentForm({
           />
         </View>
 
-        {error ? <Text className="text-xs text-red-600">{error}</Text> : null}
+        {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
       </View>
 
       <DialogFooter>

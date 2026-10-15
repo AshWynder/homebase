@@ -1,5 +1,5 @@
 import { SymbolView } from 'expo-symbols';
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren, useMemo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
@@ -12,6 +12,14 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
   const [isOpen, setIsOpen] = useState(false);
   const theme = useTheme();
 
+  // Memoized: NativeWind's native interop identity-checks `style` every render,
+  // so an inline literal re-dispatches from inside the render phase and hangs
+  // the app on any state change.
+  const chevronStyle = useMemo(
+    () => ({ transform: [{ rotate: isOpen ? '-90deg' : '90deg' }] }),
+    [isOpen],
+  );
+
   return (
     <ThemedView>
       <Pressable
@@ -23,7 +31,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
             size={14}
             weight="bold"
             tintColor={theme.text}
-            style={{ transform: [{ rotate: isOpen ? '-90deg' : '90deg' }] }}
+            style={chevronStyle}
           />
         </ThemedView>
 

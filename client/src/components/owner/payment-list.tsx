@@ -13,9 +13,9 @@ import { Banknote, CreditCard, DollarSign, Landmark, Smartphone } from 'lucide-r
 import type { PaymentMethod, PaymentStatus } from '@/api/types';
 
 const STATUS_STYLES: Record<PaymentStatus, { bg: string; text: string; label: string }> = {
-  SUCCESS: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'SUCCESS' },
-  FAILED: { bg: 'bg-red-100', text: 'text-red-700', label: 'FAILED' },
-  PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'PENDING' },
+  SUCCESS: { bg: 'bg-success/10', text: 'text-success', label: 'SUCCESS' },
+  FAILED: { bg: 'bg-destructive/10', text: 'text-destructive', label: 'FAILED' },
+  PENDING: { bg: 'bg-warning/10', text: 'text-warning', label: 'PENDING' },
 };
 
 const METHOD_ICONS: Record<PaymentMethod, typeof DollarSign> = {
@@ -89,11 +89,11 @@ export function PaymentList() {
             const unitNumber = item.invoice?.unit?.unitNumber ?? '—';
 
             return (
-              <View className="gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+              <View className="gap-3 rounded-2xl border border-border bg-card p-4">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 gap-1">
-                    <Text className="text-base font-bold text-slate-900">{tenant}</Text>
-                    <Text className="text-sm text-slate-500">
+                    <Text className="text-base font-bold text-foreground">{tenant}</Text>
+                    <Text className="text-sm text-muted-foreground">
                       {propertyName} • Unit {unitNumber} •{' '}
                       {formatMonthYear(item.invoice?.periodStart)}
                     </Text>
@@ -107,19 +107,19 @@ export function PaymentList() {
 
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center gap-2">
-                    <View className="h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
-                      <Icon as={MethodIcon} size={16} className="text-slate-600" />
+                    <View className="h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                      <Icon as={MethodIcon} size={16} className="text-muted-foreground" />
                     </View>
-                    <Text className="text-sm text-slate-600">{METHOD_LABELS[item.method]}</Text>
+                    <Text className="text-sm text-muted-foreground">{METHOD_LABELS[item.method]}</Text>
                   </View>
-                  <Text className="text-base font-bold text-slate-900">
+                  <Text className="text-base font-bold text-foreground">
                     {formatKes(item.amount)}
                   </Text>
                 </View>
 
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-xs text-slate-500">{formatDateTime(item.createdAt)}</Text>
-                  <Text className="text-xs text-slate-400">{item.transactionRef}</Text>
+                  <Text className="text-xs text-muted-foreground">{formatDateTime(item.createdAt)}</Text>
+                  <Text className="text-xs text-muted-foreground">{item.transactionRef}</Text>
                 </View>
               </View>
             );

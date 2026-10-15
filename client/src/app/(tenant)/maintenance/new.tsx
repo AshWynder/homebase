@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
   // Hoisted: NativeWind's native interop identity-checks `style` on every render,
   // so an inline literal re-dispatches from inside the render phase and hangs the app.
   descriptionBox: { minHeight: 120, fontSize: 15, lineHeight: 22 },
+  photo: { width: '100%', height: '100%' },
 });
 
 export default function ReportMaintenanceScreen() {
@@ -86,7 +87,7 @@ export default function ReportMaintenanceScreen() {
   const atPhotoLimit = photos.length >= MAINTENANCE_LIMITS.maxPhotos;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <DetailHeader title="Report an issue" subtitle={photos.length ? undefined : 'Photos optional'} />
 
       <ScrollView
@@ -95,13 +96,13 @@ export default function ReportMaintenanceScreen() {
         contentContainerClassName="pb-10">
         <View className="px-5 pt-5">
           {/* What happens next, up front. */}
-          <View className="mb-5 flex-row items-start gap-3 rounded-2xl border border-teal-100 bg-teal-50 p-4">
-            <View className="h-9 w-9 items-center justify-center rounded-xl bg-white">
-              <Icon as={ImagePlus} size={18} className="text-teal-700" />
+          <View className="mb-5 flex-row items-start gap-3 rounded-2xl border border-primary/20 bg-primary/10 p-4">
+            <View className="h-9 w-9 items-center justify-center rounded-xl bg-card">
+              <Icon as={ImagePlus} size={18} className="text-primary" />
             </View>
             <View className="flex-1">
-              <Text className="text-sm font-bold text-teal-900">A photo saves a trip</Text>
-              <Text className="mt-0.5 text-xs leading-5 text-teal-800">
+              <Text className="text-sm font-bold text-primary">A photo saves a trip</Text>
+              <Text className="mt-0.5 text-xs leading-5 text-primary">
                 Your landlord sees exactly what you see, so they can send the right
                 person first time.
               </Text>
@@ -109,7 +110,7 @@ export default function ReportMaintenanceScreen() {
           </View>
 
           {/* Description */}
-          <Text className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-700">
+          <Text className="mb-2 text-[11px] font-bold uppercase tracking-wider text-foreground">
             What&apos;s wrong?
           </Text>
           <TextInput
@@ -123,20 +124,20 @@ export default function ReportMaintenanceScreen() {
             // Hard-capped at the server's limit so an over-long description is
             // impossible to submit rather than merely flagged.
             maxLength={MAINTENANCE_LIMITS.maxDescriptionLength}
-            className={`rounded-2xl border bg-white p-4 text-slate-900 ${
-              descriptionError ? 'border-rose-300' : 'border-slate-200'
+            className={`rounded-2xl border bg-card p-4 text-foreground ${
+              descriptionError ? 'border-destructive' : 'border-border'
             }`}
             style={styles.descriptionBox}
           />
           <View className="mt-1.5 flex-row items-center justify-between">
-            <Text className="flex-1 text-xs text-rose-600">
+            <Text className="flex-1 text-xs text-destructive">
               {descriptionError ?? ' '}
             </Text>
             <Text
               className={`text-[11px] font-semibold ${
                 description.length > MAINTENANCE_LIMITS.maxDescriptionLength * 0.9
-                  ? 'text-amber-600'
-                  : 'text-slate-400'
+                  ? 'text-warning'
+                  : 'text-muted-foreground'
               }`}>
               {description.length}/{MAINTENANCE_LIMITS.maxDescriptionLength}
             </Text>
@@ -144,10 +145,10 @@ export default function ReportMaintenanceScreen() {
 
           {/* Photos */}
           <View className="mt-6 flex-row items-center justify-between">
-            <Text className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+            <Text className="text-[11px] font-bold uppercase tracking-wider text-foreground">
               Photos
             </Text>
-            <Text className="text-[11px] font-semibold text-slate-400">
+            <Text className="text-[11px] font-semibold text-muted-foreground">
               {photos.length}/{MAINTENANCE_LIMITS.maxPhotos}
             </Text>
           </View>
@@ -156,10 +157,10 @@ export default function ReportMaintenanceScreen() {
             {photos.map((photo) => (
               <View
                 key={photo.id}
-                className="relative h-[84px] w-[84px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                className="relative h-[84px] w-[84px] overflow-hidden rounded-2xl border border-border bg-muted">
                 <Image
                   source={{ uri: photo.uri }}
-                  style={{ width: '100%', height: '100%' }}
+                  style={styles.photo}
                   contentFit="cover"
                   transition={150}
                 />
@@ -180,13 +181,13 @@ export default function ReportMaintenanceScreen() {
                 disabled={picking || createTicket.isPending}
                 accessibilityRole="button"
                 accessibilityLabel="Add a photo"
-                className="h-[84px] w-[84px] items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-teal-300 bg-teal-50 active:bg-teal-100">
+                className="h-[84px] w-[84px] items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/10 active:bg-primary/10">
                 {picking ? (
                   <ActivityIndicator size="small" color="#0F766E" />
                 ) : (
                   <>
-                    <Icon as={ImagePlus} size={20} className="text-teal-700" />
-                    <Text className="text-[10px] font-bold text-teal-800">Add</Text>
+                    <Icon as={ImagePlus} size={20} className="text-primary" />
+                    <Text className="text-[10px] font-bold text-primary">Add</Text>
                   </>
                 )}
               </Pressable>
@@ -195,13 +196,13 @@ export default function ReportMaintenanceScreen() {
 
           {atPhotoLimit ? (
             <View className="mt-2 flex-row items-center gap-1.5">
-              <Icon as={TriangleAlert} size={12} className="text-amber-600" />
-              <Text className="text-[11px] font-medium text-slate-500">
+              <Icon as={TriangleAlert} size={12} className="text-warning" />
+              <Text className="text-[11px] font-medium text-muted-foreground">
                 That&apos;s the maximum. Remove one to add another.
               </Text>
             </View>
           ) : (
-            <Text className="mt-2 text-[11px] font-medium text-slate-500">
+            <Text className="mt-2 text-[11px] font-medium text-muted-foreground">
               Up to {MAINTENANCE_LIMITS.maxPhotos} photos. They&apos;re compressed on your
               phone before sending.
             </Text>
@@ -210,20 +211,20 @@ export default function ReportMaintenanceScreen() {
       </ScrollView>
 
       {/* Submit bar pinned above the safe area. */}
-      <View className="border-t border-slate-200 bg-white px-5 py-3">
+      <View className="border-t border-border bg-background px-5 py-3">
         <Button
           onPress={handleSubmit}
           disabled={createTicket.isPending || picking}
-          className="h-12 w-full rounded-2xl bg-teal-800">
+          className="h-12 w-full rounded-2xl bg-primary">
           {createTicket.isPending ? (
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" color="#FFFFFF" />
-              <Text className="text-sm font-bold text-white">Sending…</Text>
+              <Text className="text-sm font-bold text-primary-foreground">Sending…</Text>
             </View>
           ) : (
             <View className="flex-row items-center gap-2">
-              <Icon as={Camera} size={16} className="text-white" />
-              <Text className="text-sm font-bold text-white">Send request</Text>
+              <Icon as={Camera} size={16} className="text-primary-foreground" />
+              <Text className="text-sm font-bold text-primary-foreground">Send request</Text>
             </View>
           )}
         </Button>

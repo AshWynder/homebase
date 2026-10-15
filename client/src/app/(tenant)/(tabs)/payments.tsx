@@ -37,9 +37,9 @@ const PAYMENT_STATUS_STYLES: Record<
   PaymentStatus,
   { bg: string; text: string; label: string }
 > = {
-  SUCCESS: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'SUCCESS' },
-  PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'PENDING' },
-  FAILED: { bg: 'bg-red-100', text: 'text-red-700', label: 'FAILED' },
+  SUCCESS: { bg: 'bg-success/10', text: 'text-success', label: 'SUCCESS' },
+  PENDING: { bg: 'bg-warning/10', text: 'text-warning', label: 'PENDING' },
+  FAILED: { bg: 'bg-destructive/10', text: 'text-destructive', label: 'FAILED' },
 };
 
 export default function TenantPaymentsScreen() {
@@ -154,7 +154,7 @@ export default function TenantPaymentsScreen() {
   }, [profile?.phone]);
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="pb-[100px]"
@@ -168,18 +168,18 @@ export default function TenantPaymentsScreen() {
         }>
         {/* Title Header with functional status badge */}
         <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
-          <Text className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <Text className="text-2xl font-extrabold text-foreground tracking-tight">
             Payments & Invoices
           </Text>
           {totalOutstanding > 0 ? (
-            <View className="flex-row items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200 px-3 py-1">
-              <View className="h-2 w-2 rounded-full bg-rose-500" />
-              <Text className="text-xs font-bold text-rose-700">Due</Text>
+            <View className="flex-row items-center gap-1.5 rounded-full bg-destructive/10 border border-destructive/20 px-3 py-1">
+              <View className="h-2 w-2 rounded-full bg-destructive" />
+              <Text className="text-xs font-bold text-destructive">Due</Text>
             </View>
           ) : (
-            <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1">
-              <View className="h-2 w-2 rounded-full bg-emerald-500" />
-              <Text className="text-xs font-bold text-emerald-700">Up to date</Text>
+            <View className="flex-row items-center gap-1.5 rounded-full bg-success/10 border border-success/20 px-3 py-1">
+              <View className="h-2 w-2 rounded-full bg-success" />
+              <Text className="text-xs font-bold text-success">Up to date</Text>
             </View>
           )}
         </View>
@@ -198,7 +198,7 @@ export default function TenantPaymentsScreen() {
 
         {/* Billing Stream Section */}
         <View className="px-6 pt-7">
-          <Text className="text-lg font-bold text-slate-900 mb-3">
+          <Text className="text-lg font-bold text-foreground mb-3">
             Billing Stream
           </Text>
 
@@ -212,14 +212,14 @@ export default function TenantPaymentsScreen() {
 
           {/* Empty state when filtering unpaid invoices and there are none */}
           {activeTab === 'unpaid' && openInvoices.length === 0 && (
-            <View className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 items-center justify-center mb-6">
-              <View className="h-12 w-12 items-center justify-center rounded-full bg-emerald-50 mb-2.5">
-                <Icon as={CheckCircle2} size={24} className="text-emerald-600" />
+            <View className="rounded-2xl border border-dashed border-border bg-card p-6 items-center justify-center mb-6">
+              <View className="h-12 w-12 items-center justify-center rounded-full bg-success/10 mb-2.5">
+                <Icon as={CheckCircle2} size={24} className="text-success" />
               </View>
-              <Text className="text-sm font-bold text-slate-800 text-center">
+              <Text className="text-sm font-bold text-foreground text-center">
                 All Invoices Settled
               </Text>
-              <Text className="text-xs text-slate-600 text-center mt-1">
+              <Text className="text-xs text-muted-foreground text-center mt-1">
                 You have no outstanding or overdue payments.
               </Text>
             </View>
@@ -227,7 +227,7 @@ export default function TenantPaymentsScreen() {
 
           {/* Invoice list, each with its status badge (individual Pay Now for open ones) */}
           <View className="mb-6">
-            <Text className="text-[11px] font-bold tracking-wider uppercase text-slate-700 mb-2">
+            <Text className="text-[11px] font-bold tracking-wider uppercase text-foreground mb-2">
               INVOICES
             </Text>
             <View className="gap-3">
@@ -239,9 +239,9 @@ export default function TenantPaymentsScreen() {
                   return (
                     <View
                       key={inv.id}
-                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
+                      className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5">
                       <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-base font-bold text-slate-900">
+                        <Text className="text-base font-bold text-foreground">
                           {formatMonthYear(inv.periodStart)}
                         </Text>
                         <Badge variant="secondary" className={style.bg}>
@@ -253,25 +253,25 @@ export default function TenantPaymentsScreen() {
                       </View>
                       <View className="flex-row items-center justify-between">
                         <View>
-                          <Text className="text-xs text-slate-600">
+                          <Text className="text-xs text-muted-foreground">
                             {isOpen ? 'Amount payable' : 'Settled amount'}
                           </Text>
-                          <Text className="text-base font-extrabold text-slate-900">
+                          <Text className="text-base font-extrabold text-foreground">
                             {formatKes(isOpen ? inv.balanceDue : inv.amount)}
                           </Text>
                         </View>
                         {isOpen ? (
                           <TouchableOpacity
                             activeOpacity={0.85}
-                            className="flex-row items-center gap-1.5 rounded-xl bg-teal-800 px-4 py-2.5 shadow-sm"
+                            className="flex-row items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 shadow-sm"
                             onPress={() => router.push(`/(tenant)/pay/${inv.id}`)}>
-                            <Text className="text-xs font-bold text-white">
+                            <Text className="text-xs font-bold text-primary-foreground">
                               Pay Now
                             </Text>
-                            <Icon as={ArrowRight} size={14} className="text-white" />
+                            <Icon as={ArrowRight} size={14} className="text-primary-foreground" />
                           </TouchableOpacity>
                         ) : (
-                          <Text className="text-xs text-slate-400">
+                          <Text className="text-xs text-muted-foreground">
                             Due {formatDate(inv.dueDate)}
                           </Text>
                         )}
@@ -280,8 +280,8 @@ export default function TenantPaymentsScreen() {
                   );
                 })
               ) : (
-                <View className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 items-center justify-center">
-                  <Text className="text-sm font-bold text-slate-800 text-center">
+                <View className="rounded-2xl border border-dashed border-border bg-card p-6 items-center justify-center">
+                  <Text className="text-sm font-bold text-foreground text-center">
                     {activeTab === 'paid'
                       ? 'No paid invoices yet'
                       : 'No invoices to show'}
@@ -294,7 +294,7 @@ export default function TenantPaymentsScreen() {
           {/* Payment History List (shown in 'all' or 'paid' tabs) */}
           {(activeTab === 'all' || activeTab === 'paid') && (
             <View>
-              <Text className="text-[11px] font-bold tracking-wider uppercase text-slate-700 mb-2">
+              <Text className="text-[11px] font-bold tracking-wider uppercase text-foreground mb-2">
                 PAYMENT HISTORY
               </Text>
 
@@ -311,42 +311,42 @@ export default function TenantPaymentsScreen() {
                     return (
                       <View
                         key={payment.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
+                        className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5">
                         <View className="flex-row items-center justify-between mb-3">
                           <View className="flex-row items-center gap-3">
                             {payment.status === 'SUCCESS' ? (
-                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-teal-50 border border-teal-100">
+                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
                                 <Icon
                                   as={CheckCircle2}
                                   size={20}
-                                  className="text-teal-700"
+                                  className="text-primary"
                                 />
                               </View>
                             ) : payment.status === 'PENDING' ? (
-                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-amber-100">
+                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-warning/10 border border-warning/20">
                                 <Icon
                                   as={Clock}
                                   size={20}
-                                  className="text-amber-600"
+                                  className="text-warning"
                                 />
                               </View>
                             ) : (
-                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-rose-50 border border-rose-100">
+                              <View className="h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 border border-destructive/20">
                                 <Icon
                                   as={XCircle}
                                   size={20}
-                                  className="text-rose-600"
+                                  className="text-destructive"
                                 />
                               </View>
                             )}
                             <View>
-                              <Text className="text-base font-bold text-slate-900">
+                              <Text className="text-base font-bold text-foreground">
                                 {formatDateLong(
                                   payment.paidAt ?? payment.createdAt,
                                 )}{' '}
                                 Rent
                               </Text>
-                              <Text className="text-xs text-slate-600">
+                              <Text className="text-xs text-muted-foreground">
                                 {methodLabel} •{' '}
                                 {formatDateLong(
                                   payment.paidAt ?? payment.createdAt,
@@ -362,16 +362,16 @@ export default function TenantPaymentsScreen() {
                           </Badge>
                         </View>
 
-                        <View className="flex-row items-center justify-between pt-2 border-t border-slate-100">
+                        <View className="flex-row items-center justify-between pt-2 border-t border-border">
                           <View>
                             {payment.status === 'SUCCESS' ? (
-                              <Text className="text-[11px] font-medium text-slate-600">
+                              <Text className="text-[11px] font-medium text-muted-foreground">
                                 Receipt #{' '}
                                 {payment.mpesaReceiptNumber ??
                                   shortId(payment.transactionRef)}
                               </Text>
                             ) : null}
-                            <Text className="text-base font-extrabold text-slate-900">
+                            <Text className="text-base font-extrabold text-foreground">
                               {formatKes(payment.amount)}
                             </Text>
                           </View>
@@ -379,13 +379,13 @@ export default function TenantPaymentsScreen() {
                           {payment.status === 'SUCCESS' ? (
                             <TouchableOpacity
                               activeOpacity={0.7}
-                              className="flex-row items-center gap-1 rounded-xl bg-slate-100 px-3 py-2">
+                              className="flex-row items-center gap-1 rounded-xl bg-muted px-3 py-2">
                               <Icon
                                 as={FileText}
                                 size={14}
-                                className="text-slate-700"
+                                className="text-foreground"
                               />
-                              <Text className="text-xs font-semibold text-slate-700">
+                              <Text className="text-xs font-semibold text-foreground">
                                 Download Receipt
                               </Text>
                             </TouchableOpacity>
@@ -395,16 +395,16 @@ export default function TenantPaymentsScreen() {
                     );
                   })
                 ) : (
-                  <View className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 items-center justify-center">
-                    <View className="h-12 w-12 items-center justify-center rounded-full bg-slate-100 mb-2.5">
-                      <Icon as={Clock} size={22} className="text-slate-500" />
+                  <View className="rounded-2xl border border-dashed border-border bg-card p-6 items-center justify-center">
+                    <View className="h-12 w-12 items-center justify-center rounded-full bg-muted mb-2.5">
+                      <Icon as={Clock} size={22} className="text-muted-foreground" />
                     </View>
-                    <Text className="text-sm font-bold text-slate-800 text-center">
+                    <Text className="text-sm font-bold text-foreground text-center">
                       {activeTab === 'paid'
                         ? 'No settled payments yet'
                         : 'No payment history'}
                     </Text>
-                    <Text className="text-xs text-slate-600 text-center mt-1">
+                    <Text className="text-xs text-muted-foreground text-center mt-1">
                       {activeTab === 'paid'
                         ? 'Successful payments will appear here.'
                         : 'Settled payments will appear here.'}
@@ -418,39 +418,39 @@ export default function TenantPaymentsScreen() {
           {/* Payment Methods Section */}
           <View className="pt-8">
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-bold text-slate-900">
+              <Text className="text-lg font-bold text-foreground">
                 Payment Methods
               </Text>
               <TouchableOpacity activeOpacity={0.7}>
-                <Text className="text-xs font-bold text-teal-700">
+                <Text className="text-xs font-bold text-primary">
                   Manage All
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Method 1: M-Pesa Express */}
-            <View className="flex-row items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-100">
+            <View className="flex-row items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5">
               <View className="flex-row items-center gap-3">
-                <View className="h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100">
-                  <Icon as={Smartphone} size={20} className="text-emerald-600" />
+                <View className="h-10 w-10 items-center justify-center rounded-xl bg-success/10 border border-success/20">
+                  <Icon as={Smartphone} size={20} className="text-success" />
                 </View>
                 <View>
                   <View className="flex-row items-center gap-2">
-                    <Text className="text-sm font-bold text-slate-900">
+                    <Text className="text-sm font-bold text-foreground">
                       M-Pesa Express
                     </Text>
-                    <View className="rounded-md bg-teal-100 px-1.5 py-0.5">
-                      <Text className="text-[10px] font-bold text-teal-800">
+                    <View className="rounded-md bg-primary/10 px-1.5 py-0.5">
+                      <Text className="text-[10px] font-bold text-primary">
                         Default
                       </Text>
                     </View>
                   </View>
-                  <Text className="text-xs font-medium text-slate-600">
+                  <Text className="text-xs font-medium text-muted-foreground">
                     {maskedMpesaPhone}
                   </Text>
                 </View>
               </View>
-              <Icon as={MoreVertical} size={18} className="text-slate-400" />
+              <Icon as={MoreVertical} size={18} className="text-muted-foreground" />
             </View>
           </View>
         </View>

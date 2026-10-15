@@ -86,11 +86,11 @@ export function GenerateTenancyInvoiceDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <View className="rounded-2xl bg-teal-50 p-4">
-          <Text className="text-[11px] font-medium uppercase tracking-wide text-teal-700">
+        <View className="rounded-2xl bg-primary/10 p-4">
+          <Text className="text-[11px] font-medium uppercase tracking-wide text-primary">
             {tenantName}
           </Text>
-          <Text className="text-[11px] text-slate-500 mt-0.5">
+          <Text className="text-[11px] text-muted-foreground mt-0.5">
             Rent {formatKes(monthlyRent)}/mo • full period, not pro-rated
           </Text>
         </View>
@@ -118,9 +118,9 @@ export function GenerateTenancyInvoiceDialog({
           </View>
 
           {valid ? (
-            <Text className="text-xs text-slate-500">
+            <Text className="text-xs text-muted-foreground">
               This will bill {tenantName} for{' '}
-              <Text className="font-semibold text-slate-700">
+              <Text className="font-semibold text-foreground">
                 {periodLabel(m, y)}
               </Text>
               .

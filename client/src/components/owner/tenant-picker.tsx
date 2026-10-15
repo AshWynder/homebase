@@ -85,12 +85,12 @@ export function TenantPicker({
     return (
       <View className="gap-2">
         <Label>{label}</Label>
-        <View className="flex-row items-center justify-between gap-3 rounded-xl border-2 border-primary bg-white p-3">
+        <View className="flex-row items-center justify-between gap-3 rounded-xl border-2 border-primary bg-card p-3">
           <View className="flex-1 gap-0.5">
-            <Text className="text-base font-bold text-slate-900">
+            <Text className="text-base font-bold text-foreground">
               {profileDisplayName(selected)}
             </Text>
-            <Text className="text-sm text-slate-500">
+            <Text className="text-sm text-muted-foreground">
               {[selected.user?.email, selected.phone].filter(Boolean).join(' · ')}
             </Text>
           </View>
@@ -99,11 +99,11 @@ export function TenantPicker({
             onPress={() => onChange(null)}
             accessibilityRole="button"
             accessibilityLabel="Change selected tenant"
-            className="rounded-lg border border-slate-200 px-3 py-1.5 active:bg-slate-50">
+            className="rounded-lg border border-border px-3 py-1.5 active:bg-muted">
             <Text className="text-xs font-semibold text-primary">Change</Text>
           </Pressable>
         </View>
-        {error ? <Text className="text-xs text-red-600">{error}</Text> : null}
+        {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
       </View>
     );
   }
@@ -117,7 +117,7 @@ export function TenantPicker({
           <Icon
             as={Search}
             size={16}
-            className="absolute left-3 top-3 z-10 text-slate-400"
+            className="absolute left-3 top-3 z-10 text-muted-foreground"
           />
           <Input
             value={search}
@@ -139,7 +139,7 @@ export function TenantPicker({
               accessibilityRole="button"
               accessibilityLabel="Clear search"
               className="absolute right-2 top-2 z-10 p-1">
-              <Icon as={X} size={16} className="text-slate-400" />
+              <Icon as={X} size={16} className="text-muted-foreground" />
             </Pressable>
           ) : null}
         </View>
@@ -181,15 +181,15 @@ export function TenantPicker({
                   onPress={() => pick(item)}
                   accessibilityRole="button"
                   accessibilityLabel={`Select ${profileDisplayName(item)}`}
-                  className="flex-row items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 active:bg-slate-50">
-                  <View className="h-9 w-9 items-center justify-center rounded-full bg-slate-100">
-                    <Icon as={User} size={16} className="text-slate-500" />
+                  className="flex-row items-center gap-3 rounded-xl border border-border bg-card p-3 active:bg-muted">
+                  <View className="h-9 w-9 items-center justify-center rounded-full bg-muted">
+                    <Icon as={User} size={16} className="text-muted-foreground" />
                   </View>
                   <View className="flex-1 gap-0.5">
-                    <Text className="text-base font-bold text-slate-900">
+                    <Text className="text-base font-bold text-foreground">
                       {profileDisplayName(item)}
                     </Text>
-                    <Text className="text-sm text-slate-500">
+                    <Text className="text-sm text-muted-foreground">
                       {[item.user?.email, item.phone].filter(Boolean).join(' · ')}
                     </Text>
                   </View>
@@ -200,13 +200,13 @@ export function TenantPicker({
         </View>
 
         {!usersQuery.isPending && !usersQuery.isError && profiles.length > 0 ? (
-          <Text className="mt-1 text-xs text-slate-400">
+          <Text className="mt-1 text-xs text-muted-foreground">
             Only tenants without an active tenancy are listed.
           </Text>
         ) : null}
       </KeyboardAvoidingView>
 
-      {error ? <Text className="text-xs text-red-600">{error}</Text> : null}
+      {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
     </View>
   );
 }
@@ -215,9 +215,9 @@ export function TenantPicker({
 function PickerMessage({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <View className="items-center gap-1 px-4 py-6">
-      <Text className="text-sm font-semibold text-slate-700">{title}</Text>
+      <Text className="text-sm font-semibold text-foreground">{title}</Text>
       {subtitle ? (
-        <Text className="text-center text-xs text-slate-500">{subtitle}</Text>
+        <Text className="text-center text-xs text-muted-foreground">{subtitle}</Text>
       ) : null}
     </View>
   );

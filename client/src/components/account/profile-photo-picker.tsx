@@ -130,12 +130,12 @@ export function ProfilePhotoPicker() {
         onPress={showOptions}
         disabled={isLoading}
         className="relative">
-        <Avatar size="2xl" className="border-4 border-white shadow-md shadow-slate-200">
+        <Avatar size="2xl" className="border-4 border-card shadow-md shadow-black/5">
           {user?.image ? (
             <AvatarImage source={{ uri: user.image }} />
           ) : (
-            <AvatarFallback className="bg-teal-700">
-              <Text className="text-3xl font-bold text-white">{initials}</Text>
+            <AvatarFallback className="bg-primary">
+              <Text className="text-3xl font-bold text-primary-foreground">{initials}</Text>
             </AvatarFallback>
           )}
         </Avatar>
@@ -145,8 +145,8 @@ export function ProfilePhotoPicker() {
             <ActivityIndicator size="small" color="#ffffff" />
           </View>
         ) : (
-          <View className="absolute bottom-0 right-0 h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-teal-600 shadow-sm">
-            <Icon as={Camera} size={16} className="text-white" />
+          <View className="absolute bottom-0 right-0 h-9 w-9 items-center justify-center rounded-full border-2 border-card bg-primary shadow-sm">
+            <Icon as={Camera} size={16} className="text-primary-foreground" />
           </View>
         )}
       </TouchableOpacity>
@@ -155,7 +155,7 @@ export function ProfilePhotoPicker() {
         onPress={showOptions}
         disabled={isLoading}
         className="mt-2.5">
-        <Text className="text-xs font-semibold text-teal-700">
+        <Text className="text-xs font-semibold text-primary">
           {user?.image ? 'Change Photo' : 'Add Photo'}
         </Text>
       </TouchableOpacity>

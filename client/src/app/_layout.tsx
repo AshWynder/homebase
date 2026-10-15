@@ -3,15 +3,19 @@ import '../global.css';
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
 
 import { AuthGate } from '@/components/auth/auth-gate';
 import { ChatProvider } from '@/components/chat/chat-provider';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useDisplayPreferences } from '@/hooks/use-display-preferences';
 import { hasSession, isCaretakerSession, isTenantSession } from '@/lib/auth-routing';
 import { queryClient } from '@/lib/query-client';
 import { useStore } from '@/stores/use-store';
 
 export default function RootLayout() {
+  // Applies the persisted theme + text-size preferences to NativeWind.
+  useDisplayPreferences();
+
   const colorScheme = useColorScheme();
 
   const token = useStore((s) => s.token);

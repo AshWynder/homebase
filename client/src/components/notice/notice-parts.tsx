@@ -23,17 +23,17 @@ const AUDIENCE_PRESENTATION: Record<
   ALL_PROPERTIES: {
     label: 'All tenants',
     icon: Globe2,
-    className: 'bg-slate-100 text-slate-700',
+    className: 'bg-muted text-muted-foreground',
   },
   PROPERTY: {
     label: 'One property',
     icon: Building2,
-    className: 'bg-teal-50 text-teal-800',
+    className: 'bg-primary/10 text-primary',
   },
   TENANT: {
     label: 'One tenant',
     icon: User,
-    className: 'bg-amber-50 text-amber-800',
+    className: 'bg-warning/10 text-warning',
   },
 };
 
@@ -121,7 +121,7 @@ export function ReadProgress({
 
   if (recipientCount === 0) {
     return (
-      <Text className="text-[11px] font-medium text-slate-400">
+      <Text className="text-[11px] font-medium text-muted-foreground">
         No active tenants to receive this
       </Text>
     );
@@ -136,25 +136,25 @@ export function ReadProgress({
           <Icon
             as={CheckCheck}
             size={12}
-            className={allRead ? 'text-emerald-600' : 'text-slate-400'}
+            className={allRead ? 'text-success' : 'text-muted-foreground'}
           />
           <Text
             className={cn(
               'text-[11px] font-bold',
-              allRead ? 'text-emerald-700' : 'text-slate-500',
+              allRead ? 'text-success' : 'text-muted-foreground',
             )}>
             {allRead ? 'Everyone has read this' : 'Read so far'}
           </Text>
         </View>
-        <Text className="text-[11px] font-semibold text-slate-500">
+        <Text className="text-[11px] font-semibold text-muted-foreground">
           {readCount}/{recipientCount}
         </Text>
       </View>
 
       {/* 2px track keeps the bar legible next to 12px type without shouting. */}
-      <View className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+      <View className="h-1.5 w-full overflow-hidden rounded-full bg-border">
         <View
-          className={cn('h-full rounded-full', allRead ? 'bg-emerald-500' : 'bg-teal-600')}
+          className={cn('h-full rounded-full', allRead ? 'bg-success' : 'bg-primary')}
           style={barWidthStyle}
         />
       </View>
@@ -171,6 +171,6 @@ export function ReadProgress({
  */
 export function UnreadDot() {
   return (
-    <View className="h-2.5 w-2.5 rounded-full bg-teal-600" accessibilityLabel="Unread" />
+    <View className="h-2.5 w-2.5 rounded-full bg-primary" accessibilityLabel="Unread" />
   );
 }

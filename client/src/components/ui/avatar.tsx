@@ -23,7 +23,7 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
       <View
         ref={ref}
         className={cn(
-          'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100',
+          'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted',
           sizeClasses[size],
           className,
         )}
@@ -68,12 +68,12 @@ function AvatarFallback({ className, textClassName, children, ...props }: Avatar
   return (
     <View
       className={cn(
-        'flex h-full w-full items-center justify-center rounded-full bg-teal-600',
+        'flex h-full w-full items-center justify-center rounded-full bg-primary',
         className,
       )}
       {...props}>
       {typeof children === 'string' ? (
-        <Text className={cn('font-bold text-white', textClassName)}>
+        <Text className={cn('font-bold text-primary-foreground', textClassName)}>
           {children}
         </Text>
       ) : (

@@ -1,18 +1,21 @@
 import { Tabs } from 'expo-router';
-import { Bell, ClipboardList, Gauge, UserCircle } from 'lucide-react-native';
+import { Bell, ClipboardList, Gauge, Settings } from 'lucide-react-native';
 
 import { Icon } from '@/components/ui/icon';
+import { useTabBarColors } from '@/hooks/use-tab-bar-colors';
 
 export default function CaretakerTabsLayout() {
+  const tabColors = useTabBarColors();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0F766E',
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarActiveTintColor: tabColors.active,
+        tabBarInactiveTintColor: tabColors.inactive,
         tabBarStyle: {
-          borderTopColor: '#E2E8F0',
-          backgroundColor: '#FFFFFF',
+          borderTopColor: tabColors.border,
+          backgroundColor: tabColors.background,
           position: 'relative',
           zIndex: 20,
           elevation: 20,
@@ -41,10 +44,10 @@ export default function CaretakerTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="account"
+        name="settings"
         options={{
-          title: 'Account',
-          tabBarIcon: ({ color, size }) => <Icon as={UserCircle} color={color} size={size} />,
+          title: 'Settings',
+          tabBarIcon: ({ color, size }) => <Icon as={Settings} color={color} size={size} />,
         }}
       />
     </Tabs>

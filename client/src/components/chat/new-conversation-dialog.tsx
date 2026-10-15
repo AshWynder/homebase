@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Building2, MessageSquare, Users } from 'lucide-react-native';
 
 import type { MessageableGroup, MessageablePerson, Role } from '@/api/types';
@@ -17,9 +17,18 @@ import {
   useMessageablePeople,
 } from '@/hooks/queries/use-chat';
 import { useStartDirectChat, useStartGroupChat } from '@/hooks/queries/use-start-chat';
+import { useDeferredChange } from '@/hooks/use-deferred-change';
 import { cn } from '@/lib/utils';
 
 type Target = 'group' | 'direct';
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so a conditional className re-dispatches from inside the render phase and
+// hangs the app on any state change.
+const styles = StyleSheet.create({
+  tabActive: { borderColor: '#0A7168', backgroundColor: 'rgba(10, 113, 104, 0.1)' },
+  tabInactive: { borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' },
+});
 
 interface NewConversationDialogProps {
   open: boolean;
@@ -59,6 +68,7 @@ export function NewConversationDialog({
      wherever the user left off. A picker that remembers its last filter reads as
      a filter the user forgot to clear. */
   const [target, setTarget] = useState<Target>('group');
+  const onTargetChange = useDeferredChange(target, setTarget);
 
   const startGroup = useStartGroupChat({ onError: onToast });
   const startDirect = useStartDirectChat({ onError: onToast });
@@ -98,13 +108,13 @@ export function NewConversationDialog({
             label="Group chat"
             icon={Building2}
             active={target === 'group'}
-            onPress={() => setTarget('group')}
+            onPress={() => onTargetChange('group')}
           />
           <TargetTab
             label="Direct message"
             icon={Users}
             active={target === 'direct'}
-            onPress={() => setTarget('direct')}
+            onPress={() => onTargetChange('direct')}
           />
         </View>
 
@@ -142,10 +152,8 @@ function TargetTab({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
-      className={cn(
-        'flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2.5',
-        active ? 'border-primary bg-primary/10' : 'border-slate-200 bg-white'
-      )}>
+      className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-2.5"
+      style={active ? styles.tabActive : styles.tabInactive}>
       <Icon
         as={icon}
         size={15}

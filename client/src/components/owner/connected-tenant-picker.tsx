@@ -86,7 +86,7 @@ export function ConnectedTenantPicker({
       <Label>Notify</Label>
 
       <View>
-        <Icon as={Search} size={16} className="absolute left-3 top-3 text-slate-400" />
+        <Icon as={Search} size={16} className="absolute left-3 top-3 text-muted-foreground" />
         <Input
           value={search}
           onChangeText={setSearch}
@@ -107,7 +107,7 @@ export function ConnectedTenantPicker({
             accessibilityRole="button"
             accessibilityLabel="Clear search"
             className="absolute right-2 top-2 p-1">
-            <Icon as={X} size={16} className="text-slate-400" />
+            <Icon as={X} size={16} className="text-muted-foreground" />
           </Pressable>
         ) : null}
       </View>
@@ -115,11 +115,11 @@ export function ConnectedTenantPicker({
       {/* The selected choice is held outside the list, so a search that filters
           it out must not make the form look empty. */}
       {selected ? (
-        <View className="flex-row items-center gap-3 rounded-xl border border-teal-200 bg-teal-50 p-3">
-          <View className="h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
-            <Icon as={UserRound} size={16} className="text-teal-700" />
+        <View className="flex-row items-center gap-3 rounded-xl border border-primary/20 bg-primary/10 p-3">
+          <View className="h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+            <Icon as={UserRound} size={16} className="text-primary" />
           </View>
-          <Text className="flex-1 text-sm font-bold text-teal-900" numberOfLines={1}>
+          <Text className="flex-1 text-sm font-bold text-primary" numberOfLines={1}>
             {profileDisplayName(selected)}
           </Text>
           <Pressable
@@ -128,7 +128,7 @@ export function ConnectedTenantPicker({
             accessibilityRole="button"
             accessibilityLabel="Clear selection"
             className="p-1">
-            <Icon as={X} size={16} className="text-teal-700" />
+            <Icon as={X} size={16} className="text-primary" />
           </Pressable>
         </View>
       ) : null}
@@ -140,8 +140,8 @@ export function ConnectedTenantPicker({
           ))}
         </View>
       ) : visible.length === 0 ? (
-        <View className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
-          <Text className="text-center text-xs text-slate-500">
+        <View className="rounded-xl border border-dashed border-border bg-muted p-4">
+          <Text className="text-center text-xs text-muted-foreground">
             {tenanciesQuery.data?.total === 0
               ? 'None of your tenants have an active tenancy yet.'
               : 'No tenant matches that search.'}
@@ -164,30 +164,30 @@ export function ConnectedTenantPicker({
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
                 className={cn(
-                  'flex-row items-center gap-3 rounded-xl border p-3 active:bg-slate-50',
-                  active ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white',
+                  'flex-row items-center gap-3 rounded-xl border p-3 active:bg-muted',
+                  active ? 'border-primary/20 bg-primary/10' : 'border-border bg-card',
                 )}>
-                <View className="h-9 w-9 items-center justify-center rounded-lg bg-slate-100">
-                  <Icon as={UserRound} size={16} className="text-slate-600" />
+                <View className="h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                  <Icon as={UserRound} size={16} className="text-muted-foreground" />
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-sm font-semibold text-slate-900" numberOfLines={1}>
+                  <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
                     {profileDisplayName(profile)}
                   </Text>
-                  <Text className="text-[11px] text-slate-500" numberOfLines={1}>
+                  <Text className="text-[11px] text-muted-foreground" numberOfLines={1}>
                     {item.whereLabel}
                   </Text>
                 </View>
 
-                {active ? <Icon as={Check} size={16} className="text-teal-700" /> : null}
+                {active ? <Icon as={Check} size={16} className="text-primary" /> : null}
               </Pressable>
             );
           }}
         />
       )}
 
-      {error ? <Text className="text-xs text-red-600">{error}</Text> : null}
+      {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
     </View>
   );
 }

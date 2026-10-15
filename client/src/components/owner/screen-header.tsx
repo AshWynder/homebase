@@ -7,6 +7,7 @@ import { Text } from '@/components/ui/text';
 
 interface ScreenHeaderProps {
   title: string;
+  subtitle?: string;
   onAdd?: () => void;
   addLabel?: string;
   showBack?: boolean;
@@ -16,13 +17,14 @@ interface ScreenHeaderProps {
 /** App bar with the screen title and an optional green circular add button. */
 export function ScreenHeader({
   title,
+  subtitle,
   onAdd,
   addLabel = 'Add',
   showBack = false,
   onBack,
 }: ScreenHeaderProps) {
   return (
-    <View className="border-b border-slate-200 bg-white">
+    <View className="border-b border-border bg-background">
       <View className="flex-row items-center gap-3 px-5 py-3">
         {showBack ? (
           <Pressable
@@ -30,21 +32,28 @@ export function ScreenHeader({
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Go back"
-            className="h-8 w-8 items-center justify-center rounded-full bg-slate-100 active:bg-slate-200">
-            <Icon as={ArrowLeft} size={17} className="text-slate-800" />
+            className="h-8 w-8 items-center justify-center rounded-full bg-muted active:bg-accent">
+            <Icon as={ArrowLeft} size={17} className="text-foreground" />
           </Pressable>
         ) : null}
 
-        <Text className="flex-1 text-lg font-bold text-slate-900" numberOfLines={1}>
-          {title}
-        </Text>
+        <View className="flex-1">
+          <Text className="text-lg font-bold text-foreground" numberOfLines={1}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
 
         {onAdd ? (
           <Pressable
             onPress={onAdd}
             accessibilityLabel={addLabel}
-            className="h-8 w-8 items-center justify-center rounded-full bg-teal-700 active:bg-teal-800">
-            <Icon as={Plus} size={18} className="text-white" />
+            className="h-8 w-8 items-center justify-center rounded-full bg-primary active:opacity-90">
+            <Icon as={Plus} size={18} className="text-primary-foreground" />
           </Pressable>
         ) : null}
       </View>

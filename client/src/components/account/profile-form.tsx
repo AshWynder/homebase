@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Separator } from '@/components/ui/separator';
 import { useUpdateProfile } from '@/hooks/queries/use-auth';
 import { useStore } from '@/stores/use-store';
 import { ChangePasswordDialog } from './change-password-dialog';
@@ -69,19 +68,19 @@ export function ProfileForm() {
   return (
     <View className="gap-5">
       {/* Personal Info Card */}
-      <Card className="rounded-2xl border-slate-200 bg-white">
+      <Card className="rounded-2xl border-border bg-card">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-bold text-slate-900">
+          <CardTitle className="text-base font-bold text-foreground">
             Personal Information
           </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
+          <CardDescription className="text-xs text-muted-foreground">
             Update your account details and contact information.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="gap-4">
           <View className="gap-1.5">
-            <Label nativeID="name-field" className="text-xs font-semibold text-slate-700">
+            <Label nativeID="name-field" className="text-xs font-semibold text-foreground">
               Full Name
             </Label>
             <View className="relative">
@@ -90,16 +89,16 @@ export function ProfileForm() {
                 value={name}
                 onChangeText={setName}
                 placeholder="Your full name"
-                className="h-11 rounded-xl bg-slate-50 pl-10"
+                className="h-11 rounded-xl bg-muted pl-10"
               />
               <View className="absolute left-3.5 top-3">
-                <Icon as={User} size={18} className="text-slate-400" />
+                <Icon as={User} size={18} className="text-muted-foreground" />
               </View>
             </View>
           </View>
 
           <View className="gap-1.5">
-            <Label nativeID="email-field" className="text-xs font-semibold text-slate-700">
+            <Label nativeID="email-field" className="text-xs font-semibold text-foreground">
               Email Address
             </Label>
             <View className="relative">
@@ -110,16 +109,16 @@ export function ProfileForm() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholder="name@example.com"
-                className="h-11 rounded-xl bg-slate-50 pl-10"
+                className="h-11 rounded-xl bg-muted pl-10"
               />
               <View className="absolute left-3.5 top-3">
-                <Icon as={Mail} size={18} className="text-slate-400" />
+                <Icon as={Mail} size={18} className="text-muted-foreground" />
               </View>
             </View>
           </View>
 
           <View className="gap-1.5">
-            <Label nativeID="phone-field" className="text-xs font-semibold text-slate-700">
+            <Label nativeID="phone-field" className="text-xs font-semibold text-foreground">
               Phone Number
             </Label>
             <View className="relative">
@@ -129,16 +128,16 @@ export function ProfileForm() {
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
                 placeholder="+254 700 000 000"
-                className="h-11 rounded-xl bg-slate-50 pl-10"
+                className="h-11 rounded-xl bg-muted pl-10"
               />
               <View className="absolute left-3.5 top-3">
-                <Icon as={Phone} size={18} className="text-slate-400" />
+                <Icon as={Phone} size={18} className="text-muted-foreground" />
               </View>
             </View>
           </View>
 
           <View className="gap-1.5">
-            <Label nativeID="natid-field" className="text-xs font-semibold text-slate-700">
+            <Label nativeID="natid-field" className="text-xs font-semibold text-foreground">
               National ID / Passport (Optional)
             </Label>
             <View className="relative">
@@ -147,42 +146,42 @@ export function ProfileForm() {
                 value={nationalId}
                 onChangeText={setNationalId}
                 placeholder="e.g. 12345678"
-                className="h-11 rounded-xl bg-slate-50 pl-10"
+                className="h-11 rounded-xl bg-muted pl-10"
               />
               <View className="absolute left-3.5 top-3">
-                <Icon as={Shield} size={18} className="text-slate-400" />
+                <Icon as={Shield} size={18} className="text-muted-foreground" />
               </View>
             </View>
           </View>
 
           <Button
-            className="mt-2 h-11 rounded-xl bg-teal-700 active:bg-teal-800"
+            className="mt-2 h-11 rounded-xl"
             disabled={!hasChanges || updateProfile.isPending}
             onPress={handleSave}>
             {updateProfile.isPending ? (
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" color="#ffffff" />
-                <Text className="font-semibold text-white">Saving changes…</Text>
+                <Text className="font-semibold text-primary-foreground">Saving changes…</Text>
               </View>
             ) : savedSuccess ? (
               <View className="flex-row items-center gap-1.5">
-                <Icon as={CheckCircle2} size={16} className="text-white" />
-                <Text className="font-semibold text-white">Saved Successfully</Text>
+                <Icon as={CheckCircle2} size={16} className="text-primary-foreground" />
+                <Text className="font-semibold text-primary-foreground">Saved Successfully</Text>
               </View>
             ) : (
-              <Text className="font-semibold text-white">Save Changes</Text>
+              <Text className="font-semibold text-primary-foreground">Save Changes</Text>
             )}
           </Button>
         </CardContent>
       </Card>
 
       {/* Security & Password Card */}
-      <Card className="rounded-2xl border-slate-200 bg-white">
+      <Card className="rounded-2xl border-border bg-card">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-bold text-slate-900">
+          <CardTitle className="text-base font-bold text-foreground">
             Security & Login
           </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
+          <CardDescription className="text-xs text-muted-foreground">
             Manage your password to protect your account.
           </CardDescription>
         </CardHeader>
@@ -190,13 +189,13 @@ export function ProfileForm() {
         <CardContent>
           <Button
             variant="outline"
-            className="h-11 rounded-xl border-slate-200 flex-row items-center justify-between px-4"
+            className="h-11 rounded-xl flex-row items-center justify-between px-4"
             onPress={() => setPasswordDialogOpen(true)}>
             <View className="flex-row items-center gap-2.5">
-              <Icon as={Lock} size={18} className="text-slate-600" />
-              <Text className="font-medium text-slate-800">Change Password</Text>
+              <Icon as={Lock} size={18} className="text-foreground" />
+              <Text className="font-medium text-foreground">Change Password</Text>
             </View>
-            <Text className="text-xs font-semibold text-teal-700">Update</Text>
+            <Text className="text-xs font-semibold text-primary">Update</Text>
           </Button>
         </CardContent>
       </Card>

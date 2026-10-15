@@ -1,5 +1,6 @@
-import { ScrollView, Pressable, View } from 'react-native';
+import { ScrollView, Pressable, StyleSheet, View } from 'react-native';
 
+import { useDeferredChange } from '@/hooks/use-deferred-change';
 import { Text } from '@/components/ui/text';
 import { useStore } from '@/stores/use-store';
 import type { InvoiceStatus } from '@/api/types';
@@ -20,19 +21,20 @@ export const STATUS_STYLES: Record<
   InvoiceStatus,
   { bg: string; text: string; label: string }
 > = {
-  UNPAID: { bg: 'bg-red-100', text: 'text-red-700', label: 'UNPAID' },
-  PARTIALLY_PAID: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'PARTIAL' },
-  PAID: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'PAID' },
-  OVERDUE: { bg: 'bg-red-200', text: 'text-red-800', label: 'OVERDUE' },
+  UNPAID: { bg: 'bg-destructive/10', text: 'text-destructive', label: 'UNPAID' },
+  PARTIALLY_PAID: { bg: 'bg-warning/10', text: 'text-warning', label: 'PARTIAL' },
+  PAID: { bg: 'bg-success/10', text: 'text-success', label: 'PAID' },
+  OVERDUE: { bg: 'bg-destructive/10', text: 'text-destructive', label: 'OVERDUE' },
 };
 
 /** Horizontal status filter for the invoice list. */
 export function InvoiceStatusPills() {
   const statusFilter = useStore((s) => s.invoiceStatusFilter);
   const setStatusFilter = useStore((s) => s.setInvoiceStatusFilter);
+  const onStatusChange = useDeferredChange(statusFilter, setStatusFilter);
 
   return (
-    <View className="border-b border-slate-200 bg-white">
+    <View className="border-b border-border bg-background">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -42,15 +44,16 @@ export function InvoiceStatusPills() {
           return (
             <Pressable
               key={status}
-              onPress={() => setStatusFilter(status)}
+              onPress={() => onStatusChange(status)}
               accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
               accessibilityLabel={
                 status === 'ALL' ? 'All statuses' : `${STATUS_STYLES[status].label} invoices`
               }
-              className={`rounded-full px-3 py-1 ${isActive ? 'bg-teal-700' : 'bg-slate-100'}`}>
+              className="rounded-full px-3 py-1"
+              style={isActive ? styles.pillActive : styles.pillInactive}>
               <Text
-                className={`text-xs font-semibold ${isActive ? 'text-white' : 'text-slate-600'}`}>
+                className={`text-xs font-semibold ${isActive ? 'text-white' : 'text-muted-foreground'}`}>
                 {status === 'ALL' ? status : STATUS_STYLES[status].label}
               </Text>
             </Pressable>
@@ -60,3 +63,11 @@ export function InvoiceStatusPills() {
     </View>
   );
 }
+
+// Hoisted: NativeWind's native interop identity-checks `style` on every render,
+// so a conditional className re-dispatches from inside the render phase and
+// hangs the app on any state change.
+const styles = StyleSheet.create({
+  pillActive: { backgroundColor: '#0F766E' },
+  pillInactive: { backgroundColor: '#F1F5F9' },
+});

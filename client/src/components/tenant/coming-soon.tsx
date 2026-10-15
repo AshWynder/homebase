@@ -21,29 +21,29 @@ export function ComingSoonScreen({
   const signOut = useSignOut();
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
-      <View className="flex-row items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
-        <Text className="text-xl font-bold text-slate-900">{title}</Text>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-row items-center justify-between border-b border-border bg-background px-5 py-4">
+        <Text className="text-xl font-bold text-foreground">{title}</Text>
         <Button
           variant="ghost"
           size="sm"
           onPress={() => signOut.mutate()}
           disabled={signOut.isPending}>
-          <Icon as={LogOut} size={18} className="text-slate-500" />
+          <Icon as={LogOut} size={18} className="text-muted-foreground" />
         </Button>
       </View>
 
       <View className="flex-1 items-center justify-center p-6 text-center">
-        <View className="h-20 w-20 items-center justify-center rounded-3xl bg-teal-50 shadow-sm border border-teal-100 mb-5">
-          <Icon as={icon} size={36} className="text-teal-700" />
+        <View className="h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 shadow-sm border border-primary/20 mb-5">
+          <Icon as={icon} size={36} className="text-primary" />
         </View>
-        <Text className="text-2xl font-bold text-slate-900 mb-2">{title}</Text>
-        <Text className="text-base text-slate-500 text-center max-w-xs mb-6">
+        <Text className="text-2xl font-bold text-foreground mb-2">{title}</Text>
+        <Text className="text-base text-muted-foreground text-center max-w-xs mb-6">
           {subtitle}
         </Text>
-        <View className="flex-row items-center gap-2 rounded-full bg-teal-50 px-4 py-2 border border-teal-100">
-          <Icon as={Clock} size={14} className="text-teal-700" />
-          <Text className="text-xs font-semibold text-teal-800 uppercase tracking-wider">
+        <View className="flex-row items-center gap-2 rounded-full bg-primary/10 px-4 py-2 border border-primary/20">
+          <Icon as={Clock} size={14} className="text-primary" />
+          <Text className="text-xs font-semibold text-primary uppercase tracking-wider">
             Coming in next release
           </Text>
         </View>
