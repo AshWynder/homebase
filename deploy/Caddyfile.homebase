@@ -1,0 +1,13 @@
+# Add this block to the Caddyfile mounted by the `amazon1` stack
+# (amazon1/caddy/Caddyfile), then reload Caddy:
+#
+#   cd amazon1 && docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+#   (or: cd amazon1 && docker compose restart caddy)
+#
+# `homebase-app` resolves on the shared amazon1_default network.
+# Caddy will automatically issue and renew a TLS certificate for
+# homebase-api.tronzilla.duckdns.org via Let's Encrypt / ZeroSSL on standard ports 80/443.
+
+homebase-api.tronzilla.duckdns.org {
+	reverse_proxy homebase-app:3000
+}

@@ -1,0 +1,74 @@
+# Homebase backend production stack.
+#
+# Reuses the Postgres container from the `amazon1` stack (same database server,
+# separate `homebase` database/role) and joins its network so the existing
+# Caddy container can reach `homebase-app:3000`.
+#
+# Usage:
+#   docker compose up -d --build
+#   docker compose --profile seed run --rm homebase-seed   # once, after first boot
+#   docker compose logs -f homebase-app
+
+name: homebase
+
+services:
+  migrator:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: migrator
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+    restart: "no"
+    networks:
+      - amazon1
+
+  homebase-app:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: runner
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - amazon1
+
+  homebase-seed:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: runner
+    profiles:
+      - seed
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+    command: ["node", "dist/prisma/seed.prod.js"]
+    depends_on:
+      homebase-app:
+        condition: service_healthy
+    networks:
+      - amazon1
+
+networks:
+  amazon1:
+    external: true
+    name: amazon1_default
