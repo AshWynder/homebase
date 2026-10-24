@@ -1,22 +1,31 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { GenerateInvoicesDto } from './dto/generate-invoices.dto';
 import { QueryInvoiceSummaryDto } from './dto/query-invoice-summary.dto';
 import { QueryInvoicesDto } from './dto/query-invoices.dto';
+import { RecordManualPaymentDto } from './dto/record-manual-payment.dto';
 import {
   Invoice,
   InvoiceLineItemType,
   InvoiceStatus,
   MeterType,
+  PaymentProvider,
+  PaymentStatus,
   Prisma,
+  Role,
 } from '../../generated/prisma/client';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
-import { managedPropertyWhere } from '../common/property-scope';
+import {
+  managedPropertyWhere,
+  managesProperty,
+} from '../common/property-scope';
 
 /** Minimal Prisma surface needed to bill a reading and recalculate totals. */
 type InvoiceDb = Pick<Prisma.TransactionClient, 'invoice' | 'invoiceLineItem'>;
@@ -25,7 +34,7 @@ type InvoiceDb = Pick<Prisma.TransactionClient, 'invoice' | 'invoiceLineItem'>;
 export class InvoicesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async generate(dto: GenerateInvoicesDto) {
+  async generate(dto: GenerateInvoicesDto, auth?: AuthenticatedUser) {
     const { periodStart, periodEnd } = this.resolvePeriod(dto);
 
     const where: Prisma.TenancyWhereInput = {
@@ -33,6 +42,41 @@ export class InvoicesService {
     };
     if (dto.tenancyId) where.id = dto.tenancyId;
     if (dto.propertyId) where.unit = { propertyId: dto.propertyId };
+
+    // Scope generation to properties the caller manages. When a specific
+    // tenancy is named (e.g. a tenant who moved in after the bulk run), verify
+    // it actually belongs to one of their properties rather than silently
+    // returning an empty result.
+    if (auth) {
+      const propertyScope = managedPropertyWhere(auth);
+      if (dto.tenancyId) {
+        const tenancy = await this.prisma.tenancy.findUnique({
+          where: { id: dto.tenancyId },
+          select: {
+            unit: {
+              select: {
+                property: {
+                  select: { ownerId: true, caretakerId: true },
+                },
+              },
+            },
+          },
+        });
+
+        if (!tenancy) {
+          throw new NotFoundException(
+            `Tenancy with id "${dto.tenancyId}" not found`,
+          );
+        }
+        if (!managesProperty(auth, tenancy.unit.property)) {
+          throw new ForbiddenException('You do not manage this tenancy');
+        }
+      } else {
+        where.unit = dto.propertyId
+          ? { propertyId: dto.propertyId, property: propertyScope }
+          : { property: propertyScope };
+      }
+    }
 
     const tenancies = await this.prisma.tenancy.findMany({
       where,
@@ -443,6 +487,84 @@ export class InvoicesService {
     return this.recomputeStatus(invoice);
   }
 
+  async recordManualPayment(
+    id: string,
+    dto: RecordManualPaymentDto,
+    auth?: AuthenticatedUser,
+  ) {
+    if (!auth || auth.profile.role !== Role.OWNER) {
+      throw new ForbiddenException('Only property owners can record manual payments');
+    }
+
+    const amountPaid = Number(dto.amountPaid.toFixed(2));
+    const note = dto.note?.trim();
+
+    await this.prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.findUnique({
+        where: { id },
+        include: {
+          unit: {
+            include: {
+              property: {
+                select: { ownerId: true },
+              },
+            },
+          },
+        },
+      });
+
+      if (!invoice) {
+        throw new NotFoundException(`Invoice with id "${id}" not found`);
+      }
+      if (invoice.unit.property.ownerId !== auth.profile.id) {
+        throw new ForbiddenException('You do not own this invoice');
+      }
+
+      const balanceDue = Number(invoice.balanceDue);
+      if (balanceDue <= 0 || invoice.status === InvoiceStatus.PAID) {
+        throw new BadRequestException('Invoice is already fully paid');
+      }
+      if (amountPaid > balanceDue) {
+        throw new BadRequestException(
+          `amountPaid cannot exceed the current balance due of ${invoice.balanceDue}`,
+        );
+      }
+
+      const newBalance = Number((balanceDue - amountPaid).toFixed(2));
+      const status =
+        newBalance <= 0 ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID;
+
+      await tx.payment.create({
+        data: {
+          invoiceId: invoice.id,
+          amount: new Prisma.Decimal(amountPaid.toFixed(2)),
+          method: dto.method,
+          provider: PaymentProvider.MANUAL,
+          transactionRef: this.generateManualPaymentReference(),
+          status: PaymentStatus.SUCCESS,
+          paidAt: new Date(),
+          rawPayload: {
+            manual: {
+              ...(note ? { note } : {}),
+              recordedByProfileId: auth.profile.id,
+              recordedByUserId: auth.user.id,
+            },
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      await tx.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          balanceDue: new Prisma.Decimal(Math.max(newBalance, 0).toFixed(2)),
+          status,
+        },
+      });
+    });
+
+    return this.findOne(id);
+  }
+
   /**
    * Resolves the invoice covering a reading date for a unit and makes sure it
    * can still take utility charges. A reading may only be billed to a month that
@@ -701,6 +823,12 @@ export class InvoicesService {
       : InvoiceLineItemType.WATER;
   }
 
+  private generateManualPaymentReference(): string {
+    return `MANUAL-${Date.now().toString(36).toUpperCase()}-${randomBytes(4)
+      .toString('hex')
+      .toUpperCase()}`;
+  }
+
   /**
    * Derives the money on an invoice from its line items and successful payments,
    * so previously applied payments are never lost when charges are added.
@@ -759,42 +887,50 @@ export class InvoicesService {
   }
 
   /**
-   * Applies a successful payment to an invoice within a single transaction:
+   * Applies a successful payment to invoice(s) within a single transaction:
    * records the decrement of balanceDue and recomputes the invoice status.
    * Called by PaymentsService when a provider confirms a payment.
+   *
+   * A bulk payment passes `allocations` — the per-invoice split snapshotted at
+   * initiation — so one settled amount can settle (or partially settle)
+   * several invoices at once. Without allocations the payment credits its own
+   * invoice, oldest-first ordering being a no-op for a single target.
    */
   async applySuccessfulPayment(payment: {
     id: string;
     invoiceId: string;
     amount: Prisma.Decimal;
+    allocations?: { invoiceId: string; amount: number }[];
   }) {
     await this.prisma.$transaction(async (tx) => {
-      const invoice = await tx.invoice.findUnique({
-        where: { id: payment.invoiceId },
-      });
+      const targets = payment.allocations?.length
+        ? payment.allocations
+        : [{ invoiceId: payment.invoiceId, amount: Number(payment.amount) }];
 
-      if (!invoice) {
-        throw new NotFoundException(
-          `Invoice with id "${payment.invoiceId}" not found`,
-        );
-      }
+      for (const target of targets) {
+        const invoice = await tx.invoice.findUnique({
+          where: { id: target.invoiceId },
+        });
 
-      const newBalance = Number(invoice.balanceDue) - Number(payment.amount);
+        if (!invoice) {
+          throw new NotFoundException(
+            `Invoice with id "${target.invoiceId}" not found`,
+          );
+        }
 
-      const updated = await tx.invoice.update({
-        where: { id: invoice.id },
-        data: {
-          balanceDue: new Prisma.Decimal(Math.max(newBalance, 0).toFixed(2)),
-        },
-      });
+        const newBalance = Number(invoice.balanceDue) - target.amount;
 
-      const status: InvoiceStatus =
-        newBalance <= 0 ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID;
+        const status: InvoiceStatus =
+          newBalance <= 0 ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID;
 
-      if (status !== updated.status) {
         await tx.invoice.update({
           where: { id: invoice.id },
-          data: { status },
+          data: {
+            balanceDue: new Prisma.Decimal(
+              Math.max(newBalance, 0).toFixed(2),
+            ),
+            ...(status !== invoice.status ? { status } : {}),
+          },
         });
       }
     });

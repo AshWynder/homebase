@@ -43,6 +43,9 @@ enum PaymentMethod {
   MPESA_STK
   MPESA_C2B
   CARD
+  CASH
+  BANK
+  MPESA
 }
 
 enum PaymentStatus {
@@ -54,6 +57,7 @@ enum PaymentStatus {
 enum PaymentProvider {
   DARAJA
   PAYSTACK
+  MANUAL
 }
 
 enum TicketStatus {

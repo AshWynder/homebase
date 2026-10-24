@@ -18,6 +18,8 @@ async function bootstrap() {
     rawBody: true,
   });
 
+  app.enableShutdownHooks();
+
   // Photo uploads are the one feature that silently no-ops on a misconfigured
   // server, and the only symptom a user sees is a rejected request much later.
   // Saying so at boot turns a 30-minute debugging session into one log line.

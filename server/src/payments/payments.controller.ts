@@ -15,6 +15,7 @@ import { InitiateCardPaymentDto } from './dto/initiate-card-payment.dto';
 import { QueryPaymentsDto } from './dto/query-payments.dto';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { BypassTransform } from '../common/decorators/bypass-transform.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
@@ -43,21 +44,27 @@ export class PaymentsController {
   }
 
   // ── Webhooks (raw provider payloads, no API envelope) ────
-  // Paths match MPESA_STK_CALLBACK_URL / MPESA_C2B_*_URL in .env.development
+  // Paths match MPESA_STK_CALLBACK_URL / MPESA_C2B_*_URL in .env.development.
+  // @Public() is required: these are called server-to-server by Safaricom and
+  // Paystack, which have no session and would otherwise be rejected by the
+  // global AuthGuard with a 401 before reaching the handler.
 
   @Post('stk-callback')
+  @Public()
   @BypassTransform()
   darajaStkCallback(@Body() payload: Record<string, unknown>) {
     return this.paymentsService.handleDarajaStkCallback(payload);
   }
 
   @Post('c2b-validation')
+  @Public()
   @BypassTransform()
   darajaC2bValidation(@Body() payload: Record<string, unknown>) {
     return this.paymentsService.handleDarajaC2bValidation(payload);
   }
 
   @Post('c2b-confirmation')
+  @Public()
   @BypassTransform()
   async darajaC2bConfirmation(@Body() payload: Record<string, unknown>) {
     await this.paymentsService.handleDarajaC2bConfirmation(payload);
@@ -66,6 +73,7 @@ export class PaymentsController {
   }
 
   @Post('webhook/paystack')
+  @Public()
   @BypassTransform()
   paystackWebhook(@Req() request: RawBodyRequest<Request>) {
     return this.paymentsService.handlePaystackWebhook(
@@ -90,8 +98,9 @@ export class PaymentsController {
     @Query() query: QueryPaymentsDto,
     @CurrentUser() auth?: AuthenticatedUser,
   ) {
-    // Always scope the list to the authenticated user's own properties.
-    return this.paymentsService.findAll(query, auth?.profile.id);
+    // Tenants are scoped to their own tenancies; owners/caretakers to the
+    // properties they manage. See PaymentsService.findAll.
+    return this.paymentsService.findAll(query, auth);
   }
 
   @Get(':id')

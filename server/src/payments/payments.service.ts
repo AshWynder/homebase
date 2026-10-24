@@ -19,7 +19,10 @@ import {
   PaymentProvider,
   PaymentStatus,
   Prisma,
+  Role,
 } from '../../generated/prisma/client';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
+import { managedPropertyWhere } from '../common/property-scope';
 
 const PAYMENT_REF_PREFIX = 'HB';
 
@@ -37,7 +40,26 @@ export class PaymentsService {
   // 1. M-Pesa STK Push (Daraja)
 
   async initiateStkPayment(dto: InitiateStkPaymentDto) {
-    const invoice = await this.getPayableInvoice(dto.invoiceId);
+    const invoiceIds = dto.invoiceIds?.length
+      ? dto.invoiceIds
+      : dto.invoiceId
+        ? [dto.invoiceId]
+        : undefined;
+
+    if (!invoiceIds) {
+      throw new BadRequestException(
+        'Provide either invoiceId or invoiceIds to start a payment',
+      );
+    }
+
+    // Oldest-first; the primary invoice hosts the single payment record and
+    // the snapshot tells settlement how to spread the received amount.
+    const invoices = await this.resolvePayableInvoices(invoiceIds);
+    const primary = invoices[0];
+    const total = invoices.reduce(
+      (sum, invoice) => sum + Number(invoice.balanceDue),
+      0,
+    );
 
     if (!this.daraja.isStkConfigured) {
       throw new ServiceUnavailableException(
@@ -49,21 +71,37 @@ export class PaymentsService {
 
     // Create the payment record first, then push — we need the ref
     // stored regardless of push outcome for reconciliation.
+    const isBulk = invoices.length > 1;
     const payment = await this.prisma.payment.create({
       data: {
-        invoiceId: invoice.id,
-        amount: invoice.balanceDue,
+        invoiceId: primary.id,
+        amount: new Prisma.Decimal(total.toFixed(2)),
         method: PaymentMethod.MPESA_STK,
         provider: PaymentProvider.DARAJA,
         transactionRef: reference,
         phoneNumber: this.daraja.normalizePhone(dto.phoneNumber),
         status: PaymentStatus.PENDING,
+        ...(isBulk
+          ? {
+              rawPayload: {
+                bulk: {
+                  invoiceIds,
+                  amounts: Object.fromEntries(
+                    invoices.map((invoice) => [
+                      invoice.id,
+                      Number(invoice.balanceDue),
+                    ]),
+                  ),
+                },
+              } as Prisma.InputJsonValue,
+            }
+          : {}),
       },
     });
 
     try {
       const push = await this.daraja.initiateStkPush({
-        amount: Number(invoice.balanceDue),
+        amount: total,
         phoneNumber: dto.phoneNumber,
         accountReference: reference.slice(0, 12),
         description: 'Rent payment',
@@ -361,16 +399,29 @@ export class PaymentsService {
       payment.method === PaymentMethod.MPESA_STK &&
       payment.checkoutRequestId
     ) {
-      const result = await this.daraja.queryStkStatus(payment.checkoutRequestId);
-      if (result.resultCode === 0) {
-        await this.settlePayment(
-          payment,
-          { stkQuery: result.raw },
-          result.mpesaReceiptNumber,
+      // Daraja throws while the prompt is still on the customer's phone
+      // (e.g. "transaction is being processed"). That is not a failure —
+      // the callback is still to come, so leave the payment PENDING.
+      try {
+        const result = await this.daraja.queryStkStatus(
+          payment.checkoutRequestId,
         );
-      } else if (result.resultCode !== 1032 && result.resultCode !== 1037) {
-        // 1032 = cancelled by user, 1037 = timeout — leave pending briefly
-        await this.markPaymentFailed(payment.id, result.resultDesc);
+        if (result.resultCode === 0) {
+          await this.settlePayment(
+            payment,
+            { stkQuery: result.raw },
+            result.mpesaReceiptNumber,
+          );
+        } else if (result.resultCode !== 1032 && result.resultCode !== 1037) {
+          // 1032 = cancelled by user, 1037 = timeout — leave pending briefly
+          await this.markPaymentFailed(payment.id, result.resultDesc);
+        }
+      } catch (error) {
+        this.logger.log(
+          `STK status still pending for ${payment.transactionRef}: ${
+            error instanceof Error ? error.message : error
+          }`,
+        );
       }
     } else if (payment.method === PaymentMethod.CARD) {
       const result = await this.paystack.verifyTransaction(payment.transactionRef);
@@ -386,16 +437,26 @@ export class PaymentsService {
 
   // 5. Queries
 
-  async findAll(query: QueryPaymentsDto, ownerId?: string) {
+  async findAll(query: QueryPaymentsDto, auth?: AuthenticatedUser) {
     const { invoiceId, unitId, propertyId, method, status, from, to, page, limit } = query;
     const take = limit && limit > 0 ? limit : undefined;
     const skip = page && page > 0 && take ? (page - 1) * take : undefined;
 
-    const unitWhere: Prisma.UnitWhereInput = {
-      ...(unitId && { id: unitId }),
-      ...(propertyId && { propertyId }),
-      ...(ownerId && !invoiceId && { property: { ownerId } }),
-    };
+    const invoiceWhere: Prisma.InvoiceWhereInput = {};
+    if (unitId) invoiceWhere.unitId = unitId;
+
+    if (auth?.profile.role === Role.TENANT) {
+      // Tenants only see payments against invoices on their own tenancies.
+      invoiceWhere.tenancy = { tenantId: auth.profile.id };
+    } else if (auth && !invoiceId) {
+      // Owners see their properties; caretakers see the ones assigned to them.
+      invoiceWhere.unit = {
+        ...(propertyId ? { propertyId } : {}),
+        property: managedPropertyWhere(auth),
+      };
+    } else if (propertyId) {
+      invoiceWhere.unit = { propertyId };
+    }
 
     const where: Prisma.PaymentWhereInput = {
       ...(invoiceId && { invoiceId }),
@@ -407,9 +468,7 @@ export class PaymentsService {
           ...(to && { lte: to }),
         },
       }),
-      ...(Object.keys(unitWhere).length > 0 && {
-        invoice: { unit: unitWhere },
-      }),
+      ...(Object.keys(invoiceWhere).length > 0 && { invoice: invoiceWhere }),
     };
 
     const [items, total] = await Promise.all([
@@ -508,6 +567,64 @@ export class PaymentsService {
     return invoice;
   }
 
+  /**
+   * Resolves a set of billable invoices for a (possibly bulk) payment. Every
+   * id must exist and still carry a balance; otherwise the call fails before
+   * any prompt is pushed. Ordering is oldest due-date first, which is also the
+   * order the received amount is spread across on settlement.
+   */
+  private async resolvePayableInvoices(invoiceIds: string[]) {
+    const invoices = await this.prisma.invoice.findMany({
+      where: { id: { in: invoiceIds } },
+    });
+
+    const byId = new Map(invoices.map((invoice) => [invoice.id, invoice]));
+    const missing = invoiceIds.filter((id) => !byId.has(id));
+    if (missing.length > 0) {
+      throw new NotFoundException(
+        `Invoice(s) not found: ${missing.join(', ')}`,
+      );
+    }
+
+    const settled = invoiceIds
+      .map((id) => byId.get(id)!)
+      .filter((invoice) => Number(invoice.balanceDue) <= 0);
+    if (settled.length > 0) {
+      throw new BadRequestException(
+        `Invoice(s) already fully paid: ${settled
+          .map((invoice) => invoice.id)
+          .join(', ')}`,
+      );
+    }
+
+    return invoiceIds
+      .map((id) => byId.get(id)!)
+      .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+  }
+
+  /**
+   * For a bulk payment the amount must spread across the invoices it covered
+   * at initiation, using the balances snapshotted when the prompt was sent —
+   * not the live balances, which may have changed while the payment was
+   * pending. Undefined for single-invoice payments.
+   */
+  private bulkAllocation(
+    payment: Payment,
+  ): { invoiceId: string; amount: number }[] | undefined {
+    const bulk = (
+      payment.rawPayload as {
+        bulk?: { invoiceIds: string[]; amounts?: Record<string, number> };
+      } | null
+    )?.bulk;
+
+    if (!bulk?.invoiceIds || bulk.invoiceIds.length < 2) return undefined;
+
+    return bulk.invoiceIds.map((invoiceId) => ({
+      invoiceId,
+      amount: bulk.amounts?.[invoiceId] ?? 0,
+    }));
+  }
+
   private generateReference(): string {
     return `${PAYMENT_REF_PREFIX}-${Date.now().toString(36).toUpperCase()}-${randomBytes(4)
       .toString('hex')
@@ -544,10 +661,12 @@ export class PaymentsService {
     }
 
     try {
+      const allocations = this.bulkAllocation(payment);
       await this.invoicesService.applySuccessfulPayment({
         id: payment.id,
         invoiceId: payment.invoiceId,
         amount: payment.amount,
+        ...(allocations ? { allocations } : {}),
       });
     } catch (error) {
       // Settlement of the invoice failed after the payment was marked —
