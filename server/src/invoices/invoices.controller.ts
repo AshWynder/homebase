@@ -11,6 +11,7 @@ import { InvoicesService } from './invoices.service';
 import { GenerateInvoicesDto } from './dto/generate-invoices.dto';
 import { QueryInvoicesDto } from './dto/query-invoices.dto';
 import { QueryInvoiceSummaryDto } from './dto/query-invoice-summary.dto';
+import { RecordManualPaymentDto } from './dto/record-manual-payment.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -22,8 +23,11 @@ export class InvoicesController {
 
   @Post('generate')
   @ResponseMessage('Invoices generated successfully')
-  generate(@Body() dto: GenerateInvoicesDto) {
-    return this.invoicesService.generate(dto);
+  generate(
+    @Body() dto: GenerateInvoicesDto,
+    @CurrentUser() auth?: AuthenticatedUser,
+  ) {
+    return this.invoicesService.generate(dto, auth);
   }
 
   @Get()
@@ -58,6 +62,16 @@ export class InvoicesController {
   @ResponseMessage('Invoice updated successfully')
   update(@Param('id') id: string, @Body() dto: UpdateInvoiceDto) {
     return this.invoicesService.update(id, dto);
+  }
+
+  @Post(':id/manual-payment')
+  @ResponseMessage('Manual payment recorded successfully')
+  recordManualPayment(
+    @Param('id') id: string,
+    @Body() dto: RecordManualPaymentDto,
+    @CurrentUser() auth?: AuthenticatedUser,
+  ) {
+    return this.invoicesService.recordManualPayment(id, dto, auth);
   }
 
   @Post(':id/refresh')
