@@ -1,12 +1,16 @@
-import { InteractionManager, Pressable, StyleSheet, View } from 'react-native';
 import { useEffect, useRef } from 'react';
+import { InteractionManager } from 'react-native';
 
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
 
 export interface SegmentedOption<T extends string> {
   value: T;
   label: string;
+  /** Optional count badge next to the label. */
+  count?: number;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -21,6 +25,9 @@ interface SegmentedControlProps<T extends string> {
  * tap instead of a bottom-navigation slot. Swapping segments replaces the list
  * below without a navigation transition — reserving route pushes for acting on a
  * single item.
+ *
+ * Built on the rnr Tabs primitive: a muted track with a raised pill on the
+ * active segment and an optional count badge.
  */
 export function SegmentedControl<T extends string>({
   value,
@@ -48,38 +55,52 @@ export function SegmentedControl<T extends string>({
   };
 
   return (
-    <View
-      accessibilityRole="tablist"
-      className={cn('flex-row items-center rounded-2xl bg-muted p-1', className)}>
-      {options.map((option) => {
-        const isActive = option.value === value;
-        return (
-          <Pressable
-            key={option.value}
-            onPress={() => scheduleChange(option.value)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: isActive }}
-            accessibilityLabel={option.label}
-            className="flex-1 items-center justify-center rounded-xl py-2"
-            style={isActive ? styles.activeSegment : undefined}>
-            <Text
+    <Tabs
+      value={value}
+      onValueChange={(next) => scheduleChange(next as T)}
+      className={cn('gap-0', className)}>
+      <TabsList className="h-auto w-full rounded-2xl bg-muted p-1">
+        {options.map((option) => {
+          const isActive = option.value === value;
+          return (
+            <TabsTrigger
+              key={option.value}
+              value={option.value}
               className={cn(
-                'text-xs font-bold',
-                isActive ? 'text-primary' : 'text-foreground',
+                'h-9 flex-1 gap-2 rounded-xl px-2',
+                isActive && 'bg-card shadow-sm dark:bg-input',
               )}>
-              {option.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
+              <Text
+                className={cn(
+                  'text-sm font-bold',
+                  isActive
+                    ? 'text-primary dark:text-primary'
+                    : 'text-muted-foreground',
+                )}>
+                {option.label}
+              </Text>
+              {option.count === undefined ? null : (
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    'rounded-md border-transparent px-1.5 py-0.5',
+                    isActive ? 'bg-primary/15' : 'bg-muted-foreground/10',
+                  )}>
+                  <Text
+                    className={cn(
+                      'text-[10px] font-bold',
+                      isActive
+                        ? 'text-primary dark:text-primary'
+                        : 'text-muted-foreground',
+                    )}>
+                    {option.count}
+                  </Text>
+                </Badge>
+              )}
+            </TabsTrigger>
+          );
+        })}
+      </TabsList>
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  activeSegment: {
-    backgroundColor: '#FFFFFF',
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-});

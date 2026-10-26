@@ -1,29 +1,26 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { Building2, MapPin, Users, Zap } from 'lucide-react-native';
+import { Building2, Users } from 'lucide-react-native';
 
 import { ListMessage, ListSkeleton } from '@/components/owner/list-state';
+import { PropertyCard } from '@/components/owner/property-card';
 import { PropertyFilterBar } from '@/components/owner/property-filter-bar';
 import { ScreenHeader } from '@/components/owner/screen-header';
-import { StatPill } from '@/components/owner/stat-pill';
-import { Icon } from '@/components/ui/icon';
-import { Text } from '@/components/ui/text';
 import { useActiveTenancies } from '@/hooks/queries/use-tenancies';
 import { useProperties } from '@/hooks/queries/use-properties';
 import { useUnits } from '@/hooks/queries/use-units';
 import { useStore } from '@/stores/use-store';
-import type { Property } from '@/api/types';
 import { runRefresh } from '@/lib/refresh';
 
 interface PropertyStats {
   units: number;
   active: number;
-  meters: number;
+  /** Units with an active tenancy, counted once per unit. */
+  occupied: number;
 }
 
-const EMPTY_STATS: PropertyStats = { units: 0, active: 0, meters: 0 };
+const EMPTY_STATS: PropertyStats = { units: 0, active: 0, occupied: 0 };
 
 /**
  * Properties tab: the caretaker's portfolio, read-only.
@@ -43,16 +40,25 @@ export default function CaretakerPropertiesScreen() {
 
   const statsByProperty = useMemo(() => {
     const map = new Map<string, PropertyStats>();
+    const occupiedUnits = new Map<string, Set<string>>();
     for (const unit of units.data?.items ?? []) {
       const entry = map.get(unit.propertyId) ?? { ...EMPTY_STATS };
       entry.units += 1;
       map.set(unit.propertyId, entry);
     }
     for (const tenancy of tenancies.data?.items ?? []) {
-      const propertyId = tenancy.unit?.property?.id;
+      const propertyId = tenancy.unit?.propertyId ?? tenancy.unit?.property?.id;
       if (!propertyId) continue;
       const entry = map.get(propertyId) ?? { ...EMPTY_STATS };
       entry.active += 1;
+      map.set(propertyId, entry);
+      const seen = occupiedUnits.get(propertyId) ?? new Set<string>();
+      if (tenancy.unitId) seen.add(tenancy.unitId);
+      occupiedUnits.set(propertyId, seen);
+    }
+    for (const [propertyId, seen] of occupiedUnits) {
+      const entry = map.get(propertyId) ?? { ...EMPTY_STATS };
+      entry.occupied = seen.size;
       map.set(propertyId, entry);
     }
     return map;
@@ -91,7 +97,7 @@ export default function CaretakerPropertiesScreen() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="p-5 gap-3"
+          contentContainerClassName="gap-4 px-4 pb-4"
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -110,50 +116,34 @@ export default function CaretakerPropertiesScreen() {
               }
             />
           }
-          renderItem={({ item }) => (
-            <PropertyCard
-              property={item}
-              stats={statsByProperty.get(item.id) ?? EMPTY_STATS}
-            />
-          )}
+          renderItem={({ item }) => {
+            const stats = statsByProperty.get(item.id) ?? EMPTY_STATS;
+            return (
+              <PropertyCard
+                property={item}
+                units={stats.units}
+                occupied={stats.occupied}
+                href={`/(caretaker)/property/${item.id}`}
+                showCaretaker={false}
+                stats={[
+                  {
+                    label: 'Total Units',
+                    value: String(stats.units),
+                    icon: Building2,
+                    tone: 'units',
+                  },
+                  {
+                    label: 'Active Tenants',
+                    value: String(stats.active),
+                    icon: Users,
+                    tone: 'tenants',
+                  },
+                ]}
+              />
+            );
+          }}
         />
       )}
     </SafeAreaView>
-  );
-}
-
-function PropertyCard({ property, stats }: { property: Property; stats: PropertyStats }) {
-  return (
-    <Pressable
-      onPress={() => router.push(`/(caretaker)/property/${property.id}`)}
-      accessibilityRole="button"
-      accessibilityLabel={`Property ${property.name}`}
-      className="gap-4 rounded-2xl border border-border bg-card p-4 active:bg-accent">
-      <View className="gap-1">
-        <Text className="text-base font-bold text-foreground">{property.name}</Text>
-        {property.address ? (
-          <View className="flex-row items-center gap-1">
-            <Icon as={MapPin} size={13} className="text-muted-foreground" />
-            <Text className="text-sm text-muted-foreground">{property.address}</Text>
-          </View>
-        ) : null}
-      </View>
-
-      <View className="flex-col gap-2">
-        <StatPill label="Units" value={String(stats.units)} tone="teal" icon={Building2} />
-        <StatPill
-          label="Occupied"
-          value={String(stats.active)}
-          tone="blue"
-          icon={Users}
-        />
-        <StatPill
-          label="Needs reading"
-          value={String(stats.units)}
-          tone="amber"
-          icon={Zap}
-        />
-      </View>
-    </Pressable>
   );
 }

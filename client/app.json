@@ -1,18 +1,19 @@
 {
   "expo": {
-    "name": "client",
-    "slug": "client",
+    "name": "Homebase",
+    "slug": "haven",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "client",
+    "scheme": "homebase",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.homebase.haven",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -28,17 +29,17 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#FFFFFF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 120
         }
       ],
       "@react-native-community/datetimepicker",
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Haven to attach photos of your maintenance requests so the landlord can see the problem.",
-          "cameraPermission": "Allow Haven to use your camera to photograph maintenance issues you want to report.",
+          "photosPermission": "Allow Homebase to attach photos of your maintenance requests so the landlord can see the problem.",
+          "cameraPermission": "Allow Homebase to use your camera to photograph maintenance issues you want to report.",
           "microphonePermission": false
         }
       ]
@@ -46,6 +47,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b5d9fd4d-8382-4fa2-a1e3-29af6a00b343"
+      }
+    },
+    "owner": "g-three"
   }
 }

@@ -76,7 +76,7 @@ export function AssignTenantModal({
     const payload = {
       tenantId: data.tenantId,
       unitId,
-      rentAmount: typeof data.rentAmount === 'string' ? Number(data.rentAmount) : data.rentAmount,
+      rentAmount: Number(data.rentAmount),
       startDate: toIsoDate(startDate),
       endDate: data.endDate ? toIsoDate(new Date(data.endDate)) : undefined,
     };
@@ -137,7 +137,7 @@ export function AssignTenantModal({
                 name="rentAmount"
                 render={({ field: { value, onChange } }) => (
                   <Input
-                    value={String(value)}
+                    value={value}
                     onChangeText={onChange}
                     keyboardType="numeric"
                     placeholder="25000"

@@ -12,13 +12,13 @@ import { useStore } from '@/stores/use-store';
  *  1. EXPO_PUBLIC_API_URL  – explicit override (staging/prod or manual IP)
  *  2. Metro host           – the host that served this bundle, so the device
  *                            can always reach the dev backend on the same LAN
- *  3. localhost            – last-resort fallback
+ *  3. Production URL       – last-resort fallback for standalone APK / builds
  */
 const metroHost = Constants.expoConfig?.hostUri?.split(':')[0];
 
 const baseURL =
   process.env.EXPO_PUBLIC_API_URL ??
-  (metroHost ? `http://${metroHost}:3000` : 'http://localhost:3000');
+  (metroHost ? `http://${metroHost}:3000` : 'https://homebase-api.tronzilla.duckdns.org');
 
 export const api = axios.create({
   baseURL,

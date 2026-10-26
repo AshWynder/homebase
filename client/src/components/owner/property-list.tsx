@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Alert, FlatList, Pressable, View } from 'react-native';
-import { router } from 'expo-router';
 
 import { ListMessage, ListSkeleton } from '@/components/owner/list-state';
 import { PortfolioSnapshot } from '@/components/owner/portfolio-snapshot';
+import { PropertyCard } from '@/components/owner/property-card';
 import { PropertyFilterBar } from '@/components/owner/property-filter-bar';
-import { StatPill } from '@/components/owner/stat-pill';
 import { UpdatePropertyDialog } from '@/components/owner/update-property-dialog';
 import { AssignCaretakerDialog } from '@/components/owner/assign-caretaker-dialog';
 import { Icon } from '@/components/ui/icon';
@@ -25,16 +24,14 @@ import {
   useRemoveCaretaker,
 } from '@/hooks/queries/use-properties';
 import { useUnits } from '@/hooks/queries/use-units';
-import { formatKes } from '@/lib/format';
+import { formatThousands } from '@/lib/format';
 import { useStore } from '@/stores/use-store';
 import type { Property } from '@/api/types';
 import {
   Building2,
-  MapPin,
   MoreVertical,
   Pencil,
   Trash2,
-  UserCog,
   UserMinus,
   UserPlus,
   Users,
@@ -44,10 +41,12 @@ import {
 interface PropertyStats {
   units: number;
   active: number;
+  /** Units with an active tenancy, counted once per unit. */
+  occupied: number;
   revenue: number;
 }
 
-const EMPTY_STATS: PropertyStats = { units: 0, active: 0, revenue: 0 };
+const EMPTY_STATS: PropertyStats = { units: 0, active: 0, occupied: 0, revenue: 0 };
 
 /**
  * Units segment of the Portfolio tab. The create dialog is owned by the tab so
@@ -69,17 +68,27 @@ export function PropertyList() {
 
   const statsByProperty = useMemo(() => {
     const map = new Map<string, PropertyStats>();
+    const occupiedUnits = new Map<string, Set<string>>();
     for (const unit of units.data?.items ?? []) {
       const entry = map.get(unit.propertyId) ?? { ...EMPTY_STATS };
       entry.units += 1;
       map.set(unit.propertyId, entry);
     }
     for (const tenancy of tenancies.data?.items ?? []) {
-      const propertyId = tenancy.unit?.property?.id;
+      const propertyId = tenancy.unit?.propertyId ?? tenancy.unit?.property?.id;
       if (!propertyId) continue;
       const entry = map.get(propertyId) ?? { ...EMPTY_STATS };
       entry.active += 1;
       entry.revenue += Number(tenancy.rentAmount);
+      map.set(propertyId, entry);
+      // A unit with two active tenancies is still one occupied unit.
+      const seen = occupiedUnits.get(propertyId) ?? new Set<string>();
+      if (tenancy.unitId) seen.add(tenancy.unitId);
+      occupiedUnits.set(propertyId, seen);
+    }
+    for (const [propertyId, seen] of occupiedUnits) {
+      const entry = map.get(propertyId) ?? { ...EMPTY_STATS };
+      entry.occupied = seen.size;
       map.set(propertyId, entry);
     }
     return map;
@@ -162,7 +171,7 @@ export function PropertyList() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="p-5 gap-3"
+          contentContainerClassName="gap-4 px-4 pb-4"
           ListHeaderComponent={
             isFiltered ? null : (
               <View className="mb-4">
@@ -183,27 +192,33 @@ export function PropertyList() {
           renderItem={({ item }) => {
             const stats = statsByProperty.get(item.id) ?? EMPTY_STATS;
             return (
-              <Pressable
-                onPress={() => router.push(`/property/${item.id}`)}
-                className="gap-4 rounded-2xl border border-border bg-card p-4 active:bg-muted">
-                <View className="flex-row items-start justify-between">
-                  <View className="flex-1 gap-1">
-                    <Text className="text-base font-bold text-foreground">{item.name}</Text>
-                    {item.address ? (
-                      <View className="flex-row items-center gap-1">
-                        <Icon as={MapPin} size={13} className="text-muted-foreground" />
-                        <Text className="text-sm text-muted-foreground">{item.address}</Text>
-                      </View>
-                    ) : null}
-                    {item.caretaker ? (
-                      <View className="flex-row items-center gap-1">
-                        <Icon as={UserCog} size={13} className="text-primary" />
-                        <Text className="text-sm text-muted-foreground">
-                          Caretaker · {item.caretaker.user?.name ?? 'Assigned'}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
+              <PropertyCard
+                property={item}
+                units={stats.units}
+                occupied={stats.occupied}
+                href={`/property/${item.id}`}
+                stats={[
+                  {
+                    label: 'Total Units',
+                    value: String(stats.units),
+                    icon: Building2,
+                    tone: 'units',
+                  },
+                  {
+                    label: 'Active Tenants',
+                    value: String(stats.active),
+                    icon: Users,
+                    tone: 'tenants',
+                  },
+                  {
+                    label: 'Monthly Rent Target',
+                    value: formatThousands(stats.revenue),
+                    prefix: 'KES',
+                    icon: Wallet,
+                    tone: 'rent',
+                  },
+                ]}
+                menu={
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Pressable
@@ -212,7 +227,11 @@ export function PropertyList() {
                         accessibilityRole="button"
                         accessibilityLabel={`Actions for ${item.name}`}
                         onPress={(e) => e.stopPropagation()}>
-                        <Icon as={MoreVertical} size={18} className="text-muted-foreground" />
+                        <Icon
+                          as={MoreVertical}
+                          size={18}
+                          className="text-muted-foreground"
+                        />
                       </Pressable>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -250,24 +269,8 @@ export function PropertyList() {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </View>
-
-                <View className="flex-col gap-2">
-                  <StatPill label="Units" value={String(stats.units)} tone="teal" icon={Building2} />
-                  <StatPill
-                    label="Active Tenants"
-                    value={String(stats.active)}
-                    tone="blue"
-                    icon={Users}
-                  />
-                  <StatPill
-                    label="Monthly Revenue"
-                    value={formatKes(stats.revenue)}
-                    tone="amber"
-                    icon={Wallet}
-                  />
-                </View>
-              </Pressable>
+                }
+              />
             );
           }}
         />

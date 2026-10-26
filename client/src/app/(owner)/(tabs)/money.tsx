@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { InvoiceList } from '@/components/owner/invoice-list';
-import { InvoiceSummaryTiles } from '@/components/owner/invoice-summary-tiles';
+import { InvoicesTab } from '@/components/owner/money/invoices-tab';
 import { PaymentList } from '@/components/owner/payment-list';
 import { ScreenHeader } from '@/components/owner/screen-header';
 import { SegmentedControl, type SegmentedOption } from '@/components/owner/segmented-control';
@@ -24,26 +23,24 @@ export default function MoneyScreen() {
   const { showToast } = useToast();
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScreenHeader
-        title="Money"
-        addLabel="Generate invoices"
-        onAdd={segment === 'invoices' ? () => setGenerateOpen(true) : undefined}
-      />
-
-      <View className="border-b border-border bg-background px-5 pb-3">
-        <SegmentedControl value={segment} onChange={setSegment} options={SEGMENTS} />
-      </View>
-
+    <>
       {segment === 'invoices' ? (
-        <>
-          <View className="border-b border-border bg-background px-5 pb-4">
-            <InvoiceSummaryTiles />
-          </View>
-          <InvoiceList />
-        </>
+        <SafeAreaView className="flex-1 bg-screen" edges={['top']}>
+          <InvoicesTab
+            onAdd={() => setGenerateOpen(true)}
+            onShowPayments={() => setSegment('payments')}
+          />
+        </SafeAreaView>
       ) : (
-        <PaymentList />
+        <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+          <ScreenHeader title="Money" />
+
+          <View className="px-4 pb-3">
+            <SegmentedControl value={segment} onChange={setSegment} options={SEGMENTS} />
+          </View>
+
+          <PaymentList />
+        </SafeAreaView>
       )}
 
       <GenerateInvoicesDialog
@@ -51,6 +48,6 @@ export default function MoneyScreen() {
         onOpenChange={setGenerateOpen}
         onToast={showToast}
       />
-    </SafeAreaView>
+    </>
   );
 }

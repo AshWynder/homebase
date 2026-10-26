@@ -65,16 +65,16 @@ export function AssignMeterModal({
         unitId,
       };
 
-      if (data.meterType && data.meterType !== '') {
+      if (data.meterType) {
         payload.meterType = data.meterType as MeterType;
       }
       if (data.meterNumber) {
         payload.meterNumber = data.meterNumber;
       }
-      if (data.lastReading !== undefined && data.lastReading !== '') {
+      if (data.lastReading) {
         payload.lastReading = Number(data.lastReading);
       }
-      if (data.pricePerUnit !== undefined && data.pricePerUnit !== '') {
+      if (data.pricePerUnit) {
         payload.pricePerUnit = Number(data.pricePerUnit);
       }
 
@@ -110,7 +110,7 @@ export function AssignMeterModal({
               render={({ field: { value, onChange } }) => (
                 <Select
                   value={
-                    value && value !== ''
+                    value
                       ? { value, label: METER_TYPES.find((m) => m.value === value)?.label || value }
                       : undefined
                   }
@@ -160,7 +160,7 @@ export function AssignMeterModal({
               name="lastReading"
               render={({ field: { value, onChange } }) => (
                 <Input
-                  value={String(value || '')}
+                  value={value || ''}
                   onChangeText={onChange}
                   keyboardType="numeric"
                   placeholder="0"
@@ -180,7 +180,7 @@ export function AssignMeterModal({
               name="pricePerUnit"
               render={({ field: { value, onChange } }) => (
                 <Input
-                  value={String(value || '')}
+                  value={value || ''}
                   onChangeText={onChange}
                   keyboardType="decimal-pad"
                   placeholder="0.00"

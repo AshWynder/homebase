@@ -15,7 +15,7 @@ const metroHost = Constants.expoConfig?.hostUri?.split(':')[0];
 
 const httpBaseURL =
   process.env.EXPO_PUBLIC_API_URL ??
-  (metroHost ? `http://${metroHost}:3000` : 'http://localhost:3000');
+  (metroHost ? `http://${metroHost}:3000` : 'https://homebase-api.tronzilla.duckdns.org');
 
 /**
  * The origin, with the scheme swapped for `ws`/`wss`.

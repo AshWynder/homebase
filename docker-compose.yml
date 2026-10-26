@@ -13,10 +13,8 @@ name: homebase
 
 services:
   migrator:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-      target: migrator
+    image: ${HOMEBASE_MIGRATOR_IMAGE:?Set HOMEBASE_MIGRATOR_IMAGE in .env}
+    pull_policy: always
     environment:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
     restart: "no"
@@ -24,10 +22,8 @@ services:
       - amazon1
 
   homebase-app:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-      target: runner
+    image: ${HOMEBASE_APP_IMAGE:?Set HOMEBASE_APP_IMAGE in .env}
+    pull_policy: always
     restart: unless-stopped
     env_file:
       - .env

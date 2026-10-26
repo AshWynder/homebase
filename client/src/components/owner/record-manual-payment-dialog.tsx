@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,28 +9,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Text } from '@/components/ui/text';
-import { useRecordManualPayment } from '@/hooks/queries/use-invoices';
-import { useDeferredChange } from '@/hooks/use-deferred-change';
-import type { ToastFunction } from '@/hooks/use-toast';
-import { formatKes, tenantName } from '@/lib/format';
-import type { Invoice, ManualPaymentMethod } from '@/api/types';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Text } from "@/components/ui/text";
+import { useRecordManualPayment } from "@/hooks/queries/use-invoices";
+import { useDeferredChange } from "@/hooks/use-deferred-change";
+import type { ToastFunction } from "@/hooks/use-toast";
+import { formatKes, tenantName } from "@/lib/format";
+import type { Invoice, ManualPaymentMethod } from "@/api/types";
 
 const METHODS: { value: ManualPaymentMethod; label: string }[] = [
-  { value: 'CASH', label: 'Cash' },
-  { value: 'BANK', label: 'Bank' },
-  { value: 'MPESA', label: 'M-Pesa' },
+  { value: "CASH", label: "Cash" },
+  { value: "BANK", label: "Bank" },
+  { value: "MPESA", label: "M-Pesa" },
 ];
 
 // Hoisted: NativeWind's native interop identity-checks `style` on every render,
 // so a conditional className re-dispatches from inside the render phase and
 // hangs the app on any state change.
 const styles = StyleSheet.create({
-  methodActive: { borderColor: '#0F766E', backgroundColor: '#F0FDFA' },
-  methodInactive: { borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' },
+  methodActive: { borderColor: "#0F766E", backgroundColor: "#F0FDFA" },
+  methodInactive: { borderColor: "#E2E8F0", backgroundColor: "#FFFFFF" },
 });
 
 interface RecordManualPaymentDialogProps {
@@ -82,26 +82,29 @@ function RecordManualPaymentForm({
 }: RecordManualPaymentFormProps) {
   const balanceDue = Number(invoice.balanceDue);
   const [amount, setAmount] = useState(() => balanceDue.toFixed(2));
-  const [method, setMethod] = useState<ManualPaymentMethod>('CASH');
+  const [method, setMethod] = useState<ManualPaymentMethod>("CASH");
   const onMethodChange = useDeferredChange(method, setMethod);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const record = useRecordManualPayment();
 
   const parsed = Number(amount);
-  const isPartial = Number.isFinite(parsed) && parsed > 0 && parsed < balanceDue;
+  const isPartial =
+    Number.isFinite(parsed) && parsed > 0 && parsed < balanceDue;
 
   const onSubmit = () => {
     if (!amount.trim() || !Number.isFinite(parsed)) {
-      setError('Enter the amount received.');
+      setError("Enter the amount received.");
       return;
     }
     if (parsed <= 0) {
-      setError('Amount must be greater than zero.');
+      setError("Amount must be greater than zero.");
       return;
     }
     if (parsed > balanceDue) {
-      setError(`Amount cannot exceed the balance due of ${formatKes(balanceDue)}.`);
+      setError(
+        `Amount cannot exceed the balance due of ${formatKes(balanceDue)}.`,
+      );
       return;
     }
 
@@ -117,10 +120,10 @@ function RecordManualPaymentForm({
       {
         onSuccess: (updated) => {
           onToast(
-            updated.status === 'PAID'
-              ? 'Invoice marked as paid'
+            updated.status === "PAID"
+              ? "Invoice marked as paid"
               : `Payment recorded — ${formatKes(updated.balanceDue)} still due`,
-            'success',
+            "success",
           );
           onCancel();
         },
@@ -155,8 +158,11 @@ function RecordManualPaymentForm({
             </Text>
             <Pressable
               hitSlop={8}
-              onPress={() => setAmount(balanceDue.toFixed(2))}>
-              <Text className="text-xs font-semibold text-primary">Pay full balance</Text>
+              onPress={() => setAmount(balanceDue.toFixed(2))}
+            >
+              <Text className="text-xs font-semibold text-primary">
+                Pay full balance
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -171,11 +177,13 @@ function RecordManualPaymentForm({
                   key={option.value}
                   onPress={() => onMethodChange(option.value)}
                   className="flex-1 items-center rounded-xl border px-3 py-2.5"
-                  style={active ? styles.methodActive : styles.methodInactive}>
+                  style={active ? styles.methodActive : styles.methodInactive}
+                >
                   <Text
                     className={`text-sm font-semibold ${
-                      active ? 'text-primary' : 'text-muted-foreground'
-                    }`}>
+                      active ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  >
                     {option.label}
                   </Text>
                 </Pressable>
@@ -194,7 +202,9 @@ function RecordManualPaymentForm({
           />
         </View>
 
-        {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
+        {error ? (
+          <Text className="text-xs text-destructive">{error}</Text>
+        ) : null}
       </View>
 
       <DialogFooter>
@@ -204,10 +214,10 @@ function RecordManualPaymentForm({
         <Button onPress={onSubmit} disabled={record.isPending}>
           <Text>
             {record.isPending
-              ? 'Recording…'
+              ? "Recording…"
               : isPartial
-                ? 'Record Partial Payment'
-                : 'Mark as Paid'}
+                ? "Record Partial Payment"
+                : "Mark as Paid"}
           </Text>
         </Button>
       </DialogFooter>

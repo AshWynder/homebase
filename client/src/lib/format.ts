@@ -12,6 +12,34 @@ export function formatKes(amount: number | string | null | undefined): string {
 }
 
 /**
+ * Compact number without a currency prefix, e.g. `250K`, `1.5M`, `850`.
+ * Used where the currency is shown separately, as a suffix on a stat tile.
+ */
+export function formatCompactNumber(amount: number | string | null | undefined): string {
+  if (amount === null || amount === undefined) return '0';
+  const value = typeof amount === 'string' ? Number(amount) : amount;
+  if (Number.isNaN(value)) return '0';
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) {
+    const millions = value / 1_000_000;
+    return `${millions.toFixed(millions >= 10 ? 0 : 2).replace(/\.?0+$/, '')}M`;
+  }
+  if (abs >= 1_000) {
+    const thousands = value / 1_000;
+    return `${thousands.toFixed(thousands >= 10 ? 0 : 1).replace(/\.0$/, '')}K`;
+  }
+  return String(value);
+}
+
+/** Plain thousands-separated number, e.g. `250,000`. */
+export function formatThousands(amount: number | string | null | undefined): string {
+  if (amount === null || amount === undefined) return '0';
+  const value = typeof amount === 'string' ? Number(amount) : amount;
+  if (Number.isNaN(value)) return '0';
+  return kesFormatter.format(value);
+}
+
+/**
  * Compact KES for portfolio tiles, e.g. `1.77M`, `450K`, `KES 850`.
  * Keeps the `KES` prefix only for amounts under 1,000.
  */
@@ -45,6 +73,14 @@ export function formatMonthYear(value: string | Date | null | undefined): string
   const date = typeof value === 'string' ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleString('en', { month: 'short', year: 'numeric' });
+}
+
+/** Formats an ISO date as `Oct 05`, used on compact invoice rows. */
+export function formatMonthDay(value: string | Date | null | undefined): string {
+  if (!value) return '—';
+  const date = typeof value === 'string' ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleString('en', { month: 'short', day: '2-digit' });
 }
 
 /** Formats an ISO date as `Nov 1, 2024`. */

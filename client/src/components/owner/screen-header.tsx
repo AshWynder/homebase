@@ -24,8 +24,8 @@ export function ScreenHeader({
   onBack,
 }: ScreenHeaderProps) {
   return (
-    <View className="border-b border-border bg-background">
-      <View className="flex-row items-center gap-3 px-5 py-3">
+    <View className="bg-background">
+      <View className="flex-row items-center gap-3 px-4 py-3">
         {showBack ? (
           <Pressable
             onPress={onBack ?? (() => router.back())}
@@ -51,9 +51,10 @@ export function ScreenHeader({
         {onAdd ? (
           <Pressable
             onPress={onAdd}
+            accessibilityRole="button"
             accessibilityLabel={addLabel}
-            className="h-8 w-8 items-center justify-center rounded-full bg-primary active:opacity-90">
-            <Icon as={Plus} size={18} className="text-primary-foreground" />
+            className="h-10 w-10 items-center justify-center rounded-full bg-primary active:opacity-90">
+            <Icon as={Plus} size={20} className="text-primary-foreground" />
           </Pressable>
         ) : null}
       </View>
