@@ -76,6 +76,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_APP }}:${{ github.sha }}
             ${{ env.IMAGE_APP }}:latest
+          cache-from: type=gha,scope=app
+          cache-to: type=gha,mode=max,scope=app
 
       - name: Build and push migrator image
         uses: docker/build-push-action@v6
@@ -87,6 +89,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_MIGRATOR }}:${{ github.sha }}
             ${{ env.IMAGE_MIGRATOR }}:latest
+          cache-from: type=gha,scope=migrator
+          cache-to: type=gha,mode=max,scope=migrator
   deploy:
     name: Deploy to EC2
     needs: package
@@ -101,7 +105,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          script_stop: true
           script: |
             set -e
 
