@@ -50,6 +50,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Set lowercase image names
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_APP=ghcr.io/$OWNER/homebase-server-app" >> $GITHUB_ENV
+          echo "IMAGE_MIGRATOR=ghcr.io/$OWNER/homebase-server-migrator" >> $GITHUB_ENV
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -68,8 +74,8 @@ jobs:
           target: runner
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/homebase-server-app:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/homebase-server-app:latest
+            ${{ env.IMAGE_APP }}:${{ github.sha }}
+            ${{ env.IMAGE_APP }}:latest
 
       - name: Build and push migrator image
         uses: docker/build-push-action@v6
@@ -79,9 +85,8 @@ jobs:
           target: migrator
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/homebase-server-migrator:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/homebase-server-migrator:latest
-
+            ${{ env.IMAGE_MIGRATOR }}:${{ github.sha }}
+            ${{ env.IMAGE_MIGRATOR }}:latest
   deploy:
     name: Deploy to EC2
     needs: package
