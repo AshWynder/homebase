@@ -110,7 +110,7 @@ jobs:
 
             APP_DIR="${{ secrets.APP_DIR }}"
             REPO_URL="${{ secrets.APP_REPO_URL }}"
-            GHCR_OWNER="${{ github.repository_owner }}"
+            GHCR_OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
 
             mkdir -p "$APP_DIR"
             chown -R "${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }}" "$APP_DIR"
