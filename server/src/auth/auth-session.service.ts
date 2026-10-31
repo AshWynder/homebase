@@ -76,8 +76,12 @@ export class AuthSessionService {
     }
 
     return {
-      // Normalize better-auth's optional `image` to Prisma's nullable `image`.
-      user: { ...session.user, image: session.user.image ?? null },
+      // Normalize better-auth's optional `image` and `username` to Prisma's nullable fields.
+      user: {
+        ...session.user,
+        image: session.user.image ?? null,
+        username: session.user.username ?? null,
+      },
       profile,
     };
   }
