@@ -10,6 +10,8 @@ import { ListMessage, ListSkeleton } from '@/components/owner/list-state';
 import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { darkColors } from '@/theme/colors';
 import { Toast } from '@/components/ui/toast';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useToast } from '@/hooks/use-toast';
@@ -49,6 +51,8 @@ export function ConversationInboxScreen({
   edges = ['top'],
 }: ConversationInboxScreenProps) {
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const [search, setSearch] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,23 +75,43 @@ export function ConversationInboxScreen({
   const threads = data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={edges}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-[#0B0F17]"
+      style={isDark ? { backgroundColor: darkColors.background } : undefined}
+      edges={edges}>
       <DetailHeader title="Chats" />
 
-      <View className="bg-white px-5 pb-3">
+      <View
+        className="bg-white dark:bg-[#131A26] px-5 pb-3"
+        style={isDark ? { backgroundColor: darkColors.surface } : undefined}>
         <View>
-          <Icon as={Search} size={16} className="absolute left-3 top-3 z-10 text-slate-400" />
+          <Icon
+            as={Search}
+            size={16}
+            className="absolute left-3 top-3 z-10 text-slate-400"
+            color={isDark ? darkColors.textMuted : undefined}
+          />
           <Input
             value={search}
             onChangeText={setSearch}
             placeholder="Search chats"
+            placeholderTextColor={isDark ? darkColors.textMuted : undefined}
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="search"
             /* Matches the server's `QueryConversationsDto` limit, so a long search
                never turns into a 400 in the list. */
             maxLength={80}
-            className="rounded-lg border-2 border-slate-200 pl-9"
+            className="rounded-lg border-2 border-slate-200 dark:border-[rgba(255,255,255,0.08)] pl-9"
+            style={
+              isDark
+                ? {
+                    backgroundColor: darkColors.surfaceElevated ?? darkColors.surface,
+                    color: darkColors.text,
+                    borderColor: darkColors.border,
+                  }
+                : undefined
+            }
           />
         </View>
       </View>
@@ -157,6 +181,8 @@ interface ConversationRowProps {
 }
 
 function ConversationRow({ thread, onPress }: ConversationRowProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const preview = thread.lastMessage?.content ?? 'No messages yet';
   const senderPrefix =
     thread.type === 'GROUP' && thread.lastMessage
@@ -166,13 +192,15 @@ function ConversationRow({ thread, onPress }: ConversationRowProps) {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-3 border-b border-slate-100 bg-white px-5 py-4 active:bg-slate-50">
+      className="flex-row items-center gap-3 border-b border-slate-100 dark:border-[rgba(255,255,255,0.08)] bg-white dark:bg-[#131A26] px-5 py-4 active:bg-slate-50 dark:active:bg-[#1A2231]"
+      style={isDark ? { backgroundColor: darkColors.surface, borderBottomColor: darkColors.border } : undefined}>
       <AvatarFor thread={thread} />
 
       <View className="flex-1">
         <View className="flex-row items-center justify-between gap-2">
           <Text
-            className="flex-1 text-sm font-semibold text-slate-900"
+            className="flex-1 text-sm font-semibold text-slate-900 dark:text-[#F1F5F9]"
+            style={isDark ? { color: darkColors.text } : undefined}
             numberOfLines={1}>
             {thread.name}
           </Text>
@@ -187,7 +215,8 @@ function ConversationRow({ thread, onPress }: ConversationRowProps) {
         </View>
 
         <Text
-          className="mt-0.5 text-xs text-slate-500"
+          className="mt-0.5 text-xs text-slate-500 dark:text-[#94A3B8]"
+          style={isDark ? { color: darkColors.textMuted } : undefined}
           numberOfLines={thread.unreadCount > 0 ? 2 : 1}>
           {senderPrefix}
           {preview}

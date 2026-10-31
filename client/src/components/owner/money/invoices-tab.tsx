@@ -30,7 +30,11 @@ import {
   type InvoiceBucket,
 } from '@/lib/invoice-buckets';
 import { tenantName } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { useStore } from '@/stores/use-store';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { BUCKET_THEME_DARK, FINANCE_DARK } from '@/constants/finance-theme';
+import { darkColors } from '@/theme/colors';
 
 type Segment = 'invoices' | 'payments';
 
@@ -64,15 +68,20 @@ interface InvoicesTabProps {
 }
 
 function MoneyHeader({ onAdd }: { onAdd: () => void }) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <View className="flex-row items-center justify-between gap-3">
       <View className="min-w-0 flex-1">
         <Text
           className="text-[11px] font-semibold uppercase tracking-widest"
-          style={styles.headerLabel}>
+          style={{ color: isDark ? darkColors.primary : styles.headerLabel.color }}>
           FINANCES
         </Text>
-        <Text className="text-2xl font-bold" style={styles.headerTitle}>
+        <Text
+          className="text-2xl font-bold"
+          style={{ color: isDark ? darkColors.text : styles.headerTitle.color }}>
           Money
         </Text>
       </View>
@@ -83,8 +92,15 @@ function MoneyHeader({ onAdd }: { onAdd: () => void }) {
         accessibilityRole="button"
         accessibilityLabel="Generate invoices"
         className="h-11 w-11 rounded-full shadow-none active:opacity-90"
-        style={styles.headerButton}>
-        <Icon as={Plus} size={24} color="#ffffff" />
+        style={{
+          backgroundColor: isDark ? darkColors.primary : styles.headerButton.backgroundColor,
+          shadowColor: isDark ? darkColors.primary : styles.headerButton.shadowColor,
+          shadowOffset: styles.headerButton.shadowOffset,
+          shadowOpacity: isDark ? 0.22 : styles.headerButton.shadowOpacity,
+          shadowRadius: styles.headerButton.shadowRadius,
+          elevation: styles.headerButton.elevation,
+        }}>
+        <Icon as={Plus} size={24} color={isDark ? darkColors.primaryOn : '#ffffff'} />
       </Button>
     </View>
   );
@@ -94,6 +110,8 @@ function MoneyTabs({ onShowPayments }: { onShowPayments: () => void }) {
   const requestSegment = useDeferredChange<Segment>('invoices', (next) => {
     if (next === 'payments') onShowPayments();
   });
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   return (
     <Tabs
@@ -102,18 +120,41 @@ function MoneyTabs({ onShowPayments }: { onShowPayments: () => void }) {
         if (next === 'payments') requestSegment('payments');
       }}
       className="gap-0">
-      <TabsList className="h-auto w-full flex-row items-center rounded-2xl border border-[#e2e8f0] bg-[#eef2f6] p-1">
+      <TabsList
+        className="h-auto w-full flex-row items-center rounded-2xl border p-1"
+        style={{
+          borderColor: isDark ? darkColors.border : '#e2e8f0',
+          backgroundColor: isDark ? darkColors.surface : '#eef2f6',
+          borderWidth: 1,
+        }}>
         <TabsTrigger
           value="invoices"
-          className="h-10 flex-1 rounded-xl border-0 bg-white shadow-sm shadow-black/5">
-          <Text className="text-sm font-bold" style={styles.tabActiveText}>
+          className="h-10 flex-1 rounded-xl border"
+          style={{
+            backgroundColor: isDark ? darkColors.surfaceElevated : '#ffffff',
+            borderColor: isDark ? darkColors.borderStrong : '#e2e8f0',
+            borderWidth: 1,
+            shadowColor: '#000',
+            shadowOpacity: isDark ? 0.05 : 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}>
+          <Text
+            className="text-sm font-bold"
+            style={{ color: isDark ? darkColors.primaryLight : styles.tabActiveText.color }}>
             Invoices
           </Text>
         </TabsTrigger>
         <TabsTrigger
           value="payments"
-          className="h-10 flex-1 rounded-xl border-0 bg-transparent shadow-none">
-          <Text className="text-sm font-bold" style={styles.tabInactiveText}>
+          className="h-10 flex-1 rounded-xl border-0 bg-transparent shadow-none"
+          style={{
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+          }}>
+          <Text
+            className="text-sm font-bold"
+            style={{ color: isDark ? darkColors.textMuted : styles.tabInactiveText.color }}>
             Payments
           </Text>
         </TabsTrigger>
@@ -130,22 +171,30 @@ interface SearchRowProps {
 }
 
 function SearchRow({ value, onChange, sortKey, onSortChange }: SearchRowProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <View className="flex-row items-center gap-2">
       <View className="flex-1">
         <View pointerEvents="none" className="absolute left-3 top-0 z-10 h-11 justify-center">
-          <Icon as={Search} size={18} color={FINANCE.faint} />
+          <Icon as={Search} size={18} color={isDark ? darkColors.textMuted : FINANCE.faint} />
         </View>
         <Input
           value={value}
           onChangeText={onChange}
           placeholder="Search tenants or unit..."
-          placeholderTextColor={FINANCE.faint}
+          placeholderTextColor={isDark ? darkColors.textDim : FINANCE.faint}
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
-          className="h-11 rounded-xl border bg-white pl-10 pr-3 text-sm"
-          style={styles.input}
+          className="h-11 rounded-xl border pl-10 pr-3 text-sm"
+          style={{
+            borderColor: isDark ? darkColors.border : styles.input.borderColor,
+            borderWidth: 1,
+            color: isDark ? darkColors.text : styles.input.color,
+            backgroundColor: isDark ? darkColors.surface : '#ffffff',
+          }}
         />
       </View>
 
@@ -153,9 +202,13 @@ function SearchRow({ value, onChange, sortKey, onSortChange }: SearchRowProps) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Sort invoices"
-          className="h-11 w-11 items-center justify-center rounded-xl border bg-white active:opacity-80"
-          style={styles.filterButtonBorder}>
-          <Icon as={Filter} size={18} color={FINANCE.muted} />
+          className="h-11 w-11 items-center justify-center rounded-xl border active:opacity-80"
+          style={{
+            borderColor: isDark ? darkColors.border : styles.filterButtonBorder.borderColor,
+            borderWidth: 1,
+            backgroundColor: isDark ? darkColors.surface : '#ffffff',
+          }}>
+          <Icon as={Filter} size={18} color={isDark ? darkColors.primaryLight : FINANCE.muted} />
         </Pressable>
       </SortSheet>
     </View>
@@ -171,21 +224,24 @@ interface ListHeaderRowProps {
 }
 
 function ListHeaderRow({ bucket, shown, total, sortKey, onSortChange }: ListHeaderRowProps) {
-  const theme = bucket ? BUCKET_THEME[bucket] : null;
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = bucket ? (isDark ? BUCKET_THEME_DARK[bucket] : BUCKET_THEME[bucket]) : null;
   const title = theme?.listLabel ?? 'ALL INVOICES';
   const sortLabel =
     INVOICE_SORT_OPTIONS.find((option) => option.value === sortKey)?.label ?? 'Due Date';
 
   const badgeStyle = useMemo(
     () => ({
-      backgroundColor: theme?.badge ?? '#e2e8f0',
-      borderColor: theme?.color ?? '#e2e8f0',
+      backgroundColor: theme?.badge ?? (isDark ? darkColors.redTintBg : '#e2e8f0'),
+      borderColor: theme?.avatarBorder ?? (isDark ? darkColors.redTintBorder : '#e2e8f0'),
+      borderWidth: 1,
     }),
-    [theme?.badge, theme?.color],
+    [theme?.badge, theme?.avatarBorder, isDark],
   );
   const badgeTextStyle = useMemo(
-    () => ({ color: theme?.strong ?? FINANCE.muted }),
-    [theme?.strong],
+    () => ({ color: theme?.strong ?? (isDark ? darkColors.red : FINANCE.muted) }),
+    [theme?.strong, isDark],
   );
 
   return (
@@ -193,7 +249,7 @@ function ListHeaderRow({ bucket, shown, total, sortKey, onSortChange }: ListHead
       <View className="min-w-0 flex-1 flex-row items-center gap-2">
         <Text
           className="text-[11px] font-bold uppercase tracking-[1px]"
-          style={styles.listHeaderText}
+          style={{ color: isDark ? darkColors.textSlateLight : styles.listHeaderText.color }}
           numberOfLines={1}>
           {title}
         </Text>
@@ -210,7 +266,9 @@ function ListHeaderRow({ bucket, shown, total, sortKey, onSortChange }: ListHead
           accessibilityRole="button"
           accessibilityLabel={`Sort by ${sortLabel}`}
           className="active:opacity-70">
-          <Text className="text-xs font-semibold" style={styles.sortLink}>
+          <Text
+            className="text-xs font-semibold"
+            style={{ color: isDark ? darkColors.primaryLight : styles.sortLink.color }}>
             Sort: {sortLabel}
           </Text>
         </Pressable>
@@ -220,15 +278,26 @@ function ListHeaderRow({ bucket, shown, total, sortKey, onSortChange }: ListHead
 }
 
 function EmptyInvoices() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
+  const iconColor = isDark ? darkColors.textDim : FINANCE.faint;
+  const titleStyle = { color: isDark ? darkColors.text : FINANCE.text };
+  const subtitleStyle = { color: isDark ? darkColors.textMuted : FINANCE.muted };
+
   return (
     <View className="items-center justify-center gap-2 px-8 py-16">
-      <View className="h-11 w-11 items-center justify-center rounded-full bg-[#eef2f6]">
-        <Icon as={ReceiptText} size={22} color={FINANCE.faint} />
+      <View
+        className={cn(
+          'h-11 w-11 items-center justify-center rounded-full',
+          isDark ? 'bg-[#1A2231]' : 'bg-[#eef2f6]'
+        )}>
+        <Icon as={ReceiptText} size={22} color={iconColor} />
       </View>
-      <Text className="text-center text-base font-semibold" style={styles.headerTitle}>
+      <Text className="text-center text-base font-semibold" style={titleStyle}>
         No invoices found
       </Text>
-      <Text className="text-center text-sm" style={styles.listHeaderText}>
+      <Text className="text-center text-sm" style={subtitleStyle}>
         Try a different filter or search.
       </Text>
     </View>
@@ -251,6 +320,20 @@ function compareInvoices(a: Invoice, b: Invoice, sortKey: InvoiceSortKey): numbe
 
 /** Invoices segment of the Money tab, including its scrollable dashboard. */
 export function InvoicesTab({ onShowPayments, onAdd }: InvoicesTabProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const showMoreStyle = useMemo(
+    () => ({
+      backgroundColor: isDark ? darkColors.surface : undefined,
+      borderColor: isDark ? darkColors.border : FINANCE.border,
+      borderWidth: isDark ? 1 : undefined,
+    }),
+    [isDark],
+  );
+  const showMoreTextStyle = useMemo(
+    () => ({ color: isDark ? darkColors.primaryLight : styles.showMoreText.color }),
+    [isDark],
+  );
   const [selectedBucket, setSelectedBucket] = useState<InvoiceBucket | null>(null);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<InvoiceSortKey>('dueDate');
@@ -303,10 +386,10 @@ export function InvoicesTab({ onShowPayments, onAdd }: InvoicesTabProps) {
     });
   }, [invoices, query, selectedBucket]);
 
-  const sorted = useMemo(
-    () => [...filtered].sort((a, b) => compareInvoices(a, b, sortKey)),
-    [filtered, sortKey],
-  );
+  const sorted = useMemo(() => [...filtered].sort((a, b) => compareInvoices(a, b, sortKey)), [
+    filtered,
+    sortKey,
+  ]);
 
   const displayed = sorted.slice(0, visibleCount);
   const hasMore = visibleCount < sorted.length;
@@ -452,9 +535,12 @@ export function InvoicesTab({ onShowPayments, onAdd }: InvoicesTabProps) {
               onPress={loadMore}
               accessibilityRole="button"
               accessibilityLabel="Show more invoices"
-              className="h-11 rounded-xl bg-white"
-              style={styles.showMoreBorder}>
-              <Text className="text-sm font-semibold" style={styles.showMoreText}>
+              className={cn(
+                'h-11 rounded-xl',
+                isDark ? darkColors.surface : 'bg-white'
+              )}
+              style={showMoreStyle}>
+              <Text className="text-sm font-semibold" style={showMoreTextStyle}>
                 Show more
               </Text>
             </Button>

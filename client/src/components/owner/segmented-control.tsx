@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { InteractionManager } from 'react-native';
+import { InteractionManager, View } from 'react-native';
 
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { cn } from '@/lib/utils';
+import { darkColors, darkTints } from '@/theme/colors';
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -35,6 +37,9 @@ export function SegmentedControl<T extends string>({
   options,
   className,
 }: SegmentedControlProps<T>) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   const pendingChange = useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(
     null,
   );
@@ -59,7 +64,20 @@ export function SegmentedControl<T extends string>({
       value={value}
       onValueChange={(next) => scheduleChange(next as T)}
       className={cn('gap-0', className)}>
-      <TabsList className="h-auto w-full rounded-2xl bg-muted p-1">
+      <TabsList
+        className="h-auto w-full rounded-2xl p-1"
+        style={
+          isDark
+            ? {
+                backgroundColor: darkColors.surface,
+                borderColor: darkColors.border,
+                borderWidth: 1,
+              }
+            : {
+                backgroundColor: '#EAF1FF',
+                borderWidth: 0,
+              }
+        }>
         {options.map((option) => {
           const isActive = option.value === value;
           return (
@@ -68,31 +86,84 @@ export function SegmentedControl<T extends string>({
               value={option.value}
               className={cn(
                 'h-9 flex-1 gap-2 rounded-xl px-2',
-                isActive && 'bg-card shadow-sm dark:bg-input',
-              )}>
+              )}
+              style={
+                isDark
+                  ? isActive
+                    ? {
+                        backgroundColor: darkColors.surfaceElevated,
+                        borderColor: darkColors.borderStrong,
+                        borderWidth: 1,
+                      }
+                    : {
+                        backgroundColor: 'transparent',
+                        borderColor: 'transparent',
+                        borderWidth: 1,
+                      }
+                  : isActive
+                    ? {
+                        backgroundColor: '#FFFFFF',
+                        shadowColor: 'rgba(15,23,42,0.06)',
+                        shadowOffset: { width: 0, height: 1 },
+                        shadowOpacity: 1,
+                        shadowRadius: 4,
+                        elevation: 1,
+                      }
+                    : {
+                        backgroundColor: 'transparent',
+                      }
+              }>
               <Text
-                className={cn(
-                  'text-sm font-bold',
-                  isActive
-                    ? 'text-primary dark:text-primary'
-                    : 'text-muted-foreground',
-                )}>
+                className="text-sm font-bold"
+                style={
+                  isDark
+                    ? {
+                        color: isActive ? darkColors.emeraldLight : darkColors.textMuted,
+                      }
+                    : {
+                        color: isActive ? '#006241' : '#64748B',
+                      }
+                }>
                 {option.label}
               </Text>
               {option.count === undefined ? null : (
                 <Badge
                   variant="secondary"
-                  className={cn(
-                    'rounded-md border-transparent px-1.5 py-0.5',
-                    isActive ? 'bg-primary/15' : 'bg-muted-foreground/10',
-                  )}>
+                  className="rounded-md border-transparent px-1.5 py-0.5"
+                  style={
+                    isDark
+                      ? isActive
+                        ? {
+                            backgroundColor: darkColors.emeraldTintBg,
+                            borderColor: darkColors.emeraldTintBorder,
+                            borderWidth: 1,
+                          }
+                        : {
+                            backgroundColor: darkColors.surface,
+                            borderColor: darkColors.border,
+                            borderWidth: 1,
+                          }
+                      : isActive
+                        ? {
+                            backgroundColor: '#D1FAE5',
+                            borderWidth: 0,
+                          }
+                        : {
+                            backgroundColor: '#D9E5FB',
+                            borderWidth: 0,
+                          }
+                  }>
                   <Text
-                    className={cn(
-                      'text-[10px] font-bold',
-                      isActive
-                        ? 'text-primary dark:text-primary'
-                        : 'text-muted-foreground',
-                    )}>
+                    className="text-[10px] font-bold"
+                    style={
+                      isDark
+                        ? {
+                            color: isActive ? darkColors.emeraldLight : darkColors.textMuted,
+                          }
+                        : {
+                            color: isActive ? '#006241' : '#475569',
+                          }
+                    }>
                     {option.count}
                   </Text>
                 </Badge>

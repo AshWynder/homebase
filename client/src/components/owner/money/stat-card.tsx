@@ -13,6 +13,9 @@ import {
 import type { InvoiceBucket } from '@/lib/invoice-buckets';
 import { formatCompactKes, formatKes } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { BUCKET_THEME_DARK, FINANCE_DARK } from '@/constants/finance-theme';
+import { darkColors } from '@/theme/colors';
 
 interface StatCardProps {
   bucket: InvoiceBucket;
@@ -24,15 +27,12 @@ interface StatCardProps {
 
 const DEFAULT_CARD_STYLE = {
   backgroundColor: '#ffffff',
-  borderColor: FINANCE.border,
+  borderColor: '#E2E8F0',
   borderWidth: 1,
-} as const;
-
-const ZERO_CARD_STYLE = {
-  backgroundColor: ZERO_CARD_BACKGROUND,
-  borderColor: FINANCE.border,
-  borderWidth: 1,
-  opacity: 0.6,
+  shadowColor: 'rgba(15,23,42,0.06)',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 1,
+  shadowRadius: 8,
 } as const;
 
 function buildSelectedCardStyles(): Record<InvoiceBucket, ViewStyle> {
@@ -68,46 +68,118 @@ function amountLabel(amount: number): string {
 
 /** A single invoice bucket card. Doubles as the list's status filter. */
 export function StatCard({ bucket, count, amount, selected, onPress }: StatCardProps) {
-  const theme: BucketTheme = BUCKET_THEME[bucket];
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const FD = FINANCE_DARK;
+  const theme: BucketTheme = isDark ? BUCKET_THEME_DARK[bucket] : BUCKET_THEME[bucket];
   const isZero = count === 0;
   const isDisabled = isZero && !selected;
 
-  const labelStyle = useMemo(
-    () => (isDisabled ? ZERO_TEXT_STYLE : { color: theme.color }),
-    [isDisabled, theme.color],
-  );
-  const amountStyle = useMemo(
-    () =>
-      isDisabled
-        ? ZERO_TEXT_STYLE
-        : selected
-          ? { color: theme.strong }
-          : DEFAULT_AMOUNT_STYLE,
-    [isDisabled, selected, theme.strong],
-  );
-  const countStyle = useMemo(
-    () => (isDisabled ? ZERO_COUNT_STYLE : selected ? { color: theme.strong } : undefined),
-    [isDisabled, selected, theme.strong],
-  );
-  const activeBadgeStyle = useMemo(
-    () => ({ backgroundColor: theme.badge, borderColor: theme.color }),
-    [theme.badge, theme.color],
-  );
-  const activeBadgeTextStyle = useMemo(() => ({ color: theme.strong }), [theme.strong]);
-  const dotWrapperStyle = useMemo(
-    () => (selected ? { backgroundColor: theme.badge } : undefined),
-    [selected, theme.badge],
-  );
-  const dotStyle = useMemo(
-    () => ({ backgroundColor: isDisabled ? FINANCE.faint : theme.color }),
-    [isDisabled, theme.color],
-  );
+  const labelStyle = useMemo(() => {
+    if (isDark) {
+      return { color: theme.color };
+    }
+    return { color: '#334155' };
+  }, [isDark, theme.color]);
 
-  const cardStyle = isDisabled
-    ? ZERO_CARD_STYLE
-    : selected
-      ? SELECTED_CARD_STYLES[bucket]
-      : DEFAULT_CARD_STYLE;
+  const amountStyle = useMemo(() => {
+    if (isDark) {
+      return { color: darkColors.text };
+    }
+    if (bucket === 'OVERDUE') {
+      return { color: '#B91C1C' };
+    }
+    return { color: '#0F172A' };
+  }, [isDark, bucket]);
+
+  const countStyle = useMemo(() => {
+    if (isDark) {
+      return { color: darkColors.textMuted };
+    }
+    return { color: '#64748B' };
+  }, [isDark]);
+
+  const activeBadgeStyle = useMemo(() => {
+    if (isDark) {
+      if (bucket === 'OVERDUE') {
+        return {
+          backgroundColor: darkColors.redTintBg,
+          borderColor: darkColors.redTintBorder,
+          borderWidth: 1,
+        };
+      }
+      return {
+        backgroundColor: theme.badge,
+        borderColor: theme.avatarBorder,
+        borderWidth: 1,
+      };
+    }
+    if (bucket === 'OVERDUE') {
+      return {
+        backgroundColor: '#FECACA',
+        borderWidth: 0,
+      };
+    }
+    return { backgroundColor: theme.badge, borderColor: theme.color };
+  }, [isDark, bucket, theme.badge, theme.avatarBorder, theme.color]);
+
+  const activeBadgeTextStyle = useMemo(() => {
+    if (isDark) {
+      return { color: bucket === 'OVERDUE' ? darkColors.red : theme.strong };
+    }
+    return { color: bucket === 'OVERDUE' ? '#B91C1C' : theme.strong };
+  }, [isDark, bucket, theme.strong]);
+
+  const dotWrapperStyle = useMemo(() => {
+    if (isDark) {
+      return undefined;
+    }
+    return selected ? { backgroundColor: theme.badge } : undefined;
+  }, [isDark, selected, theme.badge]);
+
+  const dotStyle = useMemo(() => {
+    if (isDark) {
+      return { backgroundColor: theme.color };
+    }
+    if (bucket === 'PAID') {
+      return { backgroundColor: '#006241' };
+    }
+    if (bucket === 'OVERDUE') {
+      return { backgroundColor: '#B91C1C' };
+    }
+    return { backgroundColor: '#94A3B8' };
+  }, [isDark, bucket]);
+
+  const cardStyle = useMemo(() => {
+    if (isDark) {
+      if (selected) {
+        return {
+          backgroundColor: bucket === 'OVERDUE' ? '#1D2130' : darkColors.surfaceElevated,
+          borderColor: darkColors.borderStrong,
+          borderWidth: 1,
+        };
+      }
+      return {
+        backgroundColor: darkColors.surface,
+        borderColor: darkColors.border,
+        borderWidth: 1,
+      };
+    }
+
+    if (bucket === 'OVERDUE') {
+      return {
+        backgroundColor: '#FEDADA',
+        borderColor: 'rgba(185,28,28,0.15)',
+        borderWidth: 1,
+        shadowColor: 'rgba(15,23,42,0.06)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 8,
+      };
+    }
+
+    return DEFAULT_CARD_STYLE;
+  }, [isDark, selected, bucket]);
 
   return (
     <Pressable

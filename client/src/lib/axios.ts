@@ -18,7 +18,7 @@ const metroHost = Constants.expoConfig?.hostUri?.split(':')[0];
 
 const baseURL =
   process.env.EXPO_PUBLIC_API_URL ??
-  (metroHost ? `http://${metroHost}:3000` : 'https://homebase-api.tronzilla.duckdns.org');
+  (metroHost ? `http://${metroHost}:3000` : 'http://localhost:3000');
 
 export const api = axios.create({
   baseURL,

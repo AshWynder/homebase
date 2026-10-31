@@ -1,3 +1,4 @@
+import { darkColors } from '@/theme/colors';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 /**
@@ -10,9 +11,9 @@ export function useTabBarColors() {
   const isDark = scheme === 'dark';
 
   return {
-    active: '#0F766E',
-    inactive: '#A1A1AA',
-    border: isDark ? '#27272A' : '#E4E4E7',
-    background: isDark ? '#09090B' : '#FFFFFF',
+    active: isDark ? darkColors.emeraldLight : '#0F766E',
+    inactive: isDark ? darkColors.textDim : '#A1A1AA',
+    border: isDark ? darkColors.border : '#E4E4E7',
+    background: isDark ? darkColors.background : '#FFFFFF',
   };
 }

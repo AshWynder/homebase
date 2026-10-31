@@ -11,16 +11,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   ArrowLeft,
-  Banknote,
   Calendar,
-  Check,
-  Droplet,
   Home,
-  Plus,
   Receipt,
-  Trash2,
   Wallet,
-  Wrench,
 } from "lucide-react-native";
 
 import { ListMessage } from "@/components/owner/list-state";
@@ -31,7 +25,6 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
-import { Toast } from "@/components/ui/toast";
 import { useInvoice } from "@/hooks/queries/use-invoices";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -43,7 +36,6 @@ import {
 import {
   getDerivedInvoiceStatus,
   getStatusTheme,
-  normalizeInvoiceStatus,
 } from "@/lib/invoice-status-theme";
 import { getLineItemMeta } from "@/lib/line-item-meta";
 
@@ -58,8 +50,6 @@ const styles = StyleSheet.create({
   },
   statusPartialBadge: {
     borderWidth: 1,
-    borderColor: "#bfdbfe",
-    backgroundColor: "#eff6ff",
   },
   lineItemIcon: {
     width: 32,
@@ -90,7 +80,6 @@ function StatusBadge({
   const badgeStyle = { backgroundColor: theme.tint, borderColor: theme.border };
   const dotStyle = { backgroundColor: theme.accent };
   const statusTextStyle = { color: theme.text };
-  const partialTextStyle = { color: "#1d4ed8" };
 
   return (
     <View className="flex-row items-center gap-2">
@@ -108,10 +97,16 @@ function StatusBadge({
       </Badge>
 
       {isSecondary && isPartial ? (
-        <Badge className="px-2 py-0.5" style={styles.statusPartialBadge}>
+        <Badge
+          className="px-2 py-0.5"
+          style={[
+            styles.statusPartialBadge,
+            { borderColor: "hsl(var(--info))", backgroundColor: "hsl(var(--info)/0.1)" },
+          ]}
+        >
           <Text
             className="text-xs font-bold uppercase tracking-[0.1em]"
-            style={partialTextStyle}
+            style={{ color: "hsl(var(--info))" }}
           >
             PARTIAL
           </Text>
@@ -134,21 +129,14 @@ function InfoRow({
 }) {
   return (
     <View className="flex-row items-start gap-2.5">
-      <View className="h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
-        <Icon
-          as={icon}
-          size={16}
-          className={muted ? "text-slate-500" : "text-slate-600"}
-        />
+      <View className="h-8 w-8 items-center justify-center rounded-lg bg-muted">
+        <Icon as={icon} size={16} className="text-muted-foreground" />
       </View>
       <View className="flex-1 gap-0.5">
-        <Text className="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">
+        <Text className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
           {label}
         </Text>
-        <Text
-          className="text-sm font-semibold text-slate-900"
-          numberOfLines={2}
-        >
+        <Text className="text-sm font-semibold text-foreground" numberOfLines={2}>
           {value}
         </Text>
       </View>
@@ -158,16 +146,16 @@ function InfoRow({
 
 function BalanceDueBox({ value }: { value: string }) {
   return (
-    <View className="w-full rounded-xl border border-amber-200 bg-amber-50 p-3">
+    <View className="w-full rounded-xl border border-warning/40 bg-warning/10 p-3">
       <View className="flex-row items-center gap-3">
-        <View className="h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
-          <Icon as={Wallet} size={16} className="text-amber-700" />
+        <View className="h-8 w-8 items-center justify-center rounded-lg bg-warning/20">
+          <Icon as={Wallet} size={16} className="text-warning" />
         </View>
         <View className="flex-1">
-          <Text className="text-xs font-medium uppercase tracking-[0.15em] text-amber-700">
+          <Text className="text-xs font-medium uppercase tracking-[0.15em] text-warning">
             Balance Due
           </Text>
-          <Text className="text-sm font-bold text-slate-900">{value}</Text>
+          <Text className="text-sm font-bold text-foreground">{value}</Text>
         </View>
       </View>
     </View>
@@ -197,246 +185,186 @@ function LineItemRow({
         </View>
 
         <View className="flex-1 gap-0.5">
-          <Text className="text-xs font-semibold uppercase tracking-[0.1em]">
+          <Text className="text-xs font-semibold uppercase tracking-[0.1em] text-foreground">
             {meta.label}
           </Text>
-          <Text className="text-xs text-slate-500" numberOfLines={2}>
+          <Text className="text-xs text-muted-foreground" numberOfLines={2}>
             {item.description || "Invoice line item"}
           </Text>
         </View>
 
-        <Text
-          className="text-sm font-bold text-slate-900"
-          style={styles.lineItemAmount}
-        >
+        <Text className="text-sm font-bold text-foreground" style={styles.lineItemAmount}>
           {formatKes(item.amount)}
         </Text>
       </View>
-      {!isLast ? <Separator className="h-0.5 bg-slate-100/50" /> : null}
+      {!isLast ? <Separator className="h-0.5 bg-border/50" /> : null}
     </View>
   );
 }
 
 function PaymentButton({ onPress }: { onPress: () => void }) {
   return (
-    <Card className="rounded-2xl border border-slate-100/50 bg-white p-4 shadow-sm">
-      <View className="gap-3">
-        <View className="flex-row items-center gap-3">
-          <View className="h-9 w-9 items-center justify-center rounded-xl bg-emerald-50">
-            <Icon as={Banknote} size={18} className="text-emerald-800" />
-          </View>
-          <View className="flex-1">
-            <Text className="text-sm font-semibold text-slate-900">
-              Record a payment
-            </Text>
-            <Text className="text-xs text-slate-500">
-              Log a payment received for this invoice and adjust the balance.
-            </Text>
-          </View>
-        </View>
-
-        <Button
-          className="w-full rounded-xl bg-emerald-800 shadow-sm shadow-emerald-800/15 py-2.5 text-white flex items-center justify-center gap-2"
-          onPress={onPress}
-        >
-          <Icon as={Plus} size={16} className="text-white" />
-          <Text className="text-sm font-semibold">Record Payment</Text>
-        </Button>
-      </View>
-    </Card>
+    <Button
+      onPress={onPress}
+      className="h-12 w-full rounded-xl bg-primary"
+      accessibilityRole="button"
+      accessibilityLabel="Record manual payment"
+    >
+      <Icon as={Wallet} size={18} className="text-primary-foreground" />
+      <Text className="ml-2 text-sm font-bold text-primary-foreground">
+        Record Manual Payment
+      </Text>
+    </Button>
   );
 }
 
 export default function InvoiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const invoiceId = typeof id === "string" ? id : (id?.[0] ?? "");
-
-  const invoiceQuery = useInvoice(invoiceId);
-  const invoice = invoiceQuery.data;
+  const invoiceQuery = useInvoice(id ?? "");
+  const { showToast } = useToast();
   const [recordOpen, setRecordOpen] = useState(false);
-  const { visible, message, type, showToast, hideToast } = useToast();
 
-  const status = useMemo(() => {
-    if (!invoice) return "UNPAID";
+  const invoice = invoiceQuery.data;
 
-    const derived = getDerivedInvoiceStatus(invoice);
-    const rawStatus = normalizeInvoiceStatus(invoice.status);
+  if (invoiceQuery.isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+        <View className="flex-row items-center gap-3 border-b border-border bg-background px-4 py-3">
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityLabel="Go back"
+            className="h-10 w-10 items-center justify-center rounded-full bg-muted active:bg-accent"
+          >
+            <Icon as={ArrowLeft} size={18} className="text-foreground" />
+          </Pressable>
+          <Text className="flex-1 text-sm font-bold text-foreground">Invoice Details</Text>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color="#0F766E" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-    if (invoice.status === "PAID" || Number(invoice.balanceDue) === 0)
-      return "PAID";
-    if (derived === "OVERDUE" || rawStatus === "OVERDUE") return "OVERDUE";
-    if (derived === "PARTIAL" || rawStatus === "PARTIAL") return "PARTIAL";
-    return "UNPAID";
-  }, [invoice]);
+  if (invoiceQuery.isError || !invoice) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+        <View className="flex-row items-center gap-3 border-b border-border bg-background px-4 py-3">
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityLabel="Go back"
+            className="h-10 w-10 items-center justify-center rounded-full bg-muted active:bg-accent"
+          >
+            <Icon as={ArrowLeft} size={18} className="text-foreground" />
+          </Pressable>
+          <Text className="flex-1 text-sm font-bold text-foreground">Invoice Details</Text>
+        </View>
+        <ListMessage
+          title="Couldn't load invoice"
+          subtitle={invoiceQuery.error ? (invoiceQuery.error as Error).message : "Invoice not found"}
+        />
+      </SafeAreaView>
+    );
+  }
 
-  const lineItems = invoice?.lineItems ?? [];
-  const amountPaid = invoice
-    ? Math.max(0, Number(invoice.amount) - Number(invoice.balanceDue))
-    : 0;
-  const totalItems = lineItems.reduce(
-    (sum, item) => sum + Number(item.amount || 0),
-    0,
-  );
-  const canRecordPayment =
-    !!invoice && Number(invoice.balanceDue) > 0 && invoice.status !== "PAID";
-  const showPartialBadge =
-    status === "OVERDUE" &&
-    amountPaid > 0 &&
-    amountPaid < Number(invoice?.amount ?? 0);
+  const lineItems = invoice.lineItems ?? [];
+  const status = getDerivedInvoiceStatus(invoice);
+  const isPaid = status === "PAID";
+  const showPartialBadge = status === "PARTIAL";
+  const canRecordPayment = !isPaid;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top", "bottom"]}>
-      <Toast
-        visible={visible}
-        message={message}
-        type={type}
-        onDismiss={hideToast}
-      />
-
-      <View className="flex-row items-center gap-3 border-b border-slate-100/50 bg-white px-4 py-3">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+      <View className="flex-row items-center gap-3 border-b border-border bg-background px-4 py-3">
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
           accessibilityLabel="Go back"
-          className="h-10 w-10 items-center justify-center rounded-full bg-slate-100 active:bg-slate-200"
+          className="h-10 w-10 items-center justify-center rounded-full bg-muted active:bg-accent"
         >
-          <Icon as={ArrowLeft} size={18} className="text-slate-900" />
+          <Icon as={ArrowLeft} size={18} className="text-foreground" />
         </Pressable>
-        <Text className="flex-1 text-sm font-bold text-slate-900">
-          Invoice Details
-        </Text>
+        <Text className="flex-1 text-sm font-bold text-foreground">Invoice Details</Text>
       </View>
 
-      {invoiceQuery.isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#0F766E" />
-        </View>
-      ) : invoiceQuery.isError || !invoice ? (
-        <ListMessage
-          title="Couldn't load invoice"
-          subtitle={
-            invoiceQuery.error
-              ? (invoiceQuery.error as Error).message
-              : "Invoice not found"
-          }
-        />
-      ) : (
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-4 pb-8 pt-4"
-          showsVerticalScrollIndicator={false}
-        >
-          <View className="gap-4">
-            <Card className="overflow-hidden rounded-2xl border border-slate-100/50 bg-white shadow-sm">
-              <LinearGradient
-                colors={["#f87171", "#fca5a5"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.accentBar}
-              />
-              <View className="p-4">
-                <View className="mb-3 flex-row items-center justify-between gap-3">
-                  <Text className="text-sm font-semibold text-slate-900">
-                    General Information
-                  </Text>
-                  <StatusBadge status={status} isSecondary={showPartialBadge} />
-                </View>
-
-                <View className="gap-3">
-                  <InfoRow
-                    icon={Receipt}
-                    label="Amount"
-                    value={formatKes(invoice.amount)}
-                  />
-                  <BalanceDueBox
-                    value={
-                      Number(invoice.balanceDue) === 0
-                        ? formatKes(0)
-                        : formatKes(invoice.balanceDue)
-                    }
-                  />
-                  <InfoRow
-                    icon={Calendar}
-                    label="Due Date"
-                    value={formatDateLong(invoice.dueDate)}
-                  />
-                  <InfoRow
-                    icon={Home}
-                    label="Unit"
-                    value={`Unit ${invoice.unit?.unitNumber ?? "—"} • ${invoice.unit?.property?.name ?? "Property"}`}
-                  />
-                </View>
-              </View>
-            </Card>
-
-            <Card className="rounded-2xl border border-slate-100/50 bg-white p-4 shadow-sm">
+      <ScrollView className="flex-1" contentContainerClassName="px-4 pb-8 pt-4" showsVerticalScrollIndicator={false}>
+        <View className="gap-4">
+          <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <LinearGradient
+              colors={[getStatusTheme(status as any).accent, getStatusTheme(status as any).border]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.accentBar}
+            />
+            <View className="p-4">
               <View className="mb-3 flex-row items-center justify-between gap-3">
-                <Text className="text-sm font-semibold text-slate-900">
-                  Line Items
+                <Text className="text-sm font-semibold text-foreground">General Information</Text>
+                <StatusBadge status={status} isSecondary={showPartialBadge} />
+              </View>
+
+              <View className="gap-3">
+                <InfoRow icon={Receipt} label="Amount" value={formatKes(invoice.amount)} />
+                <BalanceDueBox value={Number(invoice.balanceDue) === 0 ? formatKes(0) : formatKes(invoice.balanceDue)} />
+                <InfoRow icon={Calendar} label="Due Date" value={formatDateLong(invoice.dueDate)} />
+                <InfoRow
+                  icon={Home}
+                  label="Unit"
+                  value={`Unit ${invoice.unit?.unitNumber ?? "—"} • ${invoice.unit?.property?.name ?? "Property"}`}
+                />
+              </View>
+            </View>
+          </Card>
+
+          <Card className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <View className="mb-3 flex-row items-center justify-between gap-3">
+              <Text className="text-sm font-semibold text-foreground">Line Items</Text>
+              <View className="rounded-full bg-muted px-2 py-0.5">
+                <Text className="text-xs font-semibold text-muted-foreground">
+                  {lineItems.length} item{lineItems.length === 1 ? "" : "s"}
                 </Text>
-                <View className="rounded-full bg-slate-100 px-2 py-0.5">
-                  <Text className="text-xs font-semibold text-slate-600">
-                    {lineItems.length} item{lineItems.length === 1 ? "" : "s"}
-                  </Text>
-                </View>
               </View>
+            </View>
 
-              {lineItems.length === 0 ? (
-                <View className="py-3">
-                  <Text className="text-center text-sm text-slate-500">
-                    No line items available
-                  </Text>
-                </View>
-              ) : (
-                <View>
-                  {lineItems.map((item, index) => (
-                    <LineItemRow
-                      key={item.id}
-                      item={item}
-                      index={index}
-                      totalCount={lineItems.length}
-                    />
-                  ))}
-                </View>
-              )}
-            </Card>
-
-            <Card className="rounded-2xl border border-slate-100/50 bg-white p-4 shadow-sm">
-              <Text className="text-sm font-semibold text-slate-900">
-                Tenant Information
-              </Text>
-              <View className="gap-1.5">
-                <View className="flex-row items-center justify-between gap-1.5 py-1">
-                  <Text className="text-xs text-slate-500">Tenant</Text>
-                  <Text className="text-sm font-semibold text-slate-900">
-                    Tenant 1
-                  </Text>
-                </View>
-                <Separator className="bg-slate-100/50" />
-                <View className="flex-row items-center justify-between gap-1.5 py-1">
-                  <Text className="text-xs text-slate-500">Billing Period</Text>
-                  <Text className="text-sm font-semibold text-slate-900">
-                    {formatPeriod(invoice.periodStart)}
-                  </Text>
-                </View>
+            {lineItems.length === 0 ? (
+              <View className="py-3">
+                <Text className="text-center text-sm text-muted-foreground">No line items available</Text>
               </View>
-            </Card>
+            ) : (
+              <View>
+                {lineItems.map((item: any, index: number) => (
+                  <LineItemRow key={item.id} item={item} index={index} totalCount={lineItems.length} />
+                ))}
+              </View>
+            )}
+          </Card>
 
-            {canRecordPayment ? (
-              <PaymentButton onPress={() => setRecordOpen(true)} />
-            ) : null}
-          </View>
-        </ScrollView>
-      )}
+          <Card className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <Text className="text-sm font-semibold text-foreground">Tenant Information</Text>
+            <View className="gap-1.5">
+              <View className="flex-row items-center justify-between gap-1.5 py-1">
+                <Text className="text-xs text-muted-foreground">Tenant</Text>
+                <Text className="text-sm font-semibold text-foreground">
+                  {invoice.tenancy?.tenant ? tenantName(invoice.tenancy.tenant) : "Tenant 1"}
+                </Text>
+              </View>
+              <Separator className="bg-border/50" />
+              <View className="flex-row items-center justify-between gap-1.5 py-1">
+                <Text className="text-xs text-muted-foreground">Billing Period</Text>
+                <Text className="text-sm font-semibold text-foreground">
+                  {formatPeriod(invoice.periodStart)}
+                  {invoice.periodEnd ? ` - ${formatPeriod(invoice.periodEnd)}` : ""}
+                </Text>
+              </View>
+            </View>
+          </Card>
 
-      {invoice ? (
-        <RecordManualPaymentDialog
-          invoice={invoice}
-          open={recordOpen}
-          onOpenChange={setRecordOpen}
-          onToast={showToast}
-        />
-      ) : null}
+          {canRecordPayment ? <PaymentButton onPress={() => setRecordOpen(true)} /> : null}
+        </View>
+      </ScrollView>
+
+      <RecordManualPaymentDialog invoice={invoice} open={recordOpen} onOpenChange={setRecordOpen} onToast={showToast} />
     </SafeAreaView>
   );
 }

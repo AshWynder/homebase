@@ -1,38 +1,52 @@
-import { useState } from 'react';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from "react";
+import { StatusBar, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { InvoicesTab } from '@/components/owner/money/invoices-tab';
-import { PaymentList } from '@/components/owner/payment-list';
-import { ScreenHeader } from '@/components/owner/screen-header';
-import { SegmentedControl, type SegmentedOption } from '@/components/owner/segmented-control';
-import { GenerateInvoicesDialog } from '@/components/owner/generate-invoices-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { InvoicesTab } from "@/components/owner/money/invoices-tab";
+import { PaymentList } from "@/components/owner/payment-list";
+import { ScreenHeader } from "@/components/owner/screen-header";
+import { SegmentedControl, type SegmentedOption } from "@/components/owner/segmented-control";
+import { GenerateInvoicesDialog } from "@/components/owner/generate-invoices-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { darkColors } from "@/theme/colors";
 
-type Segment = 'invoices' | 'payments';
+type Segment = "invoices" | "payments";
 
 const SEGMENTS: SegmentedOption<Segment>[] = [
-  { value: 'invoices', label: 'Invoices' },
-  { value: 'payments', label: 'Payments' },
+  { value: "invoices", label: "Invoices" },
+  { value: "payments", label: "Payments" },
 ];
 
 export default function MoneyScreen() {
-  const [segment, setSegment] = useState<Segment>('invoices');
+  const [segment, setSegment] = useState<Segment>("invoices");
   const [generateOpen, setGenerateOpen] = useState(false);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const { showToast } = useToast();
 
   return (
     <>
-      {segment === 'invoices' ? (
-        <SafeAreaView className="flex-1 bg-screen" edges={['top']}>
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={isDark ? darkColors.background : undefined}
+      />
+      {segment === "invoices" ? (
+        <SafeAreaView
+          className="flex-1 bg-screen dark:bg-[#0B0F17]"
+          style={{ backgroundColor: isDark ? darkColors.background : undefined }}
+          edges={["top"]}>
           <InvoicesTab
             onAdd={() => setGenerateOpen(true)}
-            onShowPayments={() => setSegment('payments')}
+            onShowPayments={() => setSegment("payments")}
           />
         </SafeAreaView>
       ) : (
-        <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        <SafeAreaView
+          className="flex-1 bg-screen dark:bg-[#0B0F17]"
+          style={{ backgroundColor: isDark ? darkColors.background : undefined }}
+          edges={["top"]}>
           <ScreenHeader title="Money" />
 
           <View className="px-4 pb-3">

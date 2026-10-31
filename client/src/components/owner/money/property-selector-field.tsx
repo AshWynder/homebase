@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Building2 } from 'lucide-react-native';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import type { Property } from '@/api/types';
 import { Icon } from '@/components/ui/icon';
@@ -11,15 +11,10 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
-import { FINANCE } from '@/constants/finance-theme';
+import { FINANCE, FINANCE_DARK } from '@/constants/finance-theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const ALL_PROPERTIES = 'all';
-
-const styles = StyleSheet.create({
-  trigger: { borderColor: FINANCE.border },
-  label: { color: FINANCE.muted },
-  value: { color: FINANCE.text },
-});
 
 interface PropertySelectorFieldProps {
   properties: Property[];
@@ -33,6 +28,10 @@ export function PropertySelectorField({
   value,
   onChange,
 }: PropertySelectorFieldProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const FD = FINANCE_DARK;
+
   const options = useMemo(
     () => [
       { value: ALL_PROPERTIES, label: `All properties (${properties.length})` },
@@ -47,6 +46,27 @@ export function PropertySelectorField({
   const selectedOption =
     options.find((option) => option.value === (value ?? ALL_PROPERTIES)) ?? options[0];
 
+  const triggerStyle = useMemo(
+    () => ({
+      backgroundColor: isDark ? FD.surface : '#ffffff',
+      borderColor: isDark ? FD.border : FINANCE.border,
+    }),
+    [isDark, FD, FINANCE],
+  );
+  const iconContainerStyle = useMemo(
+    () => ({ backgroundColor: isDark ? FD.emeraldTintBg : '#d1fae5' }),
+    [isDark, FD],
+  );
+  const iconColor = useMemo(() => (isDark ? FD.primary : FINANCE.primary), [isDark, FD, FINANCE]);
+  const labelStyle = useMemo(
+    () => ({ color: isDark ? FD.muted : FINANCE.muted }),
+    [isDark, FD, FINANCE],
+  );
+  const valueStyle = useMemo(
+    () => ({ color: isDark ? FD.text : FINANCE.text }),
+    [isDark, FD, FINANCE],
+  );
+
   return (
     <Select
       value={selectedOption}
@@ -54,18 +74,22 @@ export function PropertySelectorField({
         onChange(!option || option.value === ALL_PROPERTIES ? null : option.value)
       }>
       <SelectTrigger
-        className="h-auto w-full flex-row items-center gap-3 rounded-2xl border bg-white px-3 py-2.5 shadow-none"
-        style={styles.trigger}>
-        <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#d1fae5]">
-          <Icon as={Building2} size={18} color={FINANCE.primary} />
+        className="h-auto w-full flex-row items-center gap-3 rounded-2xl border px-3 py-2.5 shadow-none"
+        style={triggerStyle}>
+        <View
+          className="h-9 w-9 items-center justify-center rounded-xl"
+          style={iconContainerStyle}>
+          <Icon as={Building2} size={18} color={iconColor} />
         </View>
         <View className="min-w-0 flex-1">
-          <Text className="text-[11px]" style={styles.label}>
+          <Text
+            className="text-[11px]"
+            style={labelStyle}>
             Property
           </Text>
           <Text
             className="text-[15px] font-semibold"
-            style={styles.value}
+            style={valueStyle}
             numberOfLines={1}>
             {selectedOption?.label}
           </Text>

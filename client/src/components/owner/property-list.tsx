@@ -171,10 +171,10 @@ export function PropertyList() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-4 px-4 pb-4"
+          contentContainerClassName="gap-4 px-4 pt-6 pb-6"
           ListHeaderComponent={
             isFiltered ? null : (
-              <View className="mb-4">
+              <View>
                 <PortfolioSnapshot stats={portfolioStats} />
               </View>
             )

@@ -20,6 +20,8 @@ import {
 import { DetailHeader } from '@/components/common/detail-header';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { darkColors } from '@/theme/colors';
 import { useConversation, useMessages } from '@/hooks/queries/use-chat';
 import { useStore } from '@/stores/use-store';
 import { chatSocket } from '@/lib/socket';
@@ -75,6 +77,8 @@ const THREAD_CONTENT_EMPTY = {
 export function ConversationThreadScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const conversationId = String(id ?? '');
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const insets = useSafeAreaInsets();
   const profileId = useStore((s) => s.profile?.id);
@@ -344,7 +348,10 @@ export function ConversationThreadScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'bottom']}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-[#0B0F17]"
+      style={isDark ? { backgroundColor: darkColors.background } : undefined}
+      edges={['top', 'bottom']}>
       <View onLayout={(event) => setTopBlock(event.nativeEvent.layout.height)}>
         <DetailHeader
           title={conversation?.name ?? 'Chat'}
@@ -372,15 +379,31 @@ export function ConversationThreadScreen() {
         // Controlled: the draft lives here so `retry` can put failed text back
         // in the composer, and so the library's own reset clears one source.
         text={draft}
+        listViewProps={
+          isDark
+            ? {
+                style: { backgroundColor: darkColors.background },
+              }
+            : undefined
+        }
         textInputProps={{
           onChangeText: handleChangeText,
           onBlur: () => signalTyping(false),
           placeholder: 'Message',
+          placeholderTextColor: isDark ? darkColors.textMuted : undefined,
           maxLength: MESSAGE_LIMITS.maxLength,
+          style: isDark
+            ? {
+                backgroundColor: darkColors.surface,
+                color: darkColors.text,
+                borderColor: darkColors.border,
+              }
+            : undefined,
         }}
         isTyping={Object.keys(typers).length > 0}
         keyboardAvoidingViewProps={{ keyboardVerticalOffset: insets.top + topBlock }}
         maxComposerHeight={112}
+        renderChatFooter={() => (isDark ? <View style={{ backgroundColor: darkColors.background }} /> : null)}
         loadEarlierMessagesProps={{
           isAvailable: historyQuery.hasNextPage,
           isLoading: historyQuery.isFetchingNextPage,
@@ -407,8 +430,8 @@ export function ConversationThreadScreen() {
             <View className="h-48" />
           ) : (
             <View className="h-48 items-center justify-center gap-2">
-              <Icon as={MessageSquare} size={26} className="text-slate-300" />
-              <Text className="text-sm text-slate-500">No messages yet. Say hello.</Text>
+              <Icon as={MessageSquare} size={26} className={isDark ? '' : 'text-slate-300'} color={isDark ? darkColors.textDim : undefined} />
+              <Text className="text-sm text-slate-500 dark:text-[#94A3B8]" style={isDark ? { color: darkColors.textMuted } : undefined}>No messages yet. Say hello.</Text>
             </View>
           ),
           // The library sizes the content container to its contents, leaving the
@@ -432,9 +455,13 @@ export function ConversationThreadScreen() {
             <Bubble
               {...props}
               wrapperStyle={{
-                left: { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderWidth: 1 },
+                left: {
+                  backgroundColor: isDark ? darkColors.surfaceElevated ?? darkColors.surface : '#FFFFFF',
+                  borderColor: isDark ? darkColors.border : '#E2E8F0',
+                  borderWidth: 1,
+                },
                 right: {
-                  backgroundColor: '#115E59',
+                  backgroundColor: isDark ? darkColors.emeraldLight ?? darkColors.emerald : '#115E59',
                   opacity: props.currentMessage.state === 'sending' ? 0.6 : 1,
                 },
               }}
@@ -444,11 +471,23 @@ export function ConversationThreadScreen() {
               renderMessageText={(textProps) => (
                 <View>
                   {showName ? (
-                    <Text className="mt-1.5 px-2.5 text-[10px] font-semibold text-slate-500">
+                    <Text
+                      className="mt-1.5 px-2.5 text-[10px] font-semibold text-slate-500 dark:text-[#94A3B8]"
+                      style={isDark ? { color: darkColors.textMuted } : undefined}>
                       {props.currentMessage.user.name}
                     </Text>
                   ) : null}
-                  <MessageText {...textProps} />
+                  <MessageText
+                    {...textProps}
+                    textStyle={{
+                      left: {
+                        color: isDark ? darkColors.text : '#0f172a',
+                      },
+                      right: {
+                        color: '#052E22',
+                      },
+                    }}
+                  />
                 </View>
               )}
             />

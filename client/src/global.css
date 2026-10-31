@@ -2,71 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 175 84% 24%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --success: 160 84% 34%;
-    --success-foreground: 0 0% 98%;
-    --warning: 32 95% 44%;
-    --warning-foreground: 0 0% 98%;
-    --info: 199 89% 42%;
-    --info-foreground: 0 0% 98%;
-    --screen: 150 17% 98%;
-    --finance: 163 88% 20%;
-    --finance-accent: 163 94% 24%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5% 64.3%;
-    --radius: 0.5rem;
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-  }
-
-  .dark:root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 172 66% 50%;
-    --primary-foreground: 174 84% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --success: 158 64% 52%;
-    --success-foreground: 164 86% 10%;
-    --warning: 43 96% 56%;
-    --warning-foreground: 26 83% 14%;
-    --info: 199 89% 60%;
-    --info-foreground: 202 80% 10%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-  }
-}
-
 :root {
   --font-display:
     Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
@@ -75,4 +10,72 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 152 81% 10%;
+    --secondary: 173 80% 40%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 351 95% 71%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 160 84% 34%;
+    --success-foreground: 0 0% 98%;
+    --warning: 32 95% 44%;
+    --warning-foreground: 0 0% 98%;
+    --info: 199 89% 42%;
+    --info-foreground: 0 0% 98%;
+    --screen: 210 40% 98%;
+    --finance: 163 88% 20%;
+    --finance-accent: 163 94% 24%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 160 84% 39%;
+    --radius: 0.5rem;
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+  }
+
+  .dark,
+  :root[class~="dark"],
+  .dark:root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 41% 11%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 41% 11%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 152 81% 10%;
+    --secondary: 173 80% 40%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 210 40% 96%;
+    --destructive: 351 95% 71%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 158 64% 52%;
+    --success-foreground: 164 86% 10%;
+    --warning: 32 95% 44%;
+    --warning-foreground: 26 83% 14%;
+    --info: 217 91% 60%;
+    --info-foreground: 202 80% 10%;
+    --border: 0 0% 100% / 0.08;
+    --input: 217 33% 17%;
+    --ring: 160 84% 39%;
+    --screen: 222 47% 6%;
+  }
 }

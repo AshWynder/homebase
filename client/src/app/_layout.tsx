@@ -3,6 +3,16 @@ import '../global.css';
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { useFonts } from 'expo-font';
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { StatusBar } from 'react-native';
 
 import { AuthGate } from '@/components/auth/auth-gate';
 import { ChatProvider } from '@/components/chat/chat-provider';
@@ -16,6 +26,19 @@ export default function RootLayout() {
   // Applies the persisted theme + text-size preferences to NativeWind.
   useDisplayPreferences();
 
+  const [fontsLoaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
   const colorScheme = useColorScheme();
 
   const token = useStore((s) => s.token);
@@ -25,9 +48,22 @@ export default function RootLayout() {
   const isTenant = isTenantSession(profile);
   const isCaretaker = isCaretakerSession(profile);
 
+  const customDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: '#0B0F17',
+      card: '#131A26',
+      text: '#F1F5F9',
+      border: 'rgba(255,255,255,0.08)',
+      primary: '#34D399',
+      notification: '#10B981',
+    },
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : DefaultTheme}>
         {/*
           Conditional root navigator (RBAC).
           Only one role group is ever mounted, chosen from the server profile
@@ -49,6 +85,7 @@ export default function RootLayout() {
             can lose the acknowledgement of a send that is still in flight.
           */}
           <ChatProvider token={isSignedIn ? (token ?? null) : null}>
+            {colorScheme === 'dark' ? <StatusBar barStyle="light-content" backgroundColor="#0B0F17" /> : <StatusBar barStyle="dark-content" />}
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Protected guard={!isSignedIn}>
                 <Stack.Screen name="(auth)" />

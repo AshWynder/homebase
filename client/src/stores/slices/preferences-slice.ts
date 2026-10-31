@@ -22,7 +22,7 @@ export interface PreferencesSlice {
  * palette should not be thrown back into the dark one on the next login.
  */
 export const createPreferencesSlice: StateCreator<PreferencesSlice, [], [], PreferencesSlice> = (set) => ({
-  themeMode: 'system',
+  themeMode: 'light',
   fontSize: 'default',
   setThemeMode: (themeMode) => set({ themeMode }),
   setFontSize: (fontSize) => set({ fontSize }),

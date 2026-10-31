@@ -1,107 +1,361 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ChevronRight } from 'lucide-react-native';
+import { FileMinus, Megaphone, MessageSquare, Settings, Wrench } from 'lucide-react-native';
+import { useFocusEffect } from 'expo-router';
+import { useColorScheme } from 'nativewind';
 
 import { Icon } from '@/components/ui/icon';
-import { ScreenHeader } from '@/components/owner/screen-header';
 import { Text } from '@/components/ui/text';
+import { ActivityCard } from '@/components/activity/activity-card';
 import { useUnreadTotal } from '@/hooks/queries/use-chat';
 import { useSentNotices } from '@/hooks/queries/use-notices';
 import { useTenancies } from '@/hooks/queries/use-tenancies';
-import { ACTIVITY_DESTINATIONS } from '@/lib/activity';
+import { useMaintenanceStatusCounts } from '@/hooks/queries/use-maintenance';
+import { runRefresh } from '@/lib/refresh';
+import { lightColors, obsidianColors } from '@/theme/colors';
 
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; iconBg: string; iconColor: string }> = {
-  maintenance: {
-    bg: 'bg-warning/10',
-    text: 'text-warning',
-    iconBg: 'bg-warning/10',
-    iconColor: 'text-warning',
+const styles = StyleSheet.create({
+  settingsButton: {
+    backgroundColor: lightColors.container,
   },
-  tenancy_notices: {
-    bg: 'bg-destructive/10',
-    text: 'text-destructive',
-    iconBg: 'bg-destructive/10',
-    iconColor: 'text-destructive',
+  needsReview: {
+    backgroundColor: lightColors.needsReviewBg,
+    borderColor: lightColors.needsReviewBorder,
   },
-  notices: {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    iconBg: 'bg-primary/10',
-    iconColor: 'text-primary',
+  needsReviewDot: {
+    backgroundColor: lightColors.needsReviewDot,
   },
-  chats: {
-    bg: 'bg-info/10',
-    text: 'text-info',
-    iconBg: 'bg-info/10',
-    iconColor: 'text-info',
+  needsReviewText: {
+    color: lightColors.needsReviewText,
   },
-};
+  darkContainer: {
+    backgroundColor: obsidianColors.dark.background,
+  },
+  darkSettings: {
+    backgroundColor: obsidianColors.dark.settingsBg,
+    borderColor: obsidianColors.dark.settingsBorder,
+    borderWidth: 1,
+  },
+  darkNeedsReview: {
+    backgroundColor: obsidianColors.dark.needsReviewBg,
+    borderColor: obsidianColors.dark.needsReviewBorder,
+  },
+  darkNeedsReviewDot: {
+    backgroundColor: obsidianColors.dark.needsReviewDot,
+  },
+  darkNeedsReviewText: {
+    color: obsidianColors.dark.needsReviewText,
+  },
+  titleText: {
+    color: obsidianColors.dark.textPrimary,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontWeight: '700',
+  },
+  subtitleText: {
+    color: obsidianColors.dark.textSecondary,
+  },
+  selectorText: {
+    color: obsidianColors.dark.textSecondary,
+    letterSpacing: 1.2,
+  },
+});
 
 export default function ActivityScreen() {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const c = obsidianColors.dark;
+
   const noticesQuery = useSentNotices({});
-  const moveOutQuery = useTenancies({ isActive: false, limit: 1 });
+  const moveOutQuery = useTenancies({ isActive: false });
   const chatsUnread = useUnreadTotal();
-  const counts: Partial<Record<(typeof ACTIVITY_DESTINATIONS)[number]['kind'], number>> = {
-    tenancy_notices: moveOutQuery.data?.total,
-    notices: noticesQuery.data?.pages[0]?.total,
-    chats: chatsUnread,
-  };
+  const maintenanceCounts = useMaintenanceStatusCounts();
+
+  useFocusEffect(
+    useCallback(() => {
+      noticesQuery.refetch();
+      moveOutQuery.refetch();
+    }, [])
+  );
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(() => {
+    runRefresh([noticesQuery.refetch(), moveOutQuery.refetch()], setRefreshing);
+  }, [noticesQuery, moveOutQuery]);
+
+  const maintenanceActiveCount =
+    (maintenanceCounts.byStatus?.OPEN ?? 0) + (maintenanceCounts.byStatus?.IN_PROGRESS ?? 0);
+
+  const leaseNoticesCount = useMemo(() => {
+    const items = moveOutQuery.data?.items ?? [];
+    if (!items.length) {
+      return moveOutQuery.data?.total ?? 0;
+    }
+    const actionable = items.filter((item: any) => {
+      return item.terminationRequestedAt || item.terminationReason || !item.isActive;
+    });
+    return actionable.length;
+  }, [moveOutQuery.data]);
+
+  const announcementsCount = noticesQuery.data?.pages?.[0]?.total ?? 0;
+  const hasUnreadMessages = (chatsUnread ?? 0) > 0;
+
+  // Needs Review: sum of actionable counts (lease notices + announcements, plus maintenance if counted as action required)
+  const needsReviewCount = leaseNoticesCount + announcementsCount;
+  const showNeedsReview = needsReviewCount > 0;
+
+  if (!isDark) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        <View className="px-5 pb-3 pt-4">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-foreground">Activity Hub</Text>
+              <Text className="mt-0.5 text-xs text-muted-foreground">Inbox, requests & operations center</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+              className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
+              style={styles.settingsButton}
+            >
+              <Icon as={Settings} size={20} color={lightColors.textBody} />
+            </Pressable>
+          </View>
+        </View>
+
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="px-5 pb-10 gap-3"
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+          <View className="mb-1 mt-1 flex-row items-center justify-between">
+            <Text className="text-[11px] font-bold uppercase tracking-[1.2px] text-muted-foreground">
+              Action Centers & Inbox
+            </Text>
+            {showNeedsReview ? (
+              <View className="flex-row items-center gap-1.5 rounded-full border px-2.5 py-1" style={styles.needsReview}>
+                <View className="h-1.5 w-1.5 rounded-full" style={styles.needsReviewDot} />
+                <Text className="text-[11px] font-bold" style={styles.needsReviewText}>
+                  {needsReviewCount > 99 ? '99+' : needsReviewCount} Needs Review
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          <ActivityCard
+            icon={Wrench}
+            iconBackgroundColor={lightColors.peach}
+            iconColor={lightColors.brown}
+            title="Maintenance"
+            description="Open repair requests & work orders"
+            badge={
+              maintenanceActiveCount > 0
+                ? {
+                    type: 'count',
+                    count: maintenanceActiveCount,
+                    variant: 'amberDark',
+                    bg: lightColors.peach,
+                    border: lightColors.peachBorder,
+                    text: lightColors.brown,
+                  }
+                : { type: 'none' }
+            }
+            cardBackgroundColor={lightColors.surface}
+            cardBorderColor={lightColors.border}
+            chevronColor={lightColors.textMuted}
+            titleColor={lightColors.text}
+            descriptionColor={lightColors.textBody}
+            onPress={() => router.push('/maintenance')}
+          />
+
+          <ActivityCard
+            icon={FileMinus}
+            iconBackgroundColor={lightColors.roseTile}
+            iconColor={lightColors.danger}
+            title="Lease Notices"
+            description="Vacate alerts & expiring leases"
+            badge={leaseNoticesCount > 0 ? { type: 'count', count: leaseNoticesCount, variant: 'emeraldSolid', bg: lightColors.primaryDeep, text: lightColors.primaryOn } : { type: 'none' }}
+            cardBackgroundColor={lightColors.surface}
+            cardBorderColor={lightColors.border}
+            chevronColor={lightColors.textMuted}
+            titleColor={lightColors.text}
+            descriptionColor={lightColors.textBody}
+            onPress={() => router.push('/tenancy')}
+          />
+
+          <ActivityCard
+            icon={Megaphone}
+            iconBackgroundColor={lightColors.mintTile}
+            iconColor={lightColors.primaryDeep}
+            title="Announcements"
+            description="Broadcasts & community updates"
+            badge={announcementsCount > 0 ? { type: 'count', count: announcementsCount, variant: 'emeraldSolid', bg: lightColors.primaryDeep, text: lightColors.primaryOn } : { type: 'none' }}
+            cardBackgroundColor={lightColors.surface}
+            cardBorderColor={lightColors.border}
+            chevronColor={lightColors.textMuted}
+            titleColor={lightColors.text}
+            descriptionColor={lightColors.textBody}
+            onPress={() => router.push('/notices')}
+          />
+
+          <ActivityCard
+            icon={MessageSquare}
+            iconBackgroundColor={lightColors.blueTile}
+            iconColor={lightColors.blueIcon}
+            title="Messages"
+            description="Direct tenant & property chats"
+            badge={{ type: 'dot', visible: hasUnreadMessages, dotColor: lightColors.primaryDeep, dotGlow: true }}
+            cardBackgroundColor={lightColors.surface}
+            cardBorderColor={lightColors.border}
+            chevronColor={lightColors.textMuted}
+            titleColor={lightColors.text}
+            descriptionColor={lightColors.textBody}
+            onPress={() => router.push('/chats')}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScreenHeader title="Activity Hub" />
+    <SafeAreaView className="flex-1" style={styles.darkContainer} edges={['top']}>
+      <View className="px-5 pt-4 pb-3">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1">
+            <Text className="text-2xl font-bold" style={styles.titleText}>
+              Activity Hub
+            </Text>
+            <Text className="text-xs mt-0.5" style={styles.subtitleText}>
+              Inbox, requests & operations center
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+            className="h-10 w-10 items-center justify-center rounded-full"
+            style={styles.darkSettings}
+          >
+            <Icon as={Settings} size={20} color={c.iconGear} />
+          </Pressable>
+        </View>
+      </View>
 
       <ScrollView
         className="flex-1"
-        contentContainerClassName="p-5 pb-10 gap-3"
-        showsVerticalScrollIndicator={false}>
-        <View className="mb-1">
-          <Text className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        contentContainerClassName="px-5 pb-10 gap-3"
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <View className="flex-row items-center justify-between mb-1 mt-1">
+          <Text className="text-[11px] font-medium uppercase tracking-widest" style={styles.selectorText}>
             Action Centers & Inbox
           </Text>
+          {showNeedsReview ? (
+            <View className="flex-row items-center gap-1.5 rounded-full border px-2.5 py-1" style={styles.darkNeedsReview}>
+              <View className="h-1.5 w-1.5 rounded-full" style={styles.darkNeedsReviewDot} />
+              <Text className="text-[11px] font-medium" style={styles.darkNeedsReviewText}>
+                {needsReviewCount > 99 ? '99+' : needsReviewCount} Needs Review
+              </Text>
+            </View>
+          ) : null}
         </View>
 
-        {ACTIVITY_DESTINATIONS.map((destination) => {
-          const liveCount = counts[destination.kind];
-          const count = liveCount ?? destination.count ?? 0;
-          const visual = CATEGORY_COLORS[destination.kind] || CATEGORY_COLORS.notices;
+        <ActivityCard
+          icon={Wrench}
+          iconBackgroundColor={c.maintenance.tileBg}
+          iconColor={c.maintenance.tint}
+          iconBorderColor={c.maintenance.tileBorder}
+          title="Maintenance"
+          description="Open repair requests & work orders"
+          titleColor={c.textPrimary}
+          descriptionColor={c.textSecondary}
+          badge={
+            maintenanceActiveCount > 0
+              ? {
+                  type: 'count',
+                  count: maintenanceActiveCount,
+                  variant: 'amberDark',
+                  bg: c.maintenance.badgeBg,
+                  border: c.maintenance.badgeBorder,
+                  text: c.maintenance.badgeText,
+                }
+              : { type: 'none' }
+          }
+          chevronColor={c.chevron}
+          cardBackgroundColor={c.surface}
+          cardBorderColor={c.border}
+          onPress={() => router.push('/maintenance')}
+        />
 
-          return (
-            <Pressable
-              key={destination.kind}
-              onPress={() => router.push(destination.href)}
-              accessibilityRole="button"
-              accessibilityLabel={`${destination.title}. ${destination.description}`}
-              className="flex-row items-center gap-3.5 rounded-2xl border border-border bg-card p-4 active:bg-muted shadow-sm shadow-black/5">
-              <View className={`h-11 w-11 items-center justify-center rounded-xl ${visual.iconBg}`}>
-                <Icon as={destination.icon} size={20} className={visual.iconColor} />
-              </View>
+        <ActivityCard
+          icon={FileMinus}
+          iconBackgroundColor={c.lease.tileBg}
+          iconColor={c.lease.tint}
+          iconBorderColor={c.lease.tileBorder}
+          title="Lease Notices"
+          description="Vacate alerts & expiring leases"
+          titleColor={c.textPrimary}
+          descriptionColor={c.textSecondary}
+          badge={
+            leaseNoticesCount > 0
+              ? {
+                  type: 'count',
+                  count: leaseNoticesCount,
+                  variant: 'emeraldSolid',
+                  bg: c.emerald.solid,
+                  text: c.emerald.solidText,
+                }
+              : { type: 'none' }
+          }
+          chevronColor={c.chevron}
+          cardBackgroundColor={c.surface}
+          cardBorderColor={c.border}
+          onPress={() => router.push('/tenancy')}
+        />
 
-              <View className="flex-1 gap-1">
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-sm font-bold text-foreground">
-                    {destination.title}
-                  </Text>
-                  <View className={`rounded-md px-1.5 py-0.5 ${visual.bg}`}>
-                    <Text className={`text-[10px] font-bold ${visual.text}`}>
-                      {destination.category}
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-xs text-muted-foreground">{destination.description}</Text>
-              </View>
+        <ActivityCard
+          icon={Megaphone}
+          iconBackgroundColor={c.announcements.tileBg}
+          iconColor={c.announcements.tint}
+          iconBorderColor={c.announcements.tileBorder}
+          title="Announcements"
+          description="Broadcasts & community updates"
+          titleColor={c.textPrimary}
+          descriptionColor={c.textSecondary}
+          badge={
+            announcementsCount > 0
+              ? {
+                  type: 'count',
+                  count: announcementsCount,
+                  variant: 'emeraldSolid',
+                  bg: c.emerald.solid,
+                  text: c.emerald.solidText,
+                }
+              : { type: 'none' }
+          }
+          chevronColor={c.chevron}
+          cardBackgroundColor={c.surface}
+          cardBorderColor={c.border}
+          onPress={() => router.push('/notices')}
+        />
 
-              {count > 0 ? (
-                <View className="min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5">
-                  <Text className="text-xs font-bold text-primary-foreground">{count}</Text>
-                </View>
-              ) : null}
-
-              <Icon as={ChevronRight} size={18} className="text-muted-foreground" />
-            </Pressable>
-          );
-        })}
+        <ActivityCard
+          icon={MessageSquare}
+          iconBackgroundColor={c.messages.tileBg}
+          iconColor={c.messages.tint}
+          iconBorderColor={c.messages.tileBorder}
+          title="Messages"
+          description="Direct tenant & property chats"
+          titleColor={c.textPrimary}
+          descriptionColor={c.textSecondary}
+          badge={{ type: 'dot', visible: hasUnreadMessages, dotColor: c.emerald.dot, dotGlow: true }}
+          chevronColor={c.chevron}
+          cardBackgroundColor={c.surface}
+          cardBorderColor={c.border}
+          onPress={() => router.push('/chats')}
+        />
       </ScrollView>
     </SafeAreaView>
   );

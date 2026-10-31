@@ -62,8 +62,17 @@ module.exports = {
         md: 'var(--radius-md)',
         sm: 'var(--radius-sm)',
       },
+      fontFamily: {
+        sans: ['PlusJakartaSans_400Regular', 'Plus Jakarta Sans', 'Spline Sans', 'Inter', 'ui-sans-serif', 'system-ui'],
+        display: ['PlusJakartaSans_700Bold', 'Plus Jakarta Sans', 'Spline Sans', 'ui-sans-serif'],
+        heading: ['PlusJakartaSans_600SemiBold', 'Plus Jakarta Sans', 'Spline Sans', 'ui-sans-serif'],
+        body: ['PlusJakartaSans_400Regular', 'Plus Jakarta Sans', 'Spline Sans', 'Inter', 'ui-sans-serif'],
+        medium: ['PlusJakartaSans_500Medium', 'Plus Jakarta Sans'],
+        semibold: ['PlusJakartaSans_600SemiBold', 'Plus Jakarta Sans'],
+        bold: ['PlusJakartaSans_700Bold', 'Plus Jakarta Sans'],
+      },
       fonts: {
-        sans: ['Spline Sans', 'Inter', 'ui-sans-serif', 'system-ui'],
+        sans: ['PlusJakartaSans_400Regular', 'Plus Jakarta Sans', 'Spline Sans', 'Inter', 'ui-sans-serif', 'system-ui'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas'],
         rounded: ['SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'Meiryo'],
         serif: ['Georgia', 'Times New Roman', 'serif'],
@@ -71,4 +80,4 @@ module.exports = {
     },
   },
   plugins: [require('tailwindcss-animate')],
-};
+};// Ensure font families map to Plus Jakarta Sans when loaded

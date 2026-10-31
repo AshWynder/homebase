@@ -1,18 +1,5 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { ScreenHeader } from '@/components/owner/screen-header';
-import { TenancyList } from '@/components/owner/tenancy-list';
+import { UnderDevelopment } from '@/components/common/under-development';
 
 export default function OwnerTenanciesScreen() {
-  return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScreenHeader title="Move-Out & Leases" showBack />
-      <TenancyList
-        isActive={false}
-        showTerminationDetails
-        emptyTitle="No move-out notices"
-        emptySubtitle="Tenant move-out notices will appear here after they submit one."
-      />
-    </SafeAreaView>
-  );
+  return <UnderDevelopment title="Move-Out & Leases" />;
 }

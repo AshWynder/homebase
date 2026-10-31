@@ -3,38 +3,33 @@ import type { LucideIcon } from 'lucide-react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { cn } from '@/lib/utils';
+import { darkColors } from '@/theme/colors';
 
 export type StatRowTone = 'units' | 'tenants' | 'rent';
 
 interface StatRowToneClasses {
-  /** Panel background and border. */
   panel: string;
-  /** Icon tile background and icon colour. */
   tile: string;
   icon: string;
 }
 
-/**
- * Tint per row so the three stats on a card are told apart at a glance without
- * pulling the app palette apart: slate for units, sky for people, amber for
- * money.
- */
-const TONES: Record<StatRowTone, StatRowToneClasses> = {
+const LIGHT_TONES: Record<StatRowTone, StatRowToneClasses> = {
   units: {
-    panel: 'border-slate-100 bg-slate-50 dark:border-slate-500/20 dark:bg-slate-500/10',
-    tile: 'bg-emerald-100 dark:bg-emerald-500/20',
-    icon: 'text-emerald-700 dark:text-emerald-300',
+    panel: 'border-0',
+    tile: '',
+    icon: '',
   },
   tenants: {
-    panel: 'border-sky-100 bg-sky-50 dark:border-sky-500/20 dark:bg-sky-500/10',
-    tile: 'bg-sky-500',
-    icon: 'text-white',
+    panel: 'border-0',
+    tile: '',
+    icon: '',
   },
   rent: {
-    panel: 'border-orange-100 bg-orange-50 dark:border-orange-500/20 dark:bg-orange-500/10',
-    tile: 'bg-amber-600',
-    icon: 'text-white',
+    panel: 'border-0',
+    tile: '',
+    icon: '',
   },
 };
 
@@ -58,34 +53,203 @@ export function StatRow({
   icon,
   tone = 'units',
 }: StatRowProps) {
-  const t = TONES[tone];
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
+  if (!isDark) {
+    if (tone === 'units') {
+      return (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            borderRadius: 16,
+            backgroundColor: '#EEF3FF',
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+          }}>
+          <View style={{ minWidth: 0, flex: 1, gap: 2 }}>
+            <Text style={{ color: '#64748B', fontSize: 12 }} numberOfLines={1}>
+              {label}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+              {prefix ? (
+                <Text style={{ color: '#64748B', fontSize: 12, fontWeight: '600' }}>{prefix}</Text>
+              ) : null}
+              <Text style={{ color: '#0F172A', fontSize: 18, fontWeight: '700' }} numberOfLines={1}>
+                {value}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 12,
+              backgroundColor: '#A7F3D0',
+            }}>
+            <Icon as={icon} size={18} color="#006241" />
+          </View>
+        </View>
+      );
+    }
+    if (tone === 'tenants') {
+      return (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            borderRadius: 16,
+            backgroundColor: '#E6F0FF',
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+          }}>
+          <View style={{ minWidth: 0, flex: 1, gap: 2 }}>
+            <Text style={{ color: '#64748B', fontSize: 12 }} numberOfLines={1}>
+              {label}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+              {prefix ? (
+                <Text style={{ color: '#64748B', fontSize: 12, fontWeight: '600' }}>{prefix}</Text>
+              ) : null}
+              <Text style={{ color: '#0F172A', fontSize: 18, fontWeight: '700' }} numberOfLines={1}>
+                {value}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 12,
+              backgroundColor: '#BFDBFE',
+            }}>
+            <Icon as={icon} size={18} color="#1E40AF" />
+          </View>
+        </View>
+      );
+    }
+    // rent
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: 'rgba(217,119,6,0.25)',
+          backgroundColor: '#FFF4E5',
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+        }}>
+        <View style={{ minWidth: 0, flex: 1, gap: 2 }}>
+          <Text style={{ color: '#64748B', fontSize: 12 }} numberOfLines={1}>
+            {label}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+            {prefix ? (
+              <Text style={{ color: '#64748B', fontSize: 12, fontWeight: '600' }}>{prefix}</Text>
+            ) : null}
+            <Text style={{ color: '#0F172A', fontSize: 18, fontWeight: '700' }} numberOfLines={1}>
+              {value}
+            </Text>
+          </View>
+        </View>
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 12,
+            backgroundColor: '#92400E',
+          }}>
+          <Icon as={icon} size={18} color="#FFFFFF" />
+        </View>
+      </View>
+    );
+  }
+
+  // Dark mode styles using Obsidian Emerald Operations tokens
+  const darkConfig = {
+    units: {
+      panelBg: darkColors.surface,
+      panelBorder: darkColors.border,
+      tileBg: darkColors.emeraldTintBg,
+      tileBorder: darkColors.emeraldTintBorder,
+      iconColor: darkColors.emeraldLight,
+    },
+    tenants: {
+      panelBg: darkColors.surface,
+      panelBorder: darkColors.blueTintBorder,
+      tileBg: darkColors.blueTintBg,
+      tileBorder: darkColors.blueTintBorder,
+      iconColor: darkColors.blueLight,
+    },
+    rent: {
+      panelBg: darkColors.surface,
+      panelBorder: darkColors.amberTintBorder,
+      tileBg: darkColors.amberTintBg,
+      tileBorder: darkColors.amberTintBorder,
+      iconColor: darkColors.amberLight,
+    },
+  }[tone];
+
   return (
     <View
-      className={cn(
-        'flex-row items-center gap-3 rounded-2xl border px-3 py-2.5',
-        t.panel,
-      )}>
-      <View className="min-w-0 flex-1 gap-0.5">
-        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: darkConfig.panelBorder,
+        backgroundColor: darkConfig.panelBg,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+      }}>
+      <View style={{ minWidth: 0, flex: 1, gap: 2 }}>
+        <Text
+          className="text-xs"
+          style={{ color: darkColors.textMuted }}
+          numberOfLines={1}>
           {label}
         </Text>
-        <View className="flex-row items-baseline gap-1">
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
           {prefix ? (
-            <Text className="text-xs font-semibold text-muted-foreground">
+            <Text
+              className="text-xs font-semibold"
+              style={{ color: darkColors.textMuted }}>
               {prefix}
             </Text>
           ) : null}
-          <Text className="text-lg font-bold text-foreground" numberOfLines={1}>
+          <Text
+            className="text-lg font-bold"
+            style={{ color: darkColors.text }}
+            numberOfLines={1}>
             {value}
           </Text>
         </View>
       </View>
       <View
-        className={cn(
-          'h-10 w-10 items-center justify-center rounded-xl',
-          t.tile,
-        )}>
-        <Icon as={icon} size={18} className={t.icon} />
+        style={{
+          width: 40,
+          height: 40,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: darkConfig.tileBorder,
+          backgroundColor: darkConfig.tileBg,
+        }}>
+        <Icon as={icon} size={18} color={darkConfig.iconColor} />
       </View>
     </View>
   );

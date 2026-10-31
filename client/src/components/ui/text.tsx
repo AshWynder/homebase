@@ -79,6 +79,7 @@ function Text({
   return (
     <Component
       className={cn(textVariants({ variant }), textClass, className)}
+      style={[{ fontFamily: 'PlusJakartaSans_400Regular' }, (props as any).style]}
       role={variant ? ROLE[variant] : undefined}
       aria-level={variant ? ARIA_LEVEL[variant] : undefined}
       {...props}
