@@ -1,81 +1,63 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ColorValue } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Bell, Building2, CircleDollarSign, Settings } from 'lucide-react-native';
+import { Bell, Building2, Settings, Wallet } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useActivityNeedsReview } from '@/hooks/use-activity-badge';
-import { darkColors } from '@/theme/colors';
+import { useAppColors } from '@/theme/useAppColors';
+
+const ICON_SIZE = 24;
+const BAR_CONTENT_HEIGHT = 60;
+const BAR_VERTICAL_PADDING = 4;
+
+type TabBarColors = ReturnType<typeof useAppColors>;
 
 function TabLabel({
   title,
   focused,
-  isDark,
+  colors,
 }: {
   title: string;
   focused: boolean;
-  isDark: boolean;
+  colors: TabBarColors;
 }) {
-  if (!isDark) {
-    const color = focused ? '#006241' : '#64748B';
-    return (
-      <View style={styles.labelWrapper}>
-        <Text
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          style={[
-            styles.labelText,
-            {
-              color,
-              fontFamily: 'PlusJakartaSans_600SemiBold',
-            },
-          ]}>
-          {title}
-        </Text>
-        {focused ? <View style={[styles.activeDot, { backgroundColor: '#006241' }]} /> : <View style={styles.dotPlaceholder} />}
-      </View>
-    );
-  }
-
-  const color = focused ? darkColors.emeraldLight : darkColors.textDim;
   return (
-    <View style={styles.labelWrapper}>
-      <Text
-        numberOfLines={1}
-        ellipsizeMode="tail"
-        style={[styles.labelText, { color }]}>
-        {title}
-      </Text>
-      {focused ? (
-        <View style={styles.activeDot} />
-      ) : (
-        <View style={styles.dotPlaceholder} />
-      )}
-    </View>
+    <Text
+      numberOfLines={1}
+      style={[
+        styles.labelText,
+        {
+          color: focused ? colors.tabBarActive : colors.tabBarInactive,
+          fontFamily: focused
+            ? 'PlusJakartaSans_600SemiBold'
+            : 'PlusJakartaSans_500Medium',
+        },
+      ]}>
+      {title}
+    </Text>
   );
 }
 
 function ActivityTabIcon({
   color,
-  size,
-  isDark,
+  colors,
 }: {
-  color: string;
-  size: number;
-  isDark: boolean;
+  color: ColorValue;
+  colors: TabBarColors;
 }) {
   const hasNeedsReview = useActivityNeedsReview();
   return (
     <View style={styles.iconWrapper}>
-      <Icon as={Bell} color={color} size={size} />
+      <Icon as={Bell} color={color} size={ICON_SIZE} />
       {hasNeedsReview ? (
         <View
           style={[
             styles.notificationDot,
             {
-              backgroundColor: '#059669',
-              borderColor: isDark ? darkColors.background : '#FFFFFF',
+              backgroundColor: colors.primary,
+              borderColor: colors.tabBarBackground,
             },
           ]}
         />
@@ -85,24 +67,26 @@ function ActivityTabIcon({
 }
 
 export default function OwnerTabsLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colors = useAppColors();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: isDark ? ('#34D399' as any) : '#006241',
-        tabBarInactiveTintColor: isDark ? ('#64748B' as any) : '#64748B',
+        tabBarActiveTintColor: colors.tabBarActive,
+        tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarStyle: {
-          borderTopColor: isDark ? darkColors.border : '#E2E8F0',
+          borderTopColor: colors.tabBarBorder,
           borderTopWidth: 1,
-          backgroundColor: isDark ? darkColors.background : '#FFFFFF',
+          backgroundColor: colors.tabBarBackground,
           position: 'relative',
           zIndex: 20,
-          elevation: 20,
-          paddingTop: 4,
-          paddingBottom: 4,
+          elevation: 0,
+          height:
+            BAR_CONTENT_HEIGHT + BAR_VERTICAL_PADDING * 2 + insets.bottom,
+          paddingTop: BAR_VERTICAL_PADDING,
+          paddingBottom: insets.bottom + BAR_VERTICAL_PADDING,
         },
         tabBarItemStyle: {
           flex: 1,
@@ -110,7 +94,7 @@ export default function OwnerTabsLayout() {
           paddingHorizontal: 2,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 12,
           includeFontPadding: false,
           letterSpacing: 0,
         },
@@ -120,10 +104,10 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Portfolio',
           tabBarLabel: ({ focused }) => (
-            <TabLabel title="Portfolio" focused={focused} isDark={isDark} />
+            <TabLabel title="Portfolio" focused={focused} colors={colors} />
           ),
-          tabBarIcon: ({ color, size }) => (
-            <Icon as={Building2} color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <Icon as={Building2} color={color} size={ICON_SIZE} />
           ),
         }}
       />
@@ -132,10 +116,10 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Money',
           tabBarLabel: ({ focused }) => (
-            <TabLabel title="Money" focused={focused} isDark={isDark} />
+            <TabLabel title="Money" focused={focused} colors={colors} />
           ),
-          tabBarIcon: ({ color, size }) => (
-            <Icon as={CircleDollarSign} color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <Icon as={Wallet} color={color} size={ICON_SIZE} />
           ),
         }}
       />
@@ -144,10 +128,10 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Activity',
           tabBarLabel: ({ focused }) => (
-            <TabLabel title="Activity" focused={focused} isDark={isDark} />
+            <TabLabel title="Activity" focused={focused} colors={colors} />
           ),
-          tabBarIcon: ({ color, size }) => (
-            <ActivityTabIcon color={color} size={size} isDark={isDark} />
+          tabBarIcon: ({ color }) => (
+            <ActivityTabIcon color={color} colors={colors} />
           ),
         }}
       />
@@ -156,10 +140,10 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Settings',
           tabBarLabel: ({ focused }) => (
-            <TabLabel title="Settings" focused={focused} isDark={isDark} />
+            <TabLabel title="Settings" focused={focused} colors={colors} />
           ),
-          tabBarIcon: ({ color, size }) => (
-            <Icon as={Settings} color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <Icon as={Settings} color={color} size={ICON_SIZE} />
           ),
         }}
       />
@@ -168,27 +152,13 @@ export default function OwnerTabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  labelWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   labelText: {
-    fontSize: 11,
-    fontWeight: '600',
+    marginTop: 6,
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: 'center',
     includeFontPadding: false,
     letterSpacing: 0,
-  },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#34D399',
-    marginTop: 2,
-  },
-  dotPlaceholder: {
-    width: 4,
-    height: 4,
-    marginTop: 2,
   },
   iconWrapper: {
     position: 'relative',
@@ -200,7 +170,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#34D399',
     borderWidth: 2,
   },
 });

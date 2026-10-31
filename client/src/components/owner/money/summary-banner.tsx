@@ -17,7 +17,15 @@ interface SummaryBannerProps {
 
 const styles = StyleSheet.create({
   label: { color: 'rgba(255,255,255,0.8)' },
-  amount: { color: '#ffffff' },
+  amount: {
+    color: '#FFFFFF',
+    fontSize: 32,
+    lineHeight: 42,
+    fontWeight: '700',
+    marginTop: 8,
+    paddingTop: 2,
+    paddingBottom: 4,
+  },
   pill: {
     backgroundColor: 'rgba(255,255,255,0.15)',
     borderColor: 'rgba(255,255,255,0.25)',
@@ -43,7 +51,7 @@ export function SummaryBanner({
         colors={['#00563A', '#006241', '#047857']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        className="rounded-2xl p-4">
+        className="rounded-2xl px-4 pb-5 pt-4">
         <View className="flex-row items-center justify-between gap-2">
           <View className="flex-row items-center gap-2">
             <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#D1FAE5' }} />
@@ -67,7 +75,7 @@ export function SummaryBanner({
           </View>
         </View>
 
-        <Text style={{ color: '#FFFFFF', fontSize: 32, fontWeight: '700', marginTop: 8 }} numberOfLines={1}>
+        <Text style={styles.amount} numberOfLines={1}>
           <Text style={{ color: '#A7F3D0', fontSize: 16, fontWeight: '600' }}>KES </Text>
           {numberOnly}
         </Text>

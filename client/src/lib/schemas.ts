@@ -145,6 +145,15 @@ export const assignCaretakerFormSchema = z
       .string()
       .trim()
       .min(2, "Enter the caretaker's full name"),
+    username: z
+      .string()
+      .trim()
+      .min(3, 'Username must be at least 3 characters')
+      .max(30, 'Username must be at most 30 characters')
+      .regex(
+        /^[a-zA-Z0-9_.]+$/,
+        'Use letters, numbers, dots, or underscores only',
+      ),
     email: z.string().trim().email('Must be a valid email address'),
     phone: z
       .string()

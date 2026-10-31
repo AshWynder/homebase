@@ -160,9 +160,15 @@ export class PropertiesService {
 
     let caretakerId: string;
     if (dto.mode === 'create') {
-      if (!dto.name || !dto.email || !dto.phone || !dto.password) {
+      if (
+        !dto.name ||
+        !dto.username ||
+        !dto.email ||
+        !dto.phone ||
+        !dto.password
+      ) {
         throw new BadRequestException(
-          'name, email, phone and password are required to create a caretaker',
+          'name, username, email, phone and password are required to create a caretaker',
         );
       }
 
@@ -171,6 +177,7 @@ export class PropertiesService {
       // returned session token is discarded — the owner stays signed in.
       const result = await this.authService.register({
         name: dto.name.trim(),
+        username: dto.username.trim(),
         email: dto.email.trim(),
         phone: dto.phone.trim(),
         password: dto.password,

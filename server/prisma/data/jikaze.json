@@ -1,0 +1,77 @@
+{
+  "properties": [
+    {
+      "name": "jikaze plaza",
+      "address": "mwiki mariru park bethlehem road"
+    }
+  ],
+  "owner": {
+    "name": "syntyche gaceri mutinda",
+    "email": "sherrysmutinda@gmail.com"
+  },
+  "tenants": [
+    {
+      "name": "gladys mwangi",
+      "email": null,
+      "phone number": 254718671408,
+      "start date": "2026-01-09",
+      "rent amount": 14000,
+      "deposit amount paid": 13000,
+      "unit": "G1"
+    },
+    {
+      "name": "john kanai swai",
+      "email": null,
+      "phone number": 254711288129,
+      "start date": null,
+      "rent amount": 16000,
+      "deposit amount paid": 16000,
+      "unit": "F3"
+    },
+    {
+      "name": "harrison macharia",
+      "email": null,
+      "phone number": 254722570222,
+      "start date": null,
+      "rent amount": 12000,
+      "deposit amount paid": 12000,
+      "unit": "F4"
+    },
+    {
+      "name": "edwin",
+      "email": null,
+      "phone number": 254782549706,
+      "start date": "2026-01-04",
+      "rent amount": 5000,
+      "deposit amount paid": 5000,
+      "unit": "F7"
+    },
+    {
+      "name": "annah mwende nthiwa",
+      "email": null,
+      "phone number": 254725391012,
+      "start date": "2026-04-06",
+      "rent amount": 5500,
+      "deposit amount paid": 5500,
+      "unit": "F5"
+    },
+    {
+      "name": "sowara",
+      "email": null,
+      "phone number": 254722271447,
+      "start date": null,
+      "rent amount": 16000,
+      "deposit amount paid": 16000,
+      "unit": "F6"
+    },
+    {
+      "name": "venah aluoch odhiambo",
+      "email": null,
+      "phone number": 254720910121,
+      "start date": null,
+      "rent amount": 14000,
+      "deposit amount paid": 14000,
+      "unit": "F8"
+    }
+  ]
+}

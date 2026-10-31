@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 
 import { authApi, type QueryUsersInput } from '@/api/auth';
-import type { ChangePasswordInput, MeResponse, RegisterInput, UpdateProfileInput } from '@/api/types';
+import type {
+  ChangePasswordInput,
+  MeResponse,
+  RegisterInput,
+  SignInInput,
+  UpdateProfileInput,
+} from '@/api/types';
 import { useStore } from '@/stores/use-store';
 
 import { queryKeys } from './keys';
@@ -14,7 +20,7 @@ export function useSignIn() {
   const setSession = useStore((s) => s.setSession);
 
   return useMutation({
-    mutationFn: async (input: { email: string; password: string }) => {
+    mutationFn: async (input: SignInInput) => {
       const signIn = await authApi.signIn(input);
 
       let me: MeResponse;

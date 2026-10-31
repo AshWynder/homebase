@@ -5,6 +5,8 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Length,
+  Matches,
   MinLength,
 } from 'class-validator';
 
@@ -29,6 +31,14 @@ export class AssignCaretakerDto {
   @IsString()
   @IsNotEmpty({ message: 'Name is required' })
   name?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(3, 30, { message: 'Username must be between 3 and 30 characters' })
+  @Matches(/^[a-zA-Z0-9_.]+$/, {
+    message: 'Username may only contain letters, numbers, dots, and underscores',
+  })
+  username?: string;
 
   @IsOptional()
   @IsEmail({}, { message: 'Must be a valid email address' })

@@ -7,6 +7,7 @@ import type {
   RegisterInput,
   RegisterResponse,
   Role,
+  SignInInput,
   SignInResponse,
   UpdateProfileInput,
   UserProfile,
@@ -24,17 +25,23 @@ export interface QueryUsersInput {
  *
  * NOTE: `/api/auth/register`, `/api/auth/me`, `/api/auth/profile`, `/api/auth/avatar`,
  * and `/api/auth/change-password` are custom NestJS routes and return the `{ success, data }`
- * envelope (use `unwrap`). The Better Auth passthrough routes (`sign-in/email`, `sign-out`)
- * are handled by `toNodeHandler` and return raw JSON — no envelope.
+ * envelope (use `unwrap`). The Better Auth passthrough routes (`sign-in/email`,
+ * `sign-in/username`, `sign-out`) are handled by `toNodeHandler` and return raw JSON —
+ * no envelope.
  */
 export const authApi = {
   register: (input: RegisterInput) =>
     unwrap<RegisterResponse>(api.post('/api/auth/register', input)),
 
-  signIn: (input: { email: string; password: string }) =>
-    api
-      .post<SignInResponse>('/api/auth/sign-in/email', input)
-      .then((res) => res.data),
+  signIn: ({ identifier, password }: SignInInput) => {
+    const isEmail = identifier.includes('@');
+    return api
+      .post<SignInResponse>(
+        isEmail ? '/api/auth/sign-in/email' : '/api/auth/sign-in/username',
+        isEmail ? { email: identifier, password } : { username: identifier, password },
+      )
+      .then((res) => res.data);
+  },
 
   signOut: () =>
     api.post('/api/auth/sign-out').then((res) => res.data as unknown),

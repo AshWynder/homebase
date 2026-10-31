@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
-import { User, Mail, Phone, Shield, Lock, CheckCircle2 } from 'lucide-react-native';
+import { User, AtSign, Mail, Phone, Shield, Lock, CheckCircle2 } from 'lucide-react-native';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ export function ProfileForm() {
   const updateProfile = useUpdateProfile();
 
   const [name, setName] = useState(user?.name ?? '');
+  const [username, setUsername] = useState(user?.username ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
   const [phone, setPhone] = useState(profile?.phone ?? '');
   const [nationalId, setNationalId] = useState(profile?.nationalId ?? '');
@@ -26,6 +27,7 @@ export function ProfileForm() {
 
   useEffect(() => {
     setName(user?.name ?? '');
+    setUsername(user?.username ?? '');
     setEmail(user?.email ?? '');
     setPhone(profile?.phone ?? '');
     setNationalId(profile?.nationalId ?? '');
@@ -33,6 +35,7 @@ export function ProfileForm() {
 
   const hasChanges =
     name.trim() !== (user?.name ?? '') ||
+    username.trim() !== (user?.username ?? '') ||
     email.trim() !== (user?.email ?? '') ||
     phone.trim() !== (profile?.phone ?? '') ||
     nationalId.trim() !== (profile?.nationalId ?? '');
@@ -41,6 +44,27 @@ export function ProfileForm() {
     if (!name.trim()) {
       Alert.alert('Validation', 'Name cannot be blank');
       return;
+    }
+    if (user?.username && !username.trim()) {
+      Alert.alert('Validation', 'Username cannot be blank');
+      return;
+    }
+    if (username.trim()) {
+      const value = username.trim();
+      if (value.length < 3 || value.length > 30) {
+        Alert.alert(
+          'Validation',
+          'Username must be between 3 and 30 characters',
+        );
+        return;
+      }
+      if (!/^[a-zA-Z0-9_.]+$/.test(value)) {
+        Alert.alert(
+          'Validation',
+          'Username may only contain letters, numbers, dots, and underscores',
+        );
+        return;
+      }
     }
     if (!email.trim()) {
       Alert.alert('Validation', 'Email cannot be blank');
@@ -54,6 +78,7 @@ export function ProfileForm() {
     try {
       await updateProfile.mutateAsync({
         name: name.trim(),
+        username: username.trim() || undefined,
         email: email.trim(),
         phone: phone.trim(),
         nationalId: nationalId.trim() || undefined,
@@ -93,6 +118,26 @@ export function ProfileForm() {
               />
               <View className="absolute left-3.5 top-3">
                 <Icon as={User} size={18} className="text-muted-foreground" />
+              </View>
+            </View>
+          </View>
+
+          <View className="gap-1.5">
+            <Label nativeID="username-field" className="text-xs font-semibold text-foreground">
+              Username
+            </Label>
+            <View className="relative">
+              <Input
+                aria-labelledby="username-field"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder="sarah.jenkins"
+                className="h-11 rounded-xl bg-muted pl-10"
+              />
+              <View className="absolute left-3.5 top-3">
+                <Icon as={AtSign} size={18} className="text-muted-foreground" />
               </View>
             </View>
           </View>

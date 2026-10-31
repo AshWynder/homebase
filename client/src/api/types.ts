@@ -75,6 +75,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  username?: string | null;
   image?: string | null;
 }
 
@@ -252,6 +253,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  username?: string | null;
   emailVerified?: boolean;
   image?: string | null;
   createdAt?: string;
@@ -260,6 +262,7 @@ export interface AuthUser {
 
 export interface RegisterInput {
   name: string;
+  username: string;
   email: string;
   password: string;
   phone: string;
@@ -267,8 +270,14 @@ export interface RegisterInput {
   nationalId?: string;
 }
 
+export interface SignInInput {
+  identifier: string;
+  password: string;
+}
+
 export interface UpdateProfileInput {
   name?: string;
+  username?: string;
   email?: string;
   phone?: string;
   nationalId?: string;
@@ -323,6 +332,7 @@ export type AssignCaretakerInput =
   | {
       mode: 'create';
       name: string;
+      username: string;
       email: string;
       phone: string;
       password: string;

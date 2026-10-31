@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import {
   ArrowRight,
+  AtSign,
   Building2,
   Check,
   CreditCard,
@@ -36,6 +37,7 @@ import { homeRouteFor } from '@/lib/auth-routing';
 type Mode = 'sign-in' | 'sign-up';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_PATTERN = /^[a-zA-Z0-9_.]+$/;
 
 /** Input styles that flatten the shared `Input` inside a custom field row. */
 const BARE_INPUT =
@@ -48,12 +50,13 @@ const ROLE_OPTIONS: { value: Role; label: string; icon: LucideIcon }[] = [
 ];
 
 interface SignInValues {
-  email: string;
+  identifier: string;
   password: string;
 }
 
 interface SignUpValues {
   fullName: string;
+  username: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -385,12 +388,12 @@ function TermsCheckbox({
 function SignInForm() {
   const signIn = useSignIn();
   const { control, handleSubmit } = useForm<SignInValues>({
-    defaultValues: { email: '', password: '' },
+    defaultValues: { identifier: '', password: '' },
   });
 
   const onSubmit = (values: SignInValues) =>
     signIn.mutate(
-      { email: values.email.trim(), password: values.password },
+      { identifier: values.identifier.trim(), password: values.password },
       {
         // Route off the mutation result: the profile (and therefore the role)
         // is guaranteed fresh, and the store can't disagree with it.
@@ -404,21 +407,37 @@ function SignInForm() {
     <View className="mt-6 gap-4">
       <Controller
         control={control}
-        name="email"
+        name="identifier"
         rules={{
-          required: 'Email is required',
-          pattern: { value: EMAIL_PATTERN, message: 'Enter a valid email address' },
+          validate: (value) => {
+            const identifier = value.trim();
+            if (!identifier) return 'Email or username is required';
+            if (identifier.includes('@')) {
+              return (
+                EMAIL_PATTERN.test(identifier) || 'Enter a valid email address'
+              );
+            }
+            return (
+              (identifier.length >= 3 &&
+                identifier.length <= 30 &&
+                USERNAME_PATTERN.test(identifier)) ||
+              'Enter a valid username'
+            );
+          },
         }}
         render={({ field: { onChange, onBlur, value }, fieldState }) => (
-          <Field label="Email Address" icon={Mail} error={fieldState.error?.message}>
+          <Field
+            label="Email or Username"
+            icon={AtSign}
+            error={fieldState.error?.message}>
             <Input
               className={BARE_INPUT}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder="sarah.jenkins@haven.io"
+              autoCorrect={false}
+              placeholder="sarah.jenkins@haven.io or sarah.jenkins"
             />
           </Field>
         )}
@@ -464,6 +483,7 @@ function SignUpForm() {
   const { control, handleSubmit, setValue, watch } = useForm<SignUpValues>({
     defaultValues: {
       fullName: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -480,6 +500,7 @@ function SignUpForm() {
     signUp.mutate(
       {
         name: values.fullName.trim(),
+        username: values.username.trim(),
         email: values.email.trim(),
         password: values.password,
         phone: values.phone.trim(),
@@ -509,6 +530,33 @@ function SignUpForm() {
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="Sarah Jenkins"
+            />
+          </Field>
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="username"
+        rules={{
+          required: 'Username is required',
+          minLength: { value: 3, message: 'At least 3 characters' },
+          maxLength: { value: 30, message: 'At most 30 characters' },
+          pattern: {
+            value: USERNAME_PATTERN,
+            message: 'Use letters, numbers, dots, or underscores only',
+          },
+        }}
+        render={({ field: { onChange, onBlur, value }, fieldState }) => (
+          <Field label="Username" icon={AtSign} error={fieldState.error?.message}>
+            <Input
+              className={BARE_INPUT}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="sarah.jenkins"
             />
           </Field>
         )}

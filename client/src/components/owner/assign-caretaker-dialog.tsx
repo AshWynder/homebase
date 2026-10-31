@@ -70,6 +70,7 @@ export function AssignCaretakerDialog({
     resolver: zodResolver(assignCaretakerFormSchema),
     defaultValues: {
       name: '',
+      username: '',
       email: '',
       phone: '',
       password: '',

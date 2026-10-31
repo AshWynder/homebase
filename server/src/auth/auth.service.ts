@@ -68,12 +68,18 @@ export class AuthService {
           email: dto.email,
           password: dto.password,
           name: dto.name,
+          username: dto.username.trim(),
         },
       });
     } catch (error: any) {
-      throw new BadRequestException(
-        error?.body?.message || error?.message || 'Failed to sign up user',
-      );
+      const message =
+        error?.body?.message || error?.message || 'Failed to sign up user';
+      const code = error?.body?.code ?? error?.code;
+
+      if (code === 'USERNAME_IS_ALREADY_TAKEN') {
+        throw new ConflictException(message);
+      }
+      throw new BadRequestException(message);
     }
 
     if (!signUpResult?.user?.id) {
@@ -119,12 +125,25 @@ export class AuthService {
       }
     }
 
+    const normalizedUsername = dto.username?.trim().toLowerCase();
+    if (normalizedUsername && normalizedUsername !== caller.user.username) {
+      const existing = await this.prisma.user.findFirst({
+        where: { username: normalizedUsername, id: { not: userId } },
+      });
+      if (existing) {
+        throw new ConflictException(
+          `Username ${normalizedUsername} is already in use`,
+        );
+      }
+    }
+
     const [updatedUser, updatedProfile] = await this.prisma.$transaction([
       this.prisma.user.update({
         where: { id: userId },
         data: {
           ...(dto.name ? { name: dto.name.trim() } : {}),
           ...(dto.email ? { email: dto.email.trim() } : {}),
+          ...(normalizedUsername ? { username: normalizedUsername } : {}),
           ...(dto.image !== undefined ? { image: dto.image } : {}),
         },
       }),

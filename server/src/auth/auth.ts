@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from '@better-auth/prisma-adapter';
 import { prisma } from '../../prisma/prisma.client';
-import { bearer, jwt } from 'better-auth/plugins';
+import { bearer, jwt, username } from 'better-auth/plugins';
 
 // Comma-separated allowlist, same shape as CORS_ORIGINS. Falls back to the Expo
 // web dev origins so local development keeps working without extra setup.
@@ -43,5 +43,11 @@ export const auth = betterAuth({
       },
     }),
     bearer(),
+    username({
+      minUsernameLength: 3,
+      maxUsernameLength: 30,
+      usernameNormalization: (value) => value.trim().toLowerCase(),
+      displayUsername: false,
+    }),
   ],
 });
